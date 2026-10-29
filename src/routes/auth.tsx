@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +18,9 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
+
+// Google sign-in only appears when VITE_ENABLE_GOOGLE_LOGIN=true (see docs/SETUP.md).
+const GOOGLE_ENABLED = import.meta.env.VITE_ENABLE_GOOGLE_LOGIN === "true";
 
 const signInSchema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
@@ -52,10 +54,14 @@ function AuthPage() {
             <TabsContent value="signin"><SignInForm /></TabsContent>
             <TabsContent value="signup"><SignUpForm /></TabsContent>
           </Tabs>
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> OR <div className="h-px flex-1 bg-border" />
-          </div>
-          <GoogleButton />
+          {GOOGLE_ENABLED && (
+            <>
+              <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="h-px flex-1 bg-border" /> OR <div className="h-px flex-1 bg-border" />
+              </div>
+              <GoogleButton />
+            </>
+          )}
         </Card>
         <p className="mt-6 text-center text-xs text-muted-foreground">
           <Link to="/" className="hover:text-foreground">← Back to store</Link>
@@ -177,10 +183,11 @@ function GoogleButton() {
   const [busy, setBusy] = useState(false);
   async function handle() {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
     });
-    if (result.error) {
+    if (error) {
       setBusy(false);
       toast.error("Google sign-in failed");
     }

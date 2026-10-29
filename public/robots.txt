@@ -6,5 +6,3 @@ Disallow: /setup-admin
 Disallow: /auth
 Disallow: /reset-password
 Disallow: /forgot-password
-
-Sitemap: https://shielded-spree.lovable.app/sitemap.xml

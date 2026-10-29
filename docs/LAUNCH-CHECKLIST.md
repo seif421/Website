@@ -1,6 +1,6 @@
 # SentryHaus — what is left before this can go public
 
-Audit of the Lovable-generated project (TanStack Start + Supabase). Based on reading the code;
+Audit of the project (TanStack Start + Supabase). Based on reading the code;
 the project could not be built or run in the audit environment, so every item below is a code
 finding, not a runtime test. Re-verify after your first `bun run build`.
 
@@ -60,8 +60,8 @@ Today a visitor cannot buy anything.
 - Newsletter form in the footer does nothing (`onSubmit` only prevents default). Wire it to `newsletter_subscribers`, with a confirmation email.
 - Transactional email: order confirmation, shipping, password reset, welcome. The `email_templates` admin page exists but there is no sender integration.
 - Admin `Support` page is "Coming soon"; the public `/support` and `/contact` need a working form or ticket flow.
-- Per-page SEO: unique titles, descriptions, canonical URLs and Open Graph for every route; product pages need Product/Offer/Review structured data; stub pages currently use titles like "shop — SentryHaus". The OG image points to a Lovable-hosted preview image; replace with your own.
-- `public/sitemap.xml` and `robots.txt` hard-code `shielded-spree.lovable.app`. Update to your real domain and generate product URLs dynamically.
+- Per-page SEO: unique titles, descriptions, canonical URLs and Open Graph for every route; product pages need Product/Offer/Review structured data; stub pages currently use titles like "shop — SentryHaus". The social-share (Open Graph) image was removed; add your own.
+- The sitemap was removed; generate a new one (with product URLs) once the real domain is known, and add the `Sitemap:` line back to `robots.txt`.
 - Brand name inconsistency: store is "SentryHaus"; original brief and repo README said "Aegis". Pick one.
 - Cookie consent and analytics (GA4 or equivalent), error monitoring (Sentry), uptime check.
 - Accessibility pass: keyboard navigation, focus states, contrast, labels (the admin and auth forms need review).
@@ -73,9 +73,9 @@ Recently viewed, frequently bought together, product zoom, share buttons, Q&A, b
 
 ## Deployment
 
-1. Pick the host. The original brief said Vercel; the build config (`@lovable.dev/vite-tanstack-config`) targets Cloudflare by default through Nitro. Lovable's own Publish button is the lowest-effort route; moving elsewhere means changing the Nitro target.
-2. Set environment variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CJ_API_EMAIL`, `CJ_API_KEY`, plus payment keys.
-3. Supabase: apply migrations, configure Auth redirect URLs for the production domain, set up SMTP, enable email confirmation, and configure Google OAuth with your own credentials (the Lovable-managed one is for previews).
+1. Follow `docs/SETUP.md` (Supabase database + Vercel hosting; Lovable is no longer used).
+2. Set the environment variables listed in `.env.example` in Vercel.
+3. Supabase: configure Auth redirect URLs for the production domain, set up SMTP, enable email confirmation, and add Google OAuth with your own credentials if wanted.
 4. Connect a custom domain with HTTPS and update sitemap/robots/canonicals.
 5. Place a test order end to end (payment, email, CJ order, tracking) before announcing.
 

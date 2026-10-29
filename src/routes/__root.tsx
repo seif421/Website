@@ -7,10 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -38,12 +37,7 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
-  const err = error instanceof Error ? error : new Error(String(error));
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(err, { boundary: "tanstack_root_error_component" });
-  }, [err]);
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -91,8 +85,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@SentryHaus" },
       { name: "twitter:title", content: "SentryHaus — Premium Smart Home Security" },
       { name: "twitter:description", content: "Studio-grade smart cameras, doorbells, locks, and sensors. Free U.S. shipping, no monthly fees, end-to-end encrypted." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4dc02f56-16cf-45fe-bb76-7d3f664cf38d/id-preview-8294fb13--bc5c5ec5-9b5a-449c-9a54-3700d417effa.lovable.app-1783249628430.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4dc02f56-16cf-45fe-bb76-7d3f664cf38d/id-preview-8294fb13--bc5c5ec5-9b5a-449c-9a54-3700d417effa.lovable.app-1783249628430.png" },
     ],
     links: [
       {
