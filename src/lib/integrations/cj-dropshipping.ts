@@ -1,7 +1,7 @@
 /**
  * CJ Dropshipping integration layer.
  *
- * Production requires two secrets to be configured in Lovable Cloud secrets:
+ * Production requires two secrets to be configured as server environment variables (Vercel project settings):
  *   - CJ_API_EMAIL
  *   - CJ_API_KEY
  *

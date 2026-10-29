@@ -4,8 +4,8 @@ A premium e-commerce storefront and admin dashboard for smart home security prod
 (cameras, doorbells, locks, sensors), built for the U.S. market on a dropshipping model
 (supplier: CJ Dropshipping).
 
-Built with [Lovable](https://lovable.dev) and kept in sync with this repository.
-Live preview: https://shielded-spree.lovable.app
+**New here? Start with [`docs/SETUP.md`](docs/SETUP.md)** — click-by-click steps to create
+the database and put the site online.
 
 ## Tech stack
 
@@ -16,10 +16,11 @@ Live preview: https://shielded-spree.lovable.app
 | Data | Supabase (Postgres, Auth, Storage) via `@supabase/supabase-js` |
 | Forms / validation | React Hook Form, Zod |
 | Charts | Recharts |
+| Hosting | Vercel |
 | Tooling | TypeScript, ESLint, Prettier, Bun (lockfile: `bun.lock`) |
 
-> The original brief asked for Next.js; Lovable generated this project on TanStack Start instead.
-> The original prompt is preserved in [`docs/original-brief.md`](docs/original-brief.md).
+The original brief is preserved in [`docs/original-brief.md`](docs/original-brief.md);
+what is still to build is in [`docs/LAUNCH-CHECKLIST.md`](docs/LAUNCH-CHECKLIST.md).
 
 ## Project structure
 
@@ -31,32 +32,31 @@ src/
     admin/           Admin dashboard components
     ui/              shadcn/ui primitives
   hooks/             React hooks (auth, mobile, …)
-  integrations/      Supabase clients/middleware and Lovable auth
+  integrations/      Supabase clients and auth middleware
   lib/               Utilities, admin helpers, CJ Dropshipping client, error handling
   assets/            Bundled images
   router.tsx  server.ts  start.ts  styles.css  routeTree.gen.ts (generated)
-public/              robots.txt, sitemap.xml, static files
-supabase/            SQL migrations and config
-drizzle/             Drizzle config and migrations (managed by Lovable Cloud)
-docs/                Project documentation and the original brief
+public/              robots.txt and static files
+supabase/            SQL migrations (the database definition)
+docs/                Setup guide, launch checklist, original brief
 ```
 
-## Getting started
+## Run it on your computer
 
 ```sh
 bun install        # or: npm install
-cp .env.example .env   # then fill in your Supabase values
-bun run dev
+cp .env.example .env   # then fill in the Supabase values
+bun run dev            # opens on http://localhost:3000
 ```
 
 Scripts: `dev`, `build`, `preview`, `lint`, `format`.
 
 ## Environment variables
 
-See `.env.example`. Server-only secrets (never commit these): `SUPABASE_SERVICE_ROLE_KEY`,
-`CJ_API_EMAIL`, `CJ_API_KEY`.
+See `.env.example`. Secrets that must never be committed or exposed to the browser:
+`SUPABASE_SERVICE_ROLE_KEY`, `CJ_API_EMAIL`, `CJ_API_KEY`.
 
-## Notes for contributors
+## Notes
 
-- `src/routeTree.gen.ts` is auto-generated; do not edit it by hand.
-- Do not rewrite published git history; commits to `main` sync back to Lovable.
+- `src/routeTree.gen.ts` is generated automatically; do not edit it by hand.
+- Database changes go in a new file in `supabase/migrations/` (never edit old ones).
