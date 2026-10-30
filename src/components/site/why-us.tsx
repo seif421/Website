@@ -1,10 +1,11 @@
-import { ShieldCheck, Zap, Headphones, Truck } from "lucide-react";
+import { ShieldCheck, Zap, Truck, Headphones } from "lucide-react";
+import { SITE } from "@/lib/site-config";
 
 const ITEMS = [
-  { icon: ShieldCheck, title: "End-to-end encryption", body: "Your video and data are encrypted from device to app — only you have the keys." },
-  { icon: Zap, title: "5-minute setup", body: "Designed for the home, not the IT room. Just plug in and pair from the app." },
-  { icon: Truck, title: "Free U.S. shipping", body: "Fast, tracked delivery on orders over $99. Most orders ship within 24 hours." },
-  { icon: Headphones, title: "Real human support", body: "California-based experts, 7 days a week. No bots, no scripts." },
+  { icon: ShieldCheck, title: `${SITE.returnDays}-day returns`, body: "Changed your mind or got a faulty item? Return it within the return window and we will sort it out." },
+  { icon: Zap, title: "Simple to set up", body: "Products are chosen for easy installation with a phone app. Each product page lists what is in the box." },
+  { icon: Truck, title: "Honest delivery times", body: `Orders are processed in ${SITE.processingDays} business days and usually arrive ${SITE.deliveryDays} business days after dispatch.` },
+  { icon: Headphones, title: "Real people", body: "Send us a message and a person will reply by email." },
 ];
 
 export function WhyUs() {
@@ -13,7 +14,7 @@ export function WhyUs() {
       <div className="mx-auto max-w-2xl text-center">
         <p className="text-sm font-medium text-brand">Why SentryHaus</p>
         <h2 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          Built like premium hardware. Priced like a smart upgrade.
+          Smart home security, without the guesswork.
         </h2>
       </div>
       <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

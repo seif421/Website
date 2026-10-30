@@ -1,24 +1,25 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { SiteLayout } from "@/components/site/layout";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { LegalPage, pageHead } from "@/components/site/legal-page";
+import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/support")({
-  head: () => ({
-    meta: [
-      { title: "support — SentryHaus" },
-      { name: "description", content: "support page on SentryHaus." },
-    ],
-  }),
+  head: () => pageHead("Help Center", "Answers about orders, shipping, returns and warranty."),
   component: Page,
 });
 
+const link = "font-medium text-foreground underline";
+
 function Page() {
   return (
-    <SiteLayout>
-      <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
-        <p className="text-sm font-medium text-brand">Coming soon</p>
-        <h1 className="mt-2 font-display text-4xl font-bold tracking-tight capitalize">support</h1>
-        <p className="mt-4 text-muted-foreground">This page will be built in an upcoming part of the project.</p>
-      </section>
-    </SiteLayout>
+    <LegalPage
+      title="Help Center"
+      showUpdated={false}
+      sections={[
+        { heading: "Where is my order?", body: <p>Orders are processed within {SITE.processingDays} business days and usually arrive {SITE.deliveryDays} business days after dispatch. See the <Link to="/shipping" className={link}>Shipping Policy</Link> for details.</p> },
+        { heading: "How do I return something?", body: <p>You have {SITE.returnDays} days after delivery. Read the <Link to="/refunds" className={link}>Refund Policy</Link>, then send us your order number through the <Link to="/contact" className={link}>contact form</Link>.</p> },
+        { heading: "My product is faulty", body: <p>Products are covered for {SITE.warrantyMonths} months against manufacturing defects. See the <Link to="/warranty" className={link}>Warranty</Link> page and <Link to="/contact" className={link}>contact us</Link> with a photo or video.</p> },
+        { heading: "I could not find my answer", body: <p>Send us a message through the <Link to="/contact" className={link}>contact form</Link> and we will reply by email.</p> },
+      ]}
+    />
   );
 }

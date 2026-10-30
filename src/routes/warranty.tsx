@@ -1,24 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { SiteLayout } from "@/components/site/layout";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { LegalPage, pageHead } from "@/components/site/legal-page";
+import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/warranty")({
-  head: () => ({
-    meta: [
-      { title: "warranty — SentryHaus" },
-      { name: "description", content: "warranty page on SentryHaus." },
-    ],
-  }),
+  head: () => pageHead("Warranty", "Warranty cover for SentryHaus products."),
   component: Page,
 });
 
 function Page() {
   return (
-    <SiteLayout>
-      <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
-        <p className="text-sm font-medium text-brand">Coming soon</p>
-        <h1 className="mt-2 font-display text-4xl font-bold tracking-tight capitalize">warranty</h1>
-        <p className="mt-4 text-muted-foreground">This page will be built in an upcoming part of the project.</p>
-      </section>
-    </SiteLayout>
+    <LegalPage
+      title="Warranty"
+      sections={[
+        { heading: "What is covered", body: <><p>Our products are covered against manufacturing defects for {SITE.warrantyMonths} months from the delivery date. If a product stops working because of a defect, we will repair it, replace it or refund you.</p></> },
+        { heading: "What is not covered", body: <><p>The warranty does not cover damage from accidents, misuse, wrong installation, water damage on products not rated for it, unauthorised repairs, or normal wear and tear such as scratches.</p></> },
+        { heading: "How to claim", body: <><p>Use the <Link to="/contact" className="font-medium text-foreground underline">contact form</Link> with your order number, a short description of the problem and, if possible, a photo or video. We may ask you to try a few troubleshooting steps first.</p></> },
+        { heading: "Your legal rights", body: <><p>This warranty is in addition to, and does not limit, your legal rights as a consumer.</p></> },
+      ]}
+    />
   );
 }

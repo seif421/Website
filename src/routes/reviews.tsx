@@ -1,24 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { SiteLayout } from "@/components/site/layout";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { LegalPage, pageHead } from "@/components/site/legal-page";
 
 export const Route = createFileRoute("/reviews")({
-  head: () => ({
-    meta: [
-      { title: "reviews — SentryHaus" },
-      { name: "description", content: "reviews page on SentryHaus." },
-    ],
-  }),
+  head: () => pageHead("Reviews", "Customer reviews at SentryHaus."),
   component: Page,
 });
 
 function Page() {
   return (
-    <SiteLayout>
-      <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
-        <p className="text-sm font-medium text-brand">Coming soon</p>
-        <h1 className="mt-2 font-display text-4xl font-bold tracking-tight capitalize">reviews</h1>
-        <p className="mt-4 text-muted-foreground">This page will be built in an upcoming part of the project.</p>
-      </section>
-    </SiteLayout>
+    <LegalPage
+      title="Reviews"
+      showUpdated={false}
+      sections={[
+        { heading: "Reviews come from real buyers", body: <><p>We only show reviews that customers write about products they bought. You can read them at the bottom of each product page. If a product has no reviews yet, it simply has not been reviewed yet.</p></> },
+        { heading: "Browse products", body: <><p><Link to="/shop" className="font-medium text-foreground underline">Go to the shop</Link> to see our products and their reviews.</p></> },
+      ]}
+    />
   );
 }

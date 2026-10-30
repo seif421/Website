@@ -1,5 +1,6 @@
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { SITE } from "@/lib/site-config";
 import heroImage from "@/assets/hero-camera.jpg";
 
 export function Hero() {
@@ -18,8 +19,8 @@ export function Hero() {
             </span>
           </h1>
           <p className="mt-6 max-w-lg text-lg text-primary-foreground/75">
-            Studio-grade smart cameras, doorbells, and locks — engineered for the way modern families live.
-            Effortless setup, end-to-end encryption, no monthly fees required.
+            Smart cameras, doorbells, locks and sensors to help you keep an eye on your home.
+            Clear prices, honest delivery times and easy returns.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link
@@ -36,9 +37,9 @@ export function Hero() {
             </Link>
           </div>
           <div className="mt-10 grid max-w-md grid-cols-3 gap-4 text-sm">
-            <Stat k="4.9★" v="12,000+ reviews" />
-            <Stat k="2-yr" v="Warranty" />
-            <Stat k="E2E" v="Encrypted" />
+            <Stat k={`${SITE.returnDays}-day`} v="Returns" />
+            <Stat k={`${SITE.warrantyMonths}-month`} v="Warranty" />
+            <Stat k="Secure" v="Checkout" />
           </div>
         </div>
 
@@ -54,7 +55,7 @@ export function Hero() {
               fetchPriority="high"
             />
             <div className="absolute bottom-5 left-5 flex items-center gap-2 rounded-full bg-background/95 px-4 py-2 text-xs font-medium text-foreground shadow-soft">
-              <ShieldCheck className="size-4 text-brand" /> Live · Recording in 4K HDR
+              <ShieldCheck className="size-4 text-brand" /> Smart home security
             </div>
           </div>
         </div>

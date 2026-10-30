@@ -4,7 +4,6 @@ import { Hero } from "@/components/site/hero";
 import { Categories } from "@/components/site/categories";
 import { FeaturedProducts } from "@/components/site/featured-products";
 import { WhyUs } from "@/components/site/why-us";
-import { Reviews } from "@/components/site/reviews";
 import { FAQ } from "@/components/site/faq";
 import { fetchFeatured } from "@/lib/store/queries";
 
@@ -13,9 +12,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "SentryHaus — Premium Smart Home Security" },
-      { name: "description", content: "Studio-grade smart cameras, doorbells, locks, and sensors. Free U.S. shipping, no monthly fees, end-to-end encrypted." },
+      { name: "description", content: "Smart cameras, doorbells, locks and sensors for your home. Clear prices, honest delivery times and easy returns." },
       { property: "og:title", content: "SentryHaus — Premium Smart Home Security" },
-      { property: "og:description", content: "Studio-grade smart cameras, doorbells, locks, and sensors. Free U.S. shipping, no monthly fees, end-to-end encrypted." },
+      { property: "og:description", content: "Smart cameras, doorbells, locks and sensors for your home. Clear prices, honest delivery times and easy returns." },
       { property: "og:url", content: "/" },
     ],
     links: [{ rel: "canonical", href: "/" }],
@@ -31,7 +30,6 @@ function Index() {
       <Categories />
       <FeaturedProducts products={products} />
       <WhyUs />
-      <Reviews />
       <FAQ />
     </SiteLayout>
   );
