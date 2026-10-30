@@ -1,23 +1,27 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, Search, ShoppingBag, User, Menu, X, LayoutDashboard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnnouncementBar } from "./announcement-bar";
 import { Logo } from "./logo";
 import { useAuth } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
 
-const NAV = [
-  { label: "Shop All", to: "/shop" },
-  { label: "Cameras", to: "/shop" },
-  { label: "Doorbells", to: "/shop" },
-  { label: "Locks", to: "/shop" },
-  { label: "Sensors", to: "/shop" },
-  { label: "Accessories", to: "/shop" },
-] as const;
+const NAV: { label: string; category?: string }[] = [
+  { label: "Shop All" },
+  { label: "Cameras", category: "smart-cameras" },
+  { label: "Doorbells", category: "doorbell-cameras" },
+  { label: "Locks", category: "smart-locks" },
+  { label: "Sensors", category: "motion-sensors" },
+  { label: "Accessories", category: "accessories" },
+];
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [term, setTerm] = useState("");
   const { user, isStaff } = useAuth();
+  const { count } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -25,6 +29,12 @@ export function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    setOpen(false);
+    navigate({ to: "/shop", search: { q: term.trim() || undefined } });
+  }
 
   return (
     <header className="sticky top-0 z-50">
@@ -41,7 +51,8 @@ export function Header() {
               {NAV.map((item) => (
                 <Link
                   key={item.label}
-                  to={item.to}
+                  to="/shop"
+                  search={item.category ? { category: item.category } : {}}
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {item.label}
@@ -51,24 +62,28 @@ export function Header() {
           </div>
 
           <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
-            <div className="hidden max-w-sm flex-1 md:block">
+            <form role="search" onSubmit={submitSearch} className="hidden max-w-sm flex-1 md:block">
               <label className="relative block">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
                 <input
                   type="search"
+                  value={term}
+                  onChange={(e) => setTerm(e.target.value)}
                   placeholder="Search cameras, locks, sensors…"
                   className="h-10 w-full rounded-full border border-input bg-surface pl-9 pr-4 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-brand focus:bg-background focus:ring-2 focus:ring-brand/20"
                   aria-label="Search products"
                 />
               </label>
-            </div>
+            </form>
 
             {isStaff && (
               <IconLink to="/admin" label="Admin"><LayoutDashboard className="size-5" /></IconLink>
             )}
             <IconLink to={user ? "/account" : "/auth"} label={user ? "Account" : "Sign in"}><User className="size-5" /></IconLink>
             <IconLink to="/wishlist" label="Wishlist"><Heart className="size-5" /></IconLink>
-            <IconLink to="/cart" label="Cart" badge={0}><ShoppingBag className="size-5" /></IconLink>
+            <IconLink to="/cart" label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"} badge={count}>
+              <ShoppingBag className="size-5" />
+            </IconLink>
 
             <button
               type="button"
@@ -85,11 +100,22 @@ export function Header() {
         {open && (
           <div className="border-t border-border/60 bg-background lg:hidden">
             <nav aria-label="Mobile" className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
+              <form role="search" onSubmit={submitSearch} className="mb-3 md:hidden">
+                <input
+                  type="search"
+                  value={term}
+                  onChange={(e) => setTerm(e.target.value)}
+                  placeholder="Search products…"
+                  className="h-10 w-full rounded-full border border-input bg-surface px-4 text-sm text-foreground outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  aria-label="Search products"
+                />
+              </form>
               <ul className="flex flex-col gap-1">
                 {NAV.map((item) => (
                   <li key={item.label}>
                     <Link
-                      to={item.to}
+                      to="/shop"
+                      search={item.category ? { category: item.category } : {}}
                       onClick={() => setOpen(false)}
                       className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                     >
@@ -126,7 +152,7 @@ function IconLink({
       {children}
       {typeof badge === "number" && badge > 0 && (
         <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-brand text-[10px] font-semibold text-brand-foreground">
-          {badge}
+          {badge > 9 ? "9+" : badge}
         </span>
       )}
     </Link>
