@@ -1,24 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { SiteLayout } from "@/components/site/layout";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { LegalPage, pageHead } from "@/components/site/legal-page";
+import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/about")({
-  head: () => ({
-    meta: [
-      { title: "about — SentryHaus" },
-      { name: "description", content: "about page on SentryHaus." },
-    ],
-  }),
+  head: () => pageHead("About", "About SentryHaus."),
   component: Page,
 });
 
 function Page() {
   return (
-    <SiteLayout>
-      <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
-        <p className="text-sm font-medium text-brand">Coming soon</p>
-        <h1 className="mt-2 font-display text-4xl font-bold tracking-tight capitalize">about</h1>
-        <p className="mt-4 text-muted-foreground">This page will be built in an upcoming part of the project.</p>
-      </section>
-    </SiteLayout>
+    <LegalPage
+      title="About"
+      showUpdated={false}
+      sections={[
+        { heading: "What we do", body: <><p>{SITE.name} sells smart home security products: cameras, doorbells, locks and sensors, chosen to be simple to set up and fair in price.</p></> },
+        { heading: "How we work", body: <><p>We pick products from established manufacturers, check what we list, and ship directly to you. Delivery times and costs are shown honestly at checkout, and you can read how returns and warranty work before you buy.</p></> },
+        { heading: "Talk to us", body: <><p>Questions about a product or an order? Use the <Link to="/contact" className="font-medium text-foreground underline">contact form</Link> and a real person will reply.</p></> },
+      ]}
+    />
   );
 }

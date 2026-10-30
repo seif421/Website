@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Plus, Minus } from "lucide-react";
 
+import { SITE } from "@/lib/site-config";
+
 const FAQS = [
-  { q: "Do I need a subscription to use SentryHaus products?", a: "No. Every device works fully out of the box — local storage, live view, motion alerts, and 2-way audio are all included with no monthly fee." },
-  { q: "How long does shipping take?", a: "Most U.S. orders ship within 24 hours and arrive in 2–4 business days. Shipping is free on orders over $99." },
-  { q: "What is your return policy?", a: "We offer a 30-day risk-free return on every product. If you're not in love, send it back for a full refund." },
-  { q: "Is my video footage private?", a: "Yes. All video is end-to-end encrypted between your device and the SentryHaus app. Only you can access it." },
-  { q: "Do the products work outdoors?", a: "Our outdoor cameras and doorbells are IP65-rated and engineered for rain, snow, and temperatures from -4°F to 122°F." },
+  { q: "How long does delivery take?", a: `Orders are processed within ${SITE.processingDays} business days and usually arrive ${SITE.deliveryDays} business days after dispatch. Exact shipping costs are shown at checkout.` },
+  { q: "What is your return policy?", a: `You can return an item within ${SITE.returnDays} days of delivery if it is unused and in its original packaging. See the Refund Policy for the full details.` },
+  { q: "Is there a warranty?", a: `Yes. Products are covered against manufacturing defects for ${SITE.warrantyMonths} months from delivery.` },
+  { q: "Do I need a subscription?", a: "Each product page explains what the device does on its own and whether any optional paid cloud features exist. Please read the product description before you buy." },
+  { q: "How do I contact you?", a: "Use the contact form. A real person will reply by email." },
 ];
 
 export function FAQ() {

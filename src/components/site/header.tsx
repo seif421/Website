@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart, Search, ShoppingBag, User, Menu, X, LayoutDashboard } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, LayoutDashboard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AnnouncementBar } from "./announcement-bar";
 import { Logo } from "./logo";
@@ -80,7 +80,6 @@ export function Header() {
               <IconLink to="/admin" label="Admin"><LayoutDashboard className="size-5" /></IconLink>
             )}
             <IconLink to={user ? "/account" : "/auth"} label={user ? "Account" : "Sign in"}><User className="size-5" /></IconLink>
-            <IconLink to="/wishlist" label="Wishlist"><Heart className="size-5" /></IconLink>
             <IconLink to="/cart" label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"} badge={count}>
               <ShoppingBag className="size-5" />
             </IconLink>
