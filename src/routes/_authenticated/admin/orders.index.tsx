@@ -18,7 +18,7 @@ import {
   money, shortDate, toCsv, downloadBlob, addOrderTimeline,
 } from "@/lib/admin/formatters";
 
-export const Route = createFileRoute("/_authenticated/admin/orders")({
+export const Route = createFileRoute("/_authenticated/admin/orders/")({
   component: OrdersPage,
 });
 

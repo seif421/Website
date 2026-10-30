@@ -36,7 +36,7 @@ import {
   productsToCsv, parseCsv, downloadFile, slugify, logActivity,
 } from "@/lib/admin/products-helpers";
 
-export const Route = createFileRoute("/_authenticated/admin/products")({
+export const Route = createFileRoute("/_authenticated/admin/products/")({
   component: ProductsPage,
 });
 
