@@ -1,8 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /account
-Disallow: /setup-admin
-Disallow: /auth
-Disallow: /reset-password
-Disallow: /forgot-password
