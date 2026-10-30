@@ -6,8 +6,10 @@ import { FeaturedProducts } from "@/components/site/featured-products";
 import { WhyUs } from "@/components/site/why-us";
 import { Reviews } from "@/components/site/reviews";
 import { FAQ } from "@/components/site/faq";
+import { fetchFeatured } from "@/lib/store/queries";
 
 export const Route = createFileRoute("/")({
+  loader: () => fetchFeatured(4),
   head: () => ({
     meta: [
       { title: "SentryHaus — Premium Smart Home Security" },
@@ -22,11 +24,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const products = Route.useLoaderData();
   return (
     <SiteLayout>
       <Hero />
       <Categories />
-      <FeaturedProducts />
+      <FeaturedProducts products={products} />
       <WhyUs />
       <Reviews />
       <FAQ />

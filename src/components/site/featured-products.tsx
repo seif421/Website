@@ -1,8 +1,8 @@
-import { PRODUCTS } from "./products";
-import { ProductCard } from "./product-card";
 import { Link } from "@tanstack/react-router";
+import { ProductCard } from "./product-card";
+import type { StoreProduct } from "@/lib/store/queries";
 
-export function FeaturedProducts() {
+export function FeaturedProducts({ products }: { products: StoreProduct[] }) {
   return (
     <section className="bg-surface">
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -17,11 +17,18 @@ export function FeaturedProducts() {
             Shop all →
           </Link>
         </div>
-        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {PRODUCTS.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        {products.length === 0 ? (
+          <div className="mt-10 rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+            <p className="font-display text-lg font-semibold">New products are on the way.</p>
+            <p className="mt-2 text-sm text-muted-foreground">We are stocking the shop. Please check back soon.</p>
+          </div>
+        ) : (
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -2,15 +2,17 @@ import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 import { Logo } from "./logo";
 
-const COLUMNS = [
+type FooterLink = { label: string; to: string; category?: string };
+
+const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: "Shop",
     links: [
-      { label: "Smart Cameras", to: "/shop" },
-      { label: "Doorbell Cameras", to: "/shop" },
-      { label: "Smart Locks", to: "/shop" },
-      { label: "Sensors", to: "/shop" },
-      { label: "Accessories", to: "/shop" },
+      { label: "Smart Cameras", to: "/shop", category: "smart-cameras" },
+      { label: "Doorbell Cameras", to: "/shop", category: "doorbell-cameras" },
+      { label: "Smart Locks", to: "/shop", category: "smart-locks" },
+      { label: "Sensors", to: "/shop", category: "motion-sensors" },
+      { label: "Accessories", to: "/shop", category: "accessories" },
     ],
   },
   {
@@ -32,7 +34,7 @@ const COLUMNS = [
       { label: "Terms of Service", to: "/terms" },
     ],
   },
-] as const;
+];
 
 export function Footer() {
   return (
@@ -69,6 +71,7 @@ export function Footer() {
                     <li key={link.label}>
                       <Link
                         to={link.to}
+                        search={link.category ? { category: link.category } : undefined}
                         className="text-sm text-primary-foreground/70 transition-colors hover:text-accent"
                       >
                         {link.label}
