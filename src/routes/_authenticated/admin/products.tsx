@@ -99,7 +99,7 @@ function ProductsPage() {
     setLoading(true);
     let q = supabase
       .from("products")
-      .select("id,name,slug,sku,status,price,sale_price,cost,category_id,brand_id,images,is_featured,is_active,tags,created_at,archived_at,inventory(stock),category:categories(name),brand:brands(name)", { count: "exact" })
+      .select("id,name,slug,sku,status,price,sale_price,cost,category_id,brand_id,images,is_featured,is_active,tags,created_at,archived_at,inventory(stock),category:categories!products_category_id_fkey(name),brand:brands(name)", { count: "exact" })
       .is("deleted_at", null);
 
     if (search.trim()) {
@@ -201,7 +201,7 @@ function ProductsPage() {
   const exportCsv = async () => {
     const idsToExport = selectedIds.length ? selectedIds : rows.map((r) => r.id);
     const { data } = await supabase.from("products")
-      .select("id,name,slug,sku,barcode,status,price,sale_price,compare_at_price,cost,short_description,description,is_featured,is_best_seller,is_new_arrival,is_trending,tags,category:categories(name),brand:brands(name),inventory(stock)")
+      .select("id,name,slug,sku,barcode,status,price,sale_price,compare_at_price,cost,short_description,description,is_featured,is_best_seller,is_new_arrival,is_trending,tags,category:categories!products_category_id_fkey(name),brand:brands(name),inventory(stock)")
       .in("id", idsToExport);
     if (!data) return;
     const flat = data.map((p: any) => ({
