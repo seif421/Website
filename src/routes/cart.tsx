@@ -105,16 +105,15 @@ function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Shipping and tax</dt>
-                  <dd className="text-muted-foreground">Calculated at checkout</dd>
+                  <dd className="text-muted-foreground">Shown at checkout</dd>
                 </div>
               </dl>
-              <button
-                type="button"
-                disabled
-                className="mt-5 h-12 w-full cursor-not-allowed rounded-full bg-primary text-sm font-semibold text-primary-foreground opacity-50"
+              <Link
+                to="/checkout"
+                className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
               >
-                Checkout opens soon
-              </button>
+                Checkout
+              </Link>
               <Link to="/shop" className="mt-3 block text-center text-sm font-medium text-brand hover:underline">
                 Continue shopping
               </Link>
