@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, ShoppingBag, User, Menu, X, LayoutDashboard } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Search, ShoppingBag, User, Menu, X, LayoutDashboard, ChevronDown } from "lucide-react";
+import { CATEGORIES } from "./categories";
+import { useEffect, useRef, useState } from "react";
 import { AnnouncementBar } from "./announcement-bar";
 import { Logo } from "./logo";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,6 +15,56 @@ const NAV: { label: string; category?: string }[] = [
   { label: "Sensors", category: "motion-sensors" },
   { label: "Accessories", category: "accessories" },
 ];
+
+function Departments() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent) {
+        if (e.key === "Escape") setOpen(false);
+      } else if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-haspopup="true"
+        className="flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+      >
+        <Menu className="size-4" aria-hidden /> All categories <ChevronDown className="size-4" aria-hidden />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-border bg-card p-2 shadow-elevated">
+          <ul>
+            {CATEGORIES.map(({ label, slug, icon: Icon }) => (
+              <li key={slug}>
+                <Link
+                  to="/shop"
+                  search={{ category: slug }}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-surface"
+                >
+                  <Icon className="size-4 text-brand" aria-hidden /> {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -47,22 +98,10 @@ export function Header() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8">
             <Logo />
-            <nav aria-label="Primary" className="hidden items-center gap-7 lg:flex">
-              {NAV.map((item) => (
-                <Link
-                  key={item.label}
-                  to="/shop"
-                  search={item.category ? { category: item.category } : {}}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
           </div>
 
           <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
-            <form role="search" onSubmit={submitSearch} className="hidden max-w-sm flex-1 md:block">
+            <form role="search" onSubmit={submitSearch} className="hidden max-w-2xl flex-1 md:block">
               <label className="relative block">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
                 <input
@@ -93,6 +132,25 @@ export function Header() {
             >
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
+          </div>
+        </div>
+
+        <div className="hidden border-t border-border/60 bg-background lg:block">
+          <div className="mx-auto flex h-12 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+            <Departments />
+            <nav aria-label="Primary" className="flex items-center gap-6">
+              {NAV.map((item) => (
+                <Link
+                  key={item.label}
+                  to="/shop"
+                  search={item.category ? { category: item.category } : {}}
+                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link to="/shop" search={{ sort: "newest" }} className="text-sm font-medium text-muted-foreground hover:text-foreground">New arrivals</Link>
+            </nav>
           </div>
         </div>
 

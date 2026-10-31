@@ -214,6 +214,26 @@ export async function fetchFeatured(limit = 4): Promise<StoreProduct[]> {
   return hydrate((data ?? []) as unknown as ListRow[], categories);
 }
 
+export async function fetchNewest(limit = 12): Promise<StoreProduct[]> {
+  const categories = await fetchCategories();
+  const { data, error } = await published().order("created_at", { ascending: false }).limit(limit);
+  if (error) throw new Error(error.message);
+  return hydrate((data ?? []) as unknown as ListRow[], categories);
+}
+
+export type HomeRows = { bestSellers: StoreProduct[]; newest: StoreProduct[]; deals: StoreProduct[] };
+
+/** Product rows for the homepage. A row is simply left out when it has no products. */
+export async function fetchHomeRows(): Promise<HomeRows> {
+  const [bestSellers, newest] = await Promise.all([fetchFeatured(12), fetchNewest(12)]);
+  const seen = new Set<string>();
+  const deals = [...bestSellers, ...newest]
+    .filter((p) => p.discountPct > 0 && !seen.has(p.id) && (seen.add(p.id), true))
+    .sort((a, b) => b.discountPct - a.discountPct)
+    .slice(0, 12);
+  return { bestSellers, newest, deals };
+}
+
 export type Review = { id: string; rating: number; title: string | null; body: string | null; createdAt: string };
 
 export type ProductDetail = StoreProduct & {
