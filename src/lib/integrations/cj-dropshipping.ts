@@ -1,118 +1,110 @@
 /**
- * CJ Dropshipping integration layer.
- *
- * Production requires two secrets to be configured as server environment variables (Vercel project settings):
- *   - CJ_API_EMAIL
- *   - CJ_API_KEY
- *
- * All network calls are made from the server side (via a server function that
- * imports this module inside its handler) so the API key never reaches the
- * browser. This file therefore MUST remain server-safe: no browser APIs.
+ * CJ Dropshipping API client (server only).
+ * Needs one secret in the Vercel project settings: CJ_API_KEY
+ * (CJ account -> Authorization -> API -> "Add API" -> copy the API Key).
+ * Never import this file from browser code.
  */
 
 const BASE_URL = "https://developers.cjdropshipping.com/api2.0/v1";
 
-export type CjAuth = { accessToken: string; refreshToken: string; expiresAt: number };
+type Tokens = { accessToken: string; refreshToken: string; expiresAt: number };
+let cached: Tokens | null = null;
 
-let cachedAuth: CjAuth | null = null;
+export function isCjConfigured(): boolean {
+  return Boolean(process.env.CJ_API_KEY);
+}
 
-async function login(): Promise<CjAuth> {
-  const email = process.env.CJ_API_EMAIL;
-  const password = process.env.CJ_API_KEY;
-  if (!email || !password) throw new Error("cj_credentials_missing");
+async function getToken(): Promise<string> {
+  if (cached && cached.expiresAt - 60_000 > Date.now()) return cached.accessToken;
+  const apiKey = process.env.CJ_API_KEY;
+  if (!apiKey) throw new Error("CJ is not connected yet. Add CJ_API_KEY in Vercel settings.");
   const res = await fetch(`${BASE_URL}/authentication/getAccessToken`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ apiKey }),
   });
-  if (!res.ok) throw new Error(`cj_auth_failed_${res.status}`);
-  const json = (await res.json()) as {
-    result: boolean;
-    data?: { accessToken: string; refreshToken: string; accessTokenExpiryDate: string };
+  const json = (await res.json().catch(() => ({}))) as {
+    result?: boolean;
     message?: string;
+    data?: { accessToken: string; refreshToken: string; accessTokenExpiryDate: string };
   };
-  if (!json.result || !json.data) throw new Error(json.message || "cj_auth_failed");
-  return {
+  if (!res.ok || !json.result || !json.data) {
+    throw new Error(`CJ login failed: ${json.message ?? res.status}. Check that CJ_API_KEY is correct.`);
+  }
+  cached = {
     accessToken: json.data.accessToken,
     refreshToken: json.data.refreshToken,
     expiresAt: new Date(json.data.accessTokenExpiryDate).getTime(),
   };
+  return cached.accessToken;
 }
 
-async function getAuth(): Promise<CjAuth> {
-  if (cachedAuth && cachedAuth.expiresAt - 60_000 > Date.now()) return cachedAuth;
-  cachedAuth = await login();
-  return cachedAuth;
+async function cjGet<T>(path: string, retry = true): Promise<T> {
+  const token = await getToken();
+  const res = await fetch(`${BASE_URL}${path}`, { headers: { "CJ-Access-Token": token } });
+  // CJ allows about 1 request per second.
+  if (res.status === 429 && retry) {
+    await new Promise((r) => setTimeout(r, 1200));
+    return cjGet<T>(path, false);
+  }
+  const json = (await res.json().catch(() => ({}))) as T & { result?: boolean; message?: string };
+  if (!res.ok || json.result === false) throw new Error(`CJ error: ${json.message ?? res.status}`);
+  return json;
 }
 
-async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const auth = await getAuth();
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      "CJ-Access-Token": auth.accessToken,
-      ...(init?.headers ?? {}),
-    },
-  });
-  if (!res.ok) throw new Error(`cj_request_failed_${res.status}`);
-  return (await res.json()) as T;
-}
-
-export type CjProduct = {
-  pid: string;
-  productName: string;
-  productSku: string;
-  sellPrice: string;
-  productImage: string;
-  productImageSet?: string[];
+export type CjListItem = {
+  id: string;
+  nameEn: string;
+  sku: string;
+  bigImage: string;
+  sellPrice: string | number;
   categoryId?: string;
+};
+
+export type CjVariant = {
+  vid: string;
+  variantNameEn?: string;
+  variantSku?: string;
+  variantSellPrice?: number | string;
+  variantImage?: string;
+  variantKey?: string;
+};
+
+export type CjDetail = {
+  pid: string;
+  productNameEn?: string;
+  productName?: string | string[];
+  productSku?: string;
+  bigImage?: string;
+  productImageSet?: string[] | string;
+  sellPrice?: string | number;
   categoryName?: string;
+  description?: string;
+  variants?: CjVariant[];
 };
 
-export const cj = {
-  ping: async () => {
-    await getAuth();
-    return { ok: true };
-  },
-  listProducts: (params: { pageNum?: number; pageSize?: number; categoryId?: string } = {}) =>
-    api<{ result: boolean; data: { list: CjProduct[]; total: number } }>(
-      `/product/list?pageNum=${params.pageNum ?? 1}&pageSize=${params.pageSize ?? 20}${params.categoryId ? `&categoryId=${params.categoryId}` : ""}`,
-    ),
-  productDetail: (pid: string) =>
-    api<{ result: boolean; data: CjProduct & { description?: string; variants?: unknown[] } }>(
-      `/product/query?pid=${encodeURIComponent(pid)}`,
-    ),
-  stock: (vids: string[]) =>
-    api<{ result: boolean; data: unknown[] }>(`/product/stock/queryByVid`, {
-      method: "POST",
-      body: JSON.stringify({ vid: vids.join(",") }),
-    }),
-  createOrder: (payload: {
-    orderNumber: string;
-    shippingCountryCode: string;
-    shippingProvince?: string;
-    shippingCity?: string;
-    shippingAddress: string;
-    shippingZip: string;
-    shippingCustomerName: string;
-    shippingPhone?: string;
-    email?: string;
-    products: { vid: string; quantity: number }[];
-  }) => api<{ result: boolean; data: { orderId: string } }>(`/shopping/order/createOrder`, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  }),
-  orderStatus: (orderId: string) =>
-    api<{ result: boolean; data: { orderStatus: string; trackNumber?: string } }>(
-      `/shopping/order/getOrderDetail?orderId=${encodeURIComponent(orderId)}`,
-    ),
-  tracking: (trackNumber: string) =>
-    api<{ result: boolean; data: unknown }>(
-      `/logistic/trackQuery?trackNumber=${encodeURIComponent(trackNumber)}`,
-    ),
-};
+/** CJ sometimes returns a price range like "3.20 -- 5.10". We take the lowest number. */
+export function firstPrice(v: unknown): number {
+  const m = String(v ?? "").match(/\d+(\.\d+)?/);
+  return m ? Number(m[0]) : 0;
+}
 
-export function isCjConfigured(): boolean {
-  return Boolean(process.env.CJ_API_EMAIL && process.env.CJ_API_KEY);
+export async function cjSearch(params: { keyword: string; page: number; size?: number; usOnly?: boolean }) {
+  const q = new URLSearchParams({
+    keyWord: params.keyword,
+    page: String(params.page),
+    size: String(params.size ?? 20),
+  });
+  if (params.usOnly) q.set("countryCode", "US");
+  const json = await cjGet<{
+    data?: { totalRecords?: number; content?: { productList?: CjListItem[] }[] };
+  }>(`/product/listV2?${q.toString()}`);
+  const items = (json.data?.content ?? []).flatMap((c) => c.productList ?? []);
+  return { items, total: json.data?.totalRecords ?? items.length };
+}
+
+export async function cjDetail(pid: string): Promise<CjDetail> {
+  const json = await cjGet<{ data?: CjDetail }>(`/product/query?pid=${encodeURIComponent(pid)}`);
+  if (!json.data) throw new Error("CJ product not found.");
+  return json.data;
 }
