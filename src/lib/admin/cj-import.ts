@@ -79,7 +79,7 @@ function parseImages(v: unknown, fallback?: string): string[] {
 
 export const importCjProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { pid: string; markupPct: number }) => d)
+  .inputValidator((d: { pid: string; markupPct: number; categoryId?: string | null }) => d)
   .handler(async ({ data, context }): Promise<{ id: string; name: string; price: number; cost: number }> => {
     const ctx = context as unknown as Ctx;
     await requireManager(ctx);
@@ -106,6 +106,7 @@ export const importCjProduct = createServerFn({ method: "POST" })
       slug,
       sku: d.productSku || null,
       status: "draft",
+      category_id: data.categoryId || null,
       is_active: true,
       price,
       cost,
