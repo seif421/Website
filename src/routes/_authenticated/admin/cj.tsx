@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Search, Download, Check } from "lucide-react";
+import { Loader2, Search, Download, Check, Wand2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/admin/page-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,20 @@ export const Route = createFileRoute("/_authenticated/admin/cj")({
 });
 
 const usd = (n: number) => `$${n.toFixed(2)}`;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// What to look for on CJ for each shop category.
+const STARTER: { slug: string; keyword: string }[] = [
+  { slug: "smart-cameras", keyword: "wifi security camera" },
+  { slug: "doorbell-cameras", keyword: "video doorbell" },
+  { slug: "motion-sensors", keyword: "motion sensor alarm" },
+  { slug: "window-sensors", keyword: "door window sensor" },
+  { slug: "smart-locks", keyword: "smart door lock" },
+  { slug: "alarm-systems", keyword: "home alarm system" },
+  { slug: "video-recorders", keyword: "NVR recorder" },
+  { slug: "security-lights", keyword: "motion sensor light" },
+  { slug: "accessories", keyword: "camera mount bracket" },
+];
 
 function CjPage() {
   const [connected, setConnected] = useState<boolean | null>(null);
@@ -25,6 +40,43 @@ function CjPage() {
   const [searching, setSearching] = useState(false);
   const [importing, setImporting] = useState<string | null>(null);
   const [done, setDone] = useState<Record<string, string>>({});
+
+  const [auto, setAuto] = useState<string | null>(null);
+
+  async function fillCatalog() {
+    if (!confirm("Import about 5 products into each of the 9 categories? This takes a few minutes. Keep this page open. Products are saved as drafts for you to review.")) return;
+    const { data: cats } = await supabase.from("categories").select("id,slug").is("deleted_at", null);
+    const idBySlug = new Map((cats ?? []).map((c) => [c.slug, c.id]));
+    let imported = 0;
+    for (const c of STARTER) {
+      const categoryId = idBySlug.get(c.slug);
+      if (!categoryId) continue;
+      setAuto(`Searching CJ for ${c.keyword}…`);
+      let got = 0;
+      try {
+        const r = await searchCj({ data: { keyword: c.keyword, page: 1, usOnly: true } });
+        for (const row of r.rows) {
+          if (got >= 5) break;
+          if (!row.image || row.cost < 1) continue;
+          setAuto(`${c.slug}: importing ${got + 1} of 5…`);
+          await sleep(1100);
+          try {
+            await importCjProduct({ data: { pid: row.pid, markupPct: Number(markup), categoryId } });
+            got++;
+            imported++;
+          } catch (e) {
+            // Already imported or CJ hiccup: just try the next product.
+            console.warn(e);
+          }
+        }
+      } catch (e) {
+        toast.error(`${c.keyword}: ${e instanceof Error ? e.message : "search failed"}`);
+      }
+      await sleep(1100);
+    }
+    setAuto(null);
+    toast.success(`Done. ${imported} products imported as drafts. Open Products to review and publish them.`);
+  }
 
   useEffect(() => {
     cjStatus().then((r) => setConnected(r.connected)).catch(() => setConnected(false));
@@ -70,6 +122,16 @@ function CjPage() {
           CJ is not connected yet. Add your CJ API key as <code>CJ_API_KEY</code> in the Vercel settings, then redeploy.
         </div>
       )}
+
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
+        <div className="min-w-[240px] flex-1 text-sm">
+          <p className="font-medium">Quick start</p>
+          <p className="text-muted-foreground">Fill every category with about 5 CJ products (US-available). They are saved as drafts, so nothing goes live until you publish.</p>
+        </div>
+        <Button onClick={fillCatalog} disabled={auto !== null || connected === false}>
+          {auto ? <Loader2 className="size-4 animate-spin" /> : <Wand2 className="size-4" />} {auto ?? "Fill my categories"}
+        </Button>
+      </div>
 
       <form
         className="flex flex-wrap items-end gap-3"
