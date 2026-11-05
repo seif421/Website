@@ -1,9 +1,10 @@
 // Small helpers shared by the storefront pages.
 
-const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const egp = new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
+/** Prices are in Egyptian pounds, for example "1,250 EGP". */
 export function formatMoney(value: number): string {
-  return usd.format(Number.isFinite(value) ? value : 0);
+  return `${egp.format(Number.isFinite(value) ? value : 0)} EGP`;
 }
 
 const SUPABASE_URL = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? "").replace(/\/$/, "");

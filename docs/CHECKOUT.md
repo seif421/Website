@@ -1,18 +1,22 @@
-# Checkout (PayPal, United States)
+# Checkout (Egypt, cash on delivery)
 
-How it works: the customer fills in a US address, is sent to PayPal to pay, and comes back to
-`/checkout/return`. The server then asks PayPal to confirm the payment and only then marks the order paid
-and lowers the stock. Prices, shipping and tax are always calculated in the database, never in the browser.
+Customers choose a governorate, enter their details and place the order. They pay the courier in cash when it arrives.
+Nothing is charged online. PayPal was removed for the Egypt launch (the database functions for it are left in place, unused).
 
-## Settings you can change (Supabase -> SQL Editor)
-```sql
-update private.store_config set value = '5.99' where key = 'shipping_flat';       -- flat shipping in USD
-update private.store_config set value = '99'   where key = 'free_shipping_over';  -- free shipping from this subtotal ('' = never)
-update private.store_config set value = '0.07' where key = 'tax_rate';            -- 0.07 = 7% tax ('0' = none)
-```
+## How an order flows
+1. Customer places the order on `/checkout`. The order is saved as **Pending** with the tag `needs-confirmation`.
+2. In **Admin > Orders**, open the order, call or WhatsApp the customer, then press **Confirmed by phone**.
+3. Copy the details from **Send to supplier** and place the order with your supplier (for example Taager). Save the supplier's order number.
+4. When the courier takes the parcel, set the status to **Shipped** and save the tracking number.
+5. When the courier delivers and the cash is collected, press **Delivered, cash received**. The payment is marked paid.
+   If the customer refuses the parcel, press **Refused or returned**.
 
-## Going live with PayPal
-1. developer.paypal.com -> Apps & Credentials -> create an app in **Sandbox**, copy Client ID and Secret.
-2. Vercel -> Project -> Settings -> Environment Variables: add `PAYPAL_ENV=sandbox`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`. Redeploy.
-3. Test a purchase with a PayPal sandbox buyer account.
-4. When happy: create a **Live** app, replace the two values, set `PAYPAL_ENV=live`, redeploy.
+## Settings (Admin > Delivery fees)
+- Delivery fee per governorate (EGP). The starting numbers are placeholders: replace them with your courier's rates.
+- Free delivery over a given order value (optional).
+- Largest cash on delivery order (default 10,000 EGP).
+
+## Database
+Prices, delivery fees and totals are calculated in the database (`quote_order_eg`, `create_cod_order`), never trusted from the browser.
+Fees and settings live in the private schema and are changed through admin-only functions. See
+`supabase/migrations/20261105100000_egypt_cod_checkout.sql`.

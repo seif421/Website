@@ -41,9 +41,12 @@ export const ORDER_STATUS_CLASS: Record<string, string> = {
   failed_payment: "bg-red-500/15 text-red-700 dark:text-red-300",
 };
 
-export function money(v: number | string | null | undefined, currency = "USD") {
+const egp = new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+/** Money in Egyptian pounds, for example "1,250 EGP". */
+export function money(v: number | string | null | undefined) {
   const n = Number(v ?? 0);
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(n);
+  return `${egp.format(Number.isFinite(n) ? n : 0)} EGP`;
 }
 
 export function shortDate(d: string | Date | null | undefined) {

@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Boxes,
   Tag, Star, BarChart3, LineChart, Megaphone, Settings, UserCog,
   ScrollText, LifeBuoy, ShieldCheck, Award, Truck, ListTree,
-  Ship, Undo2, Bell, Gift, Mail, Download,
+  Ship, Undo2, Bell, Gift, Mail,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -20,14 +20,13 @@ const overview: Item[] = [
 ];
 const commerce: Item[] = [
   { title: "Products", url: "/admin/products", icon: Package, roles: ["admin", "manager"] },
-  { title: "Import from CJ", url: "/admin/cj", icon: Download, roles: ["admin", "manager"] },
   { title: "Categories", url: "/admin/categories", icon: FolderTree, roles: ["admin", "manager"] },
   { title: "Brands", url: "/admin/brands", icon: Award, roles: ["admin", "manager"] },
   { title: "Suppliers", url: "/admin/suppliers", icon: Truck, roles: ["admin", "manager"] },
   { title: "Attributes", url: "/admin/attributes", icon: ListTree, roles: ["admin", "manager"] },
   { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
   { title: "Returns", url: "/admin/returns", icon: Undo2 },
-  { title: "Shipping", url: "/admin/shipping", icon: Ship, roles: ["admin", "manager"] },
+  { title: "Delivery fees", url: "/admin/shipping", icon: Ship, roles: ["admin", "manager"] },
   { title: "Customers", url: "/admin/customers", icon: Users, roles: ["admin", "manager"] },
   { title: "Inventory", url: "/admin/inventory", icon: Boxes },
   { title: "Coupons", url: "/admin/coupons", icon: Tag, roles: ["admin", "manager"] },
