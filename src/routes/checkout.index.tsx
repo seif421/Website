@@ -8,7 +8,7 @@ import { formatMoney } from "@/lib/store/format";
 import { sendOrderConfirmation } from "@/lib/store/order-email";
 
 export const Route = createFileRoute("/checkout/")({
-  head: () => ({ meta: [{ title: "Checkout — SentryHaus" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Checkout — Rivvo" }, { name: "robots", content: "noindex" }] }),
   component: CheckoutPage,
 });
 

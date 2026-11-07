@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { SITE } from "@/lib/site-config";
 
-// Sends the order confirmation email. Runs only on the server, so the email key and the
+// Sends the order confirmation email. Runs only on the server, so the Gmail app password and the
 // order secret never reach the browser. A failure here never blocks the order itself.
 
 type ConfirmationItem = { name: string; quantity: number; unit_price: number; subtotal: number; image: string | null };
@@ -89,11 +89,12 @@ export const sendOrderConfirmation = createServerFn({ method: "POST" })
     return { orderNumber: d.orderNumber };
   })
   .handler(async ({ data }): Promise<{ sent: boolean }> => {
-    const apiKey = process.env.RESEND_API_KEY;
-    const from = process.env.EMAIL_FROM;
+    // Emails are sent from the shop's Gmail address using a Google "app password" (no domain needed).
+    const user = process.env.GMAIL_USER;
+    const pass = process.env.GMAIL_APP_PASSWORD;
     const secret = process.env.ORDER_SECRET;
-    if (!apiKey || !from || !secret) {
-      console.warn("[order email] not configured: set RESEND_API_KEY, EMAIL_FROM and ORDER_SECRET");
+    if (!user || !pass || !secret) {
+      console.warn("[order email] not configured: set GMAIL_USER, GMAIL_APP_PASSWORD and ORDER_SECRET");
       return { sent: false };
     }
     const supabase = db();
@@ -109,19 +110,23 @@ export const sendOrderConfirmation = createServerFn({ method: "POST" })
     const c = order as unknown as Confirmation;
     try {
       const mail = buildConfirmationEmail(c);
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from,
-          to: [c.email],
-          subject: mail.subject,
-          html: mail.html,
-          text: mail.text,
-          ...(SITE.supportEmail ? { reply_to: SITE.supportEmail } : {}),
-        }),
+      const nodemailer = (await import("nodemailer")).default;
+      const transport = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: { user, pass: pass.replace(/\s/g, "") },
+        connectionTimeout: 8000,
+        socketTimeout: 8000,
       });
-      if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
+      await transport.sendMail({
+        from: `${SITE.name} <${user}>`,
+        to: c.email,
+        replyTo: SITE.supportEmail || user,
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text,
+      });
       return { sent: true };
     } catch (e) {
       console.error("[order email] send failed", e instanceof Error ? e.message : e);

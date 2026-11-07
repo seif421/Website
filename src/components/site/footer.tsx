@@ -96,7 +96,11 @@ export function Footer() {
         </div>
 
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-primary-foreground/10 pt-6 text-xs text-primary-foreground/60 sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} SentryHaus. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} Rivvo. All rights reserved.{SITE.supportEmail && (
+              <> · <a href={`mailto:${SITE.supportEmail}`} className="underline">{SITE.supportEmail}</a></>
+            )}
+          </p>
                   </div>
       </div>
     </footer>

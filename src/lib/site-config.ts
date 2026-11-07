@@ -1,7 +1,7 @@
 // One place for the facts that appear in the shop text and legal pages.
 // Change a value here and every page updates. Only put things here that are TRUE.
 export const SITE = {
-  name: "SentryHaus",
+  name: "Rivvo",
   // Days a customer has to return an item after it arrives.
   returnDays: 30,
   // Warranty length in months. Check with your supplier before you advertise a longer one.
@@ -17,7 +17,7 @@ export const SITE = {
   whatsapp: "",
   phone: "",
   // Where customers can write to you. Also used as the reply address of order emails. Leave empty to hide.
-  supportEmail: "",
+  supportEmail: "rivvo.shops@gmail.com",
   // Set real links to show social icons in the footer. Leave empty to hide them.
   social: { instagram: "", x: "", facebook: "", youtube: "" },
   lastUpdated: "30 October 2026",

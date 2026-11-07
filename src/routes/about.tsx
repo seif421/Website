@@ -3,7 +3,7 @@ import { LegalPage, pageHead } from "@/components/site/legal-page";
 import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/about")({
-  head: () => pageHead("About", "About SentryHaus."),
+  head: () => pageHead("About", "About Rivvo."),
   component: Page,
 });
 

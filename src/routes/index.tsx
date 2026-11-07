@@ -7,15 +7,15 @@ import { WhyUs } from "@/components/site/why-us";
 import { FAQ } from "@/components/site/faq";
 import { fetchHomeRows } from "@/lib/store/queries";
 
-const DESC = "Smart cameras, doorbells, locks and sensors for your home. Clear prices, honest delivery times and easy returns.";
+const DESC = "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.";
 
 export const Route = createFileRoute("/")({
   loader: () => fetchHomeRows(),
   head: () => ({
     meta: [
-      { title: "SentryHaus — Home security cameras, locks and sensors" },
+      { title: "Rivvo — Shop online in Egypt, pay on delivery" },
       { name: "description", content: DESC },
-      { property: "og:title", content: "SentryHaus — Home security cameras, locks and sensors" },
+      { property: "og:title", content: "Rivvo — Shop online in Egypt, pay on delivery" },
       { property: "og:description", content: DESC },
     ],
     links: [{ rel: "canonical", href: "/" }],

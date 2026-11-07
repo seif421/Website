@@ -3,7 +3,7 @@ import { LegalPage, pageHead } from "@/components/site/legal-page";
 import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/terms")({
-  head: () => pageHead("Terms of Service", "The terms that apply when you use the SentryHaus website and buy from us."),
+  head: () => pageHead("Terms of Service", "The terms that apply when you use the Rivvo website and buy from us."),
   component: Page,
 });
 

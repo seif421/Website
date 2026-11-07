@@ -14,13 +14,13 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/admin/email-templates")({ component: EmailTemplatesPage });
 
 const DEFAULTS = [
-  { slug: "welcome", name: "Welcome Email", subject: "Welcome to SentryHaus", body_html: "<h1>Welcome, {{name}}!</h1><p>Your account is ready.</p>" },
+  { slug: "welcome", name: "Welcome Email", subject: "Welcome to Rivvo", body_html: "<h1>Welcome, {{name}}!</h1><p>Your account is ready.</p>" },
   { slug: "order_confirmation", name: "Order Confirmation", subject: "Order {{order_number}} confirmed", body_html: "<h1>Thanks for your order</h1><p>Order {{order_number}} — {{total}}.</p>" },
   { slug: "shipping_confirmation", name: "Shipping Confirmation", subject: "Your order has shipped", body_html: "<p>Track: {{tracking_number}}</p>" },
   { slug: "delivery_confirmation", name: "Delivery Confirmation", subject: "Delivered", body_html: "<p>Your order was delivered.</p>" },
   { slug: "password_reset", name: "Password Reset", subject: "Reset your password", body_html: "<a href=\"{{link}}\">Reset password</a>" },
   { slug: "refund_confirmation", name: "Refund Confirmation", subject: "Refund processed", body_html: "<p>{{amount}} refunded to your account.</p>" },
-  { slug: "newsletter", name: "Newsletter", subject: "News from SentryHaus", body_html: "<p>Hello subscriber!</p>" },
+  { slug: "newsletter", name: "Newsletter", subject: "News from Rivvo", body_html: "<p>Hello subscriber!</p>" },
 ];
 
 type T = { id?: string; slug: string; name: string; subject: string; body_html: string; body_text: string | null; is_active: boolean };

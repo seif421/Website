@@ -92,7 +92,7 @@ export function AdminSidebar() {
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="text-sm font-bold tracking-tight">SentryHaus</span>
+              <span className="text-sm font-bold tracking-tight">Rivvo</span>
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Admin</span>
             </div>
           )}

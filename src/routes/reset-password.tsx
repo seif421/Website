@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Logo } from "@/components/site/logo";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Set new password — SentryHaus" }] }),
+  head: () => ({ meta: [{ title: "Set new password — Rivvo" }] }),
   component: ResetPassword,
 });
 

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage, pageHead } from "@/components/site/legal-page";
 
 export const Route = createFileRoute("/reviews")({
-  head: () => pageHead("Reviews", "Customer reviews at SentryHaus."),
+  head: () => pageHead("Reviews", "Customer reviews at Rivvo."),
   component: Page,
 });
 

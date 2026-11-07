@@ -3,9 +3,10 @@ import { useState } from "react";
 import { SiteLayout } from "@/components/site/layout";
 import { pageHead } from "@/components/site/legal-page";
 import { supabase } from "@/integrations/supabase/client";
+import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/contact")({
-  head: () => pageHead("Contact us", "Send a message to the SentryHaus team."),
+  head: () => pageHead("Contact us", "Send a message to the Rivvo team."),
   component: ContactPage,
 });
 
@@ -44,7 +45,7 @@ function ContactPage() {
       <section className="mx-auto max-w-xl px-4 py-16 sm:px-6">
         <h1 className="font-display text-4xl font-bold tracking-tight">Contact us</h1>
         <p className="mt-3 text-muted-foreground">
-          Questions about a product or an order? Send us a message and we will reply by email.
+          Questions about a product or an order? Send us a message and we will reply by email, or write to us at <a href={`mailto:${SITE.supportEmail}`} className="font-medium text-foreground underline">{SITE.supportEmail}</a>.
         </p>
 
         {state === "sent" ? (

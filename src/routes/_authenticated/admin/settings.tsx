@@ -76,8 +76,8 @@ function SettingsPage() {
         <TabsContent value="general">
           <Card className="p-6 space-y-4 max-w-2xl">
             <h3 className="font-semibold">General</h3>
-            <Field id="site-name" label="Site name" defaultValue="SentryHaus" />
-            <Field id="contact-email" label="Contact email" type="email" defaultValue="hello@sentryhaus.com" />
+            <Field id="site-name" label="Site name" defaultValue="Rivvo" />
+            <Field id="contact-email" label="Contact email" type="email" defaultValue="rivvo.shops@gmail.com" />
             <div className="space-y-1.5"><Label htmlFor="tag">Tagline</Label><Textarea id="tag" defaultValue="Premium smart home security." /></div>
             <Button>Save changes</Button>
           </Card>
@@ -170,8 +170,8 @@ function SettingsPage() {
         <TabsContent value="email">
           <Card className="p-6 space-y-4 max-w-2xl">
             <h3 className="font-semibold">Email</h3>
-            <Field id="sender" label="Sender name" defaultValue="SentryHaus" />
-            <Field id="sender-email" label="Sender email" defaultValue="no-reply@sentryhaus.com" />
+            <Field id="sender" label="Sender name" defaultValue="Rivvo" />
+            <Field id="sender-email" label="Sender email" defaultValue="rivvo.shops@gmail.com" />
             <Button>Save</Button>
           </Card>
         </TabsContent>
@@ -199,7 +199,7 @@ function SettingsPage() {
         <TabsContent value="seo">
           <Card className="p-6 space-y-4 max-w-2xl">
             <h3 className="font-semibold">SEO</h3>
-            <Field id="seo-title" label="Default meta title" defaultValue="SentryHaus — Premium Smart Home Security" />
+            <Field id="seo-title" label="Default meta title" defaultValue="Rivvo — Premium Smart Home Security" />
             <div className="space-y-1.5"><Label htmlFor="seo-desc">Default meta description</Label>
               <Textarea id="seo-desc" defaultValue="Studio-grade smart cameras, doorbells, locks, and sensors." /></div>
             <Field id="seo-og" label="Default OG image URL" />

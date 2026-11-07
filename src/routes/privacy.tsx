@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage, pageHead } from "@/components/site/legal-page";
 
 export const Route = createFileRoute("/privacy")({
-  head: () => pageHead("Privacy Policy", "How SentryHaus collects and uses your personal data."),
+  head: () => pageHead("Privacy Policy", "How Rivvo collects and uses your personal data."),
   component: Page,
 });
 

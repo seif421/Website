@@ -14,7 +14,7 @@ import { ShieldCheck, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
-    meta: [{ title: "Sign in — SentryHaus" }, { name: "description", content: "Sign in or create your SentryHaus account." }],
+    meta: [{ title: "Sign in — Rivvo" }, { name: "description", content: "Sign in or create your Rivvo account." }],
   }),
   component: AuthPage,
 });

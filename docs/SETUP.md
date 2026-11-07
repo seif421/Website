@@ -55,7 +55,7 @@ site online). Takes about 20 minutes. Do the steps in order.
 
 ## Later (optional)
 
-- **Custom domain** (e.g. sentryhaus.com): Vercel project → **Settings → Domains**. Then update
+- **Custom domain** (e.g. rivvo.shop): Vercel project → **Settings → Domains**. Then update
   the Site URL and Redirect URLs in Supabase to the new domain.
 - **Sign in with Google**: needs a Google Cloud OAuth client; ask me and I will walk you through
   it. Then set `VITE_ENABLE_GOOGLE_LOGIN` to `true` in Vercel.

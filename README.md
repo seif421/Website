@@ -1,4 +1,4 @@
-# SentryHaus — Premium Smart Home Security Store
+# Rivvo — Premium Smart Home Security Store
 
 A premium e-commerce storefront and admin dashboard for smart home security products
 (cameras, doorbells, locks, sensors), built for the U.S. market on a dropshipping model

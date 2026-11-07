@@ -16,10 +16,10 @@ export const Route = createFileRoute("/product/$slug")({
   },
   head: ({ loaderData }) => {
     const p = loaderData?.product;
-    if (!p) return { meta: [{ title: "Product — SentryHaus" }] };
+    if (!p) return { meta: [{ title: "Product — Rivvo" }] };
 
-    const title = p.metaTitle || `${p.name} — SentryHaus`;
-    const description = p.metaDescription || p.shortDescription || `Buy ${p.name} at SentryHaus.`;
+    const title = p.metaTitle || `${p.name} — Rivvo`;
+    const description = p.metaDescription || p.shortDescription || `Buy ${p.name} at Rivvo.`;
     const image = p.images[0];
 
     const jsonLd = {
