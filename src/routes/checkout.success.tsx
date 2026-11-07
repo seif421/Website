@@ -7,13 +7,14 @@ export const Route = createFileRoute("/checkout/success")({
   validateSearch: (s: Record<string, unknown>) => ({
     order: typeof s.order === "string" && /^[A-Z0-9-]{4,30}$/i.test(s.order) ? s.order : "",
     total: Number.isFinite(Number(s.total)) ? Number(s.total) : 0,
+    emailed: Number(s.emailed) === 1,
   }),
   head: () => ({ meta: [{ title: "Order received — SentryHaus" }, { name: "robots", content: "noindex" }] }),
   component: SuccessPage,
 });
 
 function SuccessPage() {
-  const { order, total } = Route.useSearch();
+  const { order, total, emailed } = Route.useSearch();
   const wa = SITE.whatsapp
     ? `https://wa.me/${SITE.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(`Hello, my order number is ${order}`)}`
     : "";
@@ -28,7 +29,7 @@ function SuccessPage() {
           </p>
         )}
         <p className="mt-3 text-sm text-muted-foreground">
-          We will call or message you shortly to confirm your order. Delivery usually takes {SITE.deliveryDays} business days after confirmation.
+          {emailed && "We sent a confirmation to your email (check your spam folder if you do not see it). "}We will call or message you shortly to confirm your order. Delivery usually takes {SITE.deliveryDays} business days after confirmation.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link to="/shop" className="inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground">
