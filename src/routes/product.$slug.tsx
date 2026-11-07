@@ -32,7 +32,7 @@ export const Route = createFileRoute("/product/$slug")({
       brand: p.brandName ? { "@type": "Brand", name: p.brandName } : undefined,
       offers: {
         "@type": "Offer",
-        priceCurrency: "USD",
+        priceCurrency: "EGP",
         price: p.price.toFixed(2),
         availability: p.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       },

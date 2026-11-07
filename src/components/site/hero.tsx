@@ -38,7 +38,7 @@ export function Hero() {
               Cameras, locks and sensors for every door.
             </h1>
             <p className="text-primary-foreground/80">
-              Browse home security products with clear prices, easy returns and delivery across the United States.
+              Browse home security products with clear prices, easy returns and delivery across Egypt. Pay cash on delivery.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link

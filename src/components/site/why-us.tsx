@@ -2,7 +2,7 @@ import { RotateCcw, ShieldCheck, Truck, Headphones } from "lucide-react";
 import { SITE } from "@/lib/site-config";
 
 const ITEMS = [
-  { icon: Truck, title: "Delivery across the US", body: `Usually ${SITE.deliveryDays} business days after dispatch.` },
+  { icon: Truck, title: "Cash on delivery", body: `Pay when it arrives. Usually ${SITE.deliveryDays} business days.` },
   { icon: RotateCcw, title: `${SITE.returnDays}-day returns`, body: "Return unused items within the return window." },
   { icon: ShieldCheck, title: `${SITE.warrantyMonths}-month warranty`, body: "Covers manufacturing defects." },
   { icon: Headphones, title: "Real people", body: "Message us and a person replies by email." },

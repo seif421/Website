@@ -162,7 +162,7 @@ function ShopPage() {
                 />
               </label>
               <fieldset>
-                <legend className="mb-2 text-sm font-semibold">Price (USD)</legend>
+                <legend className="mb-2 text-sm font-semibold">Price (EGP)</legend>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"

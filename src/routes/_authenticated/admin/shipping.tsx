@@ -1,126 +1,106 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Save } from "lucide-react";
 import { PageShell } from "@/components/admin/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { money } from "@/lib/admin/formatters";
 
 export const Route = createFileRoute("/_authenticated/admin/shipping")({
-  component: ShippingPage,
+  component: DeliveryFeesPage,
 });
 
-type Zone = { id: string; name: string; countries: string[]; is_active: boolean };
-type Rate = { id: string; zone_id: string; name: string; method: string; price: number; free_over: number | null; carrier: string | null; estimated_days_min: number | null; estimated_days_max: number | null; is_active: boolean };
+type Zone = { governorate: string; fee: number };
 
-function ShippingPage() {
+// These database functions are new, so the generated types do not list them yet.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rpc = (supabase as any).rpc.bind(supabase) as (
+  fn: string,
+  args?: Record<string, unknown>,
+) => Promise<{ data: unknown; error: { message: string } | null }>;
+
+function DeliveryFeesPage() {
   const [zones, setZones] = useState<Zone[]>([]);
-  const [rates, setRates] = useState<Rate[]>([]);
-  const [newZone, setNewZone] = useState({ name: "", countries: "" });
-  const [newRate, setNewRate] = useState<Partial<Rate>>({ method: "flat", price: 0 });
-  const [selectedZone, setSelectedZone] = useState<string | null>(null);
+  const [fees, setFees] = useState<Record<string, string>>({});
+  const [freeOver, setFreeOver] = useState("");
+  const [codMax, setCodMax] = useState("");
 
   async function load() {
-    const [z, r] = await Promise.all([
-      supabase.from("shipping_zones").select("*").order("sort_order").order("created_at"),
-      supabase.from("shipping_rates").select("*").order("price"),
-    ]);
-    setZones((z.data ?? []) as Zone[]);
-    setRates((r.data ?? []) as Rate[]);
+    const [z, s] = await Promise.all([rpc("delivery_zones"), rpc("admin_get_store_settings")]);
+    if (Array.isArray(z.data)) {
+      setZones(z.data as Zone[]);
+      setFees(Object.fromEntries((z.data as Zone[]).map((x) => [x.governorate, String(x.fee)])));
+    }
+    if (s.error) toast.error(s.error.message);
+    else {
+      const v = s.data as { free_shipping_over: string; cod_max_total: string };
+      setFreeOver(v.free_shipping_over);
+      setCodMax(v.cod_max_total);
+    }
   }
   useEffect(() => { load(); }, []);
 
-  async function addZone() {
-    if (!newZone.name.trim()) return;
-    const countries = newZone.countries.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
-    const { error } = await supabase.from("shipping_zones").insert({ name: newZone.name, countries });
+  async function saveFee(governorate: string) {
+    const { error } = await rpc("admin_set_delivery_fee", { p_governorate: governorate, p_fee: Number(fees[governorate]) });
     if (error) return toast.error(error.message);
-    setNewZone({ name: "", countries: "" }); load();
+    toast.success(`${governorate} fee saved`);
   }
-  async function delZone(id: string) { if (!confirm("Delete zone and its rates?")) return; await supabase.from("shipping_zones").delete().eq("id", id); load(); }
-  async function addRate() {
-    if (!selectedZone || !newRate.name || newRate.price == null) return toast.error("Zone, name, and price required");
-    const { error } = await supabase.from("shipping_rates").insert({ ...newRate, zone_id: selectedZone } as never);
+  async function saveSetting(key: string, value: string) {
+    const { error } = await rpc("admin_set_store_setting", { p_key: key, p_value: value.trim() });
     if (error) return toast.error(error.message);
-    setNewRate({ method: "flat", price: 0 }); load();
+    toast.success("Saved");
   }
-  async function delRate(id: string) { await supabase.from("shipping_rates").delete().eq("id", id); load(); }
-  async function toggleRate(r: Rate) { await supabase.from("shipping_rates").update({ is_active: !r.is_active }).eq("id", r.id); load(); }
 
   return (
-    <PageShell title="Shipping" description="Zones, rates and carriers."
-      breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Shipping" }]}>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="p-4">
-          <p className="font-semibold text-sm mb-3">Zones</p>
-          <div className="space-y-2">
-            {zones.map((z) => (
-              <div key={z.id} className={`flex items-center justify-between rounded-md border p-3 cursor-pointer ${selectedZone === z.id ? "border-brand bg-brand/5" : ""}`} onClick={() => setSelectedZone(z.id)}>
-                <div>
-                  <p className="font-medium text-sm">{z.name}</p>
-                  <p className="text-xs text-muted-foreground">{z.countries.join(", ") || "No countries"}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={z.is_active ? "default" : "secondary"}>{z.is_active ? "Active" : "Off"}</Badge>
-                  <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); delZone(z.id); }}><Trash2 className="size-4" /></Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 flex gap-2">
-            <Input placeholder="Zone name" value={newZone.name} onChange={(e) => setNewZone({ ...newZone, name: e.target.value })} />
-            <Input placeholder="US, CA, GB" value={newZone.countries} onChange={(e) => setNewZone({ ...newZone, countries: e.target.value })} />
-            <Button onClick={addZone}><Plus className="size-4" /></Button>
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <p className="font-semibold text-sm mb-3">Rates {selectedZone && <Badge variant="outline" className="ml-2">for {zones.find((z) => z.id === selectedZone)?.name}</Badge>}</p>
-          <div className="space-y-2">
-            {rates.filter((r) => !selectedZone || r.zone_id === selectedZone).map((r) => (
-              <div key={r.id} className="flex items-center justify-between rounded-md border p-3">
-                <div>
-                  <p className="font-medium text-sm">{r.name} {r.carrier && <span className="text-xs text-muted-foreground">· {r.carrier}</span>}</p>
-                  <p className="text-xs text-muted-foreground">{r.method} · {money(r.price)}{r.free_over ? ` · free over ${money(r.free_over)}` : ""}{r.estimated_days_min ? ` · ${r.estimated_days_min}-${r.estimated_days_max ?? r.estimated_days_min}d` : ""}</p>
-                </div>
-                <div className="flex gap-2 items-center">
-                  <Switch checked={r.is_active} onCheckedChange={() => toggleRate(r)} />
-                  <Button variant="ghost" size="icon" onClick={() => delRate(r.id)}><Trash2 className="size-4" /></Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          {selectedZone && (
-            <div className="mt-3 space-y-2">
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div><Label>Name</Label><Input value={newRate.name ?? ""} onChange={(e) => setNewRate({ ...newRate, name: e.target.value })} /></div>
-                <div><Label>Method</Label>
-                  <Select value={newRate.method ?? "flat"} onValueChange={(v) => setNewRate({ ...newRate, method: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="flat">Flat rate</SelectItem><SelectItem value="weight">Weight based</SelectItem><SelectItem value="price">Price based</SelectItem><SelectItem value="free">Free shipping</SelectItem></SelectContent>
-                  </Select>
-                </div>
-                <div><Label>Price</Label><Input type="number" step="0.01" value={newRate.price ?? 0} onChange={(e) => setNewRate({ ...newRate, price: Number(e.target.value) })} /></div>
-                <div><Label>Free over</Label><Input type="number" step="0.01" value={newRate.free_over ?? ""} onChange={(e) => setNewRate({ ...newRate, free_over: e.target.value ? Number(e.target.value) : null })} /></div>
-                <div><Label>Carrier</Label><Input value={newRate.carrier ?? ""} onChange={(e) => setNewRate({ ...newRate, carrier: e.target.value })} /></div>
-                <div><Label>Days min–max</Label><div className="flex gap-2"><Input type="number" value={newRate.estimated_days_min ?? ""} onChange={(e) => setNewRate({ ...newRate, estimated_days_min: e.target.value ? Number(e.target.value) : null })} /><Input type="number" value={newRate.estimated_days_max ?? ""} onChange={(e) => setNewRate({ ...newRate, estimated_days_max: e.target.value ? Number(e.target.value) : null })} /></div></div>
-              </div>
-              <Button onClick={addRate} className="w-full"><Plus className="size-4" /> Add rate</Button>
+    <PageShell
+      title="Delivery fees"
+      description="What customers pay for delivery in each governorate, in EGP. Set these from your courier's price list."
+      breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Delivery fees" }]}
+    >
+      <Card className="p-5 space-y-4">
+        <p className="font-semibold text-sm">Order rules</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1">
+            <Label htmlFor="free">Free delivery over (EGP)</Label>
+            <div className="flex gap-2">
+              <Input id="free" type="number" min={0} placeholder="Empty = never free" value={freeOver} onChange={(e) => setFreeOver(e.target.value)} />
+              <Button size="sm" onClick={() => saveSetting("free_shipping_over", freeOver)}><Save className="size-4" /> Save</Button>
             </div>
-          )}
-          {!selectedZone && <p className="text-sm text-muted-foreground py-4">Select a zone to add rates.</p>}
-        </Card>
-      </div>
+            <p className="text-xs text-muted-foreground">If you use this, also set the same number in the site settings file so the announcement bar matches.</p>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="cod">Largest cash on delivery order (EGP)</Label>
+            <div className="flex gap-2">
+              <Input id="cod" type="number" min={0} placeholder="Empty = no limit" value={codMax} onChange={(e) => setCodMax(e.target.value)} />
+              <Button size="sm" onClick={() => saveSetting("cod_max_total", codMax)}><Save className="size-4" /> Save</Button>
+            </div>
+            <p className="text-xs text-muted-foreground">Bigger orders are refused at checkout. A limit reduces the loss from refused parcels.</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-5">
+        <p className="font-semibold text-sm mb-1">Fee per governorate</p>
+        <p className="mb-4 text-xs text-muted-foreground">The starting numbers are placeholders. Replace them with your courier's real rates before you sell.</p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {zones.map((z) => (
+            <div key={z.governorate} className="flex items-center gap-2">
+              <span className="w-32 shrink-0 text-sm">{z.governorate}</span>
+              <Input
+                type="number"
+                min={0}
+                value={fees[z.governorate] ?? ""}
+                onChange={(e) => setFees({ ...fees, [z.governorate]: e.target.value })}
+                aria-label={`${z.governorate} delivery fee`}
+              />
+              <Button size="sm" variant="outline" onClick={() => saveFee(z.governorate)}>Save</Button>
+            </div>
+          ))}
+        </div>
+      </Card>
     </PageShell>
   );
 }

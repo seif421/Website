@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Printer, Save, ArrowLeft } from "lucide-react";
+import { Printer, Save, ArrowLeft, Copy, Phone, MessageCircle, Check } from "lucide-react";
 import { PageShell } from "@/components/admin/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,9 +30,10 @@ type Order = {
   notes: string | null;
   tracking_number: string | null; carrier: string | null; shipping_method: string | null;
   payment_method: string | null; coupon_code: string | null; supplier_reference: string | null;
-  created_at: string;
+  created_at: string; phone: string | null; tags: string[] | null;
 };
-type Item = { id: string; product_name: string; product_sku: string | null; quantity: number; unit_price: number; subtotal: number };
+type ProductInfo = { id: string; supplier_cost: number | null; cost: number | null; supplier_url: string | null; supplier_product_id: string | null };
+type Item = { id: string; product_id: string | null; product_name: string; product_sku: string | null; quantity: number; unit_price: number; subtotal: number };
 type Timeline = { id: string; event: string; message: string | null; created_at: string };
 type Note = { id: string; note: string; is_internal: boolean; created_at: string };
 
@@ -43,6 +44,7 @@ function OrderDetail() {
   const [timeline, setTimeline] = useState<Timeline[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState("");
+  const [prod, setProd] = useState<Record<string, ProductInfo>>({});
   const [loading, setLoading] = useState(true);
 
   async function load() {
@@ -55,7 +57,13 @@ function OrderDetail() {
     ]);
     if (oRes.error) toast.error(oRes.error.message);
     setOrder(oRes.data as Order | null);
-    setItems((iRes.data ?? []) as Item[]);
+    const loaded = (iRes.data ?? []) as Item[];
+    setItems(loaded);
+    const ids = loaded.map((i) => i.product_id).filter((x): x is string => Boolean(x));
+    if (ids.length) {
+      const { data: ps } = await supabase.from("products").select("id,supplier_cost,cost,supplier_url,supplier_product_id").in("id", ids);
+      setProd(Object.fromEntries(((ps ?? []) as unknown as ProductInfo[]).map((p) => [p.id, p])));
+    }
     setTimeline((tRes.data ?? []) as Timeline[]);
     setNotes((nRes.data ?? []) as Note[]);
     setLoading(false);
@@ -74,6 +82,12 @@ function OrderDetail() {
     if (newStatus === "shipped") (patch as never as { shipped_at: string }).shipped_at = new Date().toISOString();
     if (newStatus === "delivered") (patch as never as { delivered_at: string }).delivered_at = new Date().toISOString();
     if (newStatus === "cancelled") (patch as never as { cancelled_at: string }).cancelled_at = new Date().toISOString();
+    if (newStatus === "confirmed" && order) patch.tags = (order.tags ?? []).filter((t) => t !== "needs-confirmation");
+    // Cash on delivery: the cash is in hand once the courier delivers, so mark it paid.
+    if (newStatus === "delivered" && order?.payment_method === "cod") {
+      patch.payment_status = "paid";
+      (patch as never as { paid_at: string }).paid_at = new Date().toISOString();
+    }
     await updateOrder(patch);
     await addOrderTimeline(id, `status_${newStatus}`, `Status set to ${ORDER_STATUS_LABEL[newStatus] ?? newStatus}`);
     load();
@@ -120,7 +134,7 @@ function OrderDetail() {
   return (
     <PageShell
       title={`Order ${order.order_number}`}
-      description={`${shortDate(order.created_at)} · ${order.email}`}
+      description={`${shortDate(order.created_at)} · ${order.phone ?? order.email}`}
       breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Orders", to: "/admin/orders" }, { label: order.order_number }]}
       actions={
         <div className="flex gap-2">
@@ -207,6 +221,9 @@ function OrderDetail() {
             {order.payment_method && <p className="text-xs text-muted-foreground">Method: {order.payment_method}</p>}
           </Card>
 
+          <CustomerCard order={order} onStatus={setStatus} />
+          <SupplierCard order={order} items={items} prod={prod} onSave={async (ref) => { await updateOrder({ supplier_reference: ref }); await addOrderTimeline(id, "supplier_reference", `Supplier order: ${ref}`); load(); }} />
+          <ProfitCard order={order} items={items} prod={prod} />
           <TrackingCard order={order} onSave={saveTracking} />
 
           <Card className="p-5 text-sm space-y-2">
@@ -217,7 +234,6 @@ function OrderDetail() {
           </Card>
 
           {order.coupon_code && <Card className="p-5 text-sm"><p className="font-semibold">Coupon</p><p className="text-muted-foreground">{order.coupon_code}</p></Card>}
-          {order.supplier_reference && <Card className="p-5 text-sm"><p className="font-semibold">Supplier ref</p><p className="text-muted-foreground">{order.supplier_reference}</p></Card>}
         </div>
       </div>
     </PageShell>
@@ -238,9 +254,99 @@ function TrackingCard({ order, onSave }: { order: Order; onSave: (carrier: strin
   return (
     <Card className="p-5 space-y-2">
       <p className="font-semibold text-sm">Shipment</p>
-      <Input placeholder="Carrier (UPS, FedEx…)" value={carrier} onChange={(e) => setCarrier(e.target.value)} />
+      <Input placeholder="Courier (Bosta, Aramex…)" value={carrier} onChange={(e) => setCarrier(e.target.value)} />
       <Input placeholder="Tracking number" value={tracking} onChange={(e) => setTracking(e.target.value)} />
       <Button size="sm" onClick={() => onSave(carrier, tracking)}><Save className="size-4" /> Save tracking</Button>
+    </Card>
+  );
+}
+
+function waLink(phone: string, text?: string) {
+  const intl = phone.replace(/\D/g, "").replace(/^0/, "20");
+  return `https://wa.me/${intl}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
+}
+
+function CustomerCard({ order, onStatus }: { order: Order; onStatus: (s: string) => void }) {
+  const phone = order.phone ?? (order.shipping_address as Record<string, string> | null)?.phone ?? null;
+  const needsConfirm = order.status === "pending";
+  return (
+    <Card className="p-5 space-y-3">
+      <p className="font-semibold text-sm">Customer</p>
+      {phone ? (
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" asChild><a href={`tel:${phone}`}><Phone className="size-4" /> {phone}</a></Button>
+          <Button size="sm" variant="outline" asChild>
+            <a href={waLink(phone, `Hello, this is SentryHaus about your order ${order.order_number}.`)} target="_blank" rel="noopener noreferrer"><MessageCircle className="size-4" /> WhatsApp</a>
+          </Button>
+        </div>
+      ) : <p className="text-xs text-muted-foreground">No phone number.</p>}
+      {order.notes && <p className="rounded-md bg-muted p-2 text-xs">Customer note: {order.notes}</p>}
+      <div className="flex flex-wrap gap-2 pt-1">
+        {needsConfirm && <Button size="sm" onClick={() => onStatus("confirmed")}><Check className="size-4" /> Confirmed by phone</Button>}
+        {order.status === "shipped" && <Button size="sm" onClick={() => onStatus("delivered")}>Delivered, cash received</Button>}
+        {["pending", "confirmed"].includes(order.status) && <Button size="sm" variant="outline" onClick={() => onStatus("cancelled")}>Cancel</Button>}
+        {order.status === "shipped" && <Button size="sm" variant="outline" onClick={() => onStatus("returned")}>Refused or returned</Button>}
+      </div>
+    </Card>
+  );
+}
+
+function SupplierCard({ order, items, prod, onSave }: { order: Order; items: Item[]; prod: Record<string, ProductInfo>; onSave: (ref: string) => void }) {
+  const [ref, setRef] = useState(order.supplier_reference ?? "");
+  const [copied, setCopied] = useState(false);
+  const a = (order.shipping_address ?? {}) as Record<string, string>;
+  const text = [
+    `Order ${order.order_number}`,
+    `Customer: ${a.full_name ?? ""}`,
+    `Phone: ${a.phone ?? order.phone ?? ""}`,
+    `Address: ${[a.governorate, a.city, a.line1, a.line2].filter(Boolean).join(", ")}`,
+    "Items:",
+    ...items.map((it) => {
+      const p = it.product_id ? prod[it.product_id] : undefined;
+      const id = p?.supplier_product_id ? ` (supplier code ${p.supplier_product_id})` : "";
+      return `- ${it.quantity} x ${it.product_name}${id}`;
+    }),
+    order.payment_method === "cod" ? `Cash to collect from customer: ${money(order.total)}` : "Paid online",
+  ].join("\n");
+  return (
+    <Card className="p-5 space-y-2">
+      <p className="font-semibold text-sm">Send to supplier</p>
+      <pre className="whitespace-pre-wrap rounded-md bg-muted p-3 text-xs">{text}</pre>
+      <Button size="sm" variant="outline" onClick={async () => { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>
+        <Copy className="size-4" /> {copied ? "Copied" : "Copy details"}
+      </Button>
+      <ul className="space-y-1 text-xs">
+        {items.map((it) => {
+          const url = it.product_id ? prod[it.product_id]?.supplier_url : null;
+          return url ? <li key={it.id}><a href={url} target="_blank" rel="noopener noreferrer" className="underline">Open {it.product_name} at supplier</a></li> : null;
+        })}
+      </ul>
+      <Input placeholder="Supplier order number" value={ref} onChange={(e) => setRef(e.target.value)} />
+      <Button size="sm" onClick={() => onSave(ref.trim())} disabled={!ref.trim()}><Save className="size-4" /> Save supplier order number</Button>
+    </Card>
+  );
+}
+
+function ProfitCard({ order, items, prod }: { order: Order; items: Item[]; prod: Record<string, ProductInfo> }) {
+  let cost = 0;
+  let missing = false;
+  for (const it of items) {
+    const p = it.product_id ? prod[it.product_id] : undefined;
+    const c = p?.supplier_cost ?? p?.cost ?? null;
+    if (c == null) missing = true;
+    else cost += Number(c) * it.quantity;
+  }
+  const revenue = items.reduce((n, it) => n + Number(it.subtotal), 0);
+  return (
+    <Card className="p-5 text-sm space-y-1">
+      <p className="font-semibold">Profit estimate</p>
+      <Row label="Product sales" v={money(revenue)} />
+      <Row label="Supplier cost" v={missing ? `${money(cost)}+` : money(cost)} />
+      <div className="flex justify-between border-t pt-2 font-semibold"><span>Profit on products</span><span>{money(revenue - cost)}</span></div>
+      <p className="text-xs text-muted-foreground">
+        Delivery fee charged to the customer: {money(order.shipping)}. Subtract the courier and COD fees you pay.
+        {missing && " Some products have no supplier cost, so add it in the product's Supplier tab."}
+      </p>
     </Card>
   );
 }
