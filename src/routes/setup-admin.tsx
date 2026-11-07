@@ -11,8 +11,8 @@ import { ShieldCheck, Loader2, Lock } from "lucide-react";
 export const Route = createFileRoute("/setup-admin")({
   head: () => ({
     meta: [
-      { title: "Initial setup — SentryHaus" },
-      { name: "description", content: "One-time super admin setup for a fresh SentryHaus installation." },
+      { title: "Initial setup — Rivvo" },
+      { name: "description", content: "One-time super admin setup for a fresh Rivvo installation." },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),

@@ -4,8 +4,8 @@ import { SiteLayout } from "@/components/site/layout";
 export const Route = createFileRoute("/wishlist")({
   head: () => ({
     meta: [
-      { title: "wishlist — SentryHaus" },
-      { name: "description", content: "wishlist page on SentryHaus." },
+      { title: "wishlist — Rivvo" },
+      { name: "description", content: "wishlist page on Rivvo." },
     ],
   }),
   component: Page,

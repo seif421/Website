@@ -3,7 +3,7 @@ import { LegalPage, pageHead } from "@/components/site/legal-page";
 import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/shipping")({
-  head: () => pageHead("Shipping Policy", "How and when SentryHaus orders are processed and delivered."),
+  head: () => pageHead("Shipping Policy", "How and when Rivvo orders are processed and delivered."),
   component: Page,
 });
 

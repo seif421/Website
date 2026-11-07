@@ -219,7 +219,7 @@ function ProductsPage() {
     const sample = [{
       name: "Sample Camera", slug: "sample-camera", sku: "CAM-001", barcode: "",
       status: "draft", price: "199.99", sale_price: "", compare_at_price: "249.99",
-      cost: "85.00", stock: 50, category: "Cameras", brand: "SentryHaus",
+      cost: "85.00", stock: 50, category: "Cameras", brand: "Rivvo",
       tags: "wifi|outdoor", is_featured: "false", is_best_seller: "false",
       is_new_arrival: "true", is_trending: "false",
       short_description: "Short blurb", description: "Long description",

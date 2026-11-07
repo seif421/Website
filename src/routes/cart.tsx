@@ -7,8 +7,8 @@ import { formatMoney } from "@/lib/store/format";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Your cart — SentryHaus" },
-      { name: "description", content: "Review the items in your SentryHaus cart." },
+      { title: "Your cart — Rivvo" },
+      { name: "description", content: "Review the items in your Rivvo cart." },
       { name: "robots", content: "noindex" },
     ],
   }),

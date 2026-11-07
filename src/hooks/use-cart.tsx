@@ -23,7 +23,7 @@ type CartContextValue = {
   clear: () => void;
 };
 
-const STORAGE_KEY = "sentryhaus-cart-v1";
+const STORAGE_KEY = "rivvo-cart-v1";
 const MAX_PER_ITEM = 10;
 
 const CartContext = createContext<CartContextValue | null>(null);

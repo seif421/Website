@@ -276,7 +276,7 @@ function CustomerCard({ order, onStatus }: { order: Order; onStatus: (s: string)
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" asChild><a href={`tel:${phone}`}><Phone className="size-4" /> {phone}</a></Button>
           <Button size="sm" variant="outline" asChild>
-            <a href={waLink(phone, `Hello, this is SentryHaus about your order ${order.order_number}.`)} target="_blank" rel="noopener noreferrer"><MessageCircle className="size-4" /> WhatsApp</a>
+            <a href={waLink(phone, `Hello, this is Rivvo about your order ${order.order_number}.`)} target="_blank" rel="noopener noreferrer"><MessageCircle className="size-4" /> WhatsApp</a>
           </Button>
         </div>
       ) : <p className="text-xs text-muted-foreground">No phone number.</p>}

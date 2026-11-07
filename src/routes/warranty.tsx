@@ -3,7 +3,7 @@ import { LegalPage, pageHead } from "@/components/site/legal-page";
 import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/warranty")({
-  head: () => pageHead("Warranty", "Warranty cover for SentryHaus products."),
+  head: () => pageHead("Warranty", "Warranty cover for Rivvo products."),
   component: Page,
 });
 

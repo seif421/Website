@@ -3,7 +3,7 @@ import { LegalPage, pageHead } from "@/components/site/legal-page";
 import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/refunds")({
-  head: () => pageHead("Refund Policy", "Returns, refunds and exchanges at SentryHaus."),
+  head: () => pageHead("Refund Policy", "Returns, refunds and exchanges at Rivvo."),
   component: Page,
 });
 

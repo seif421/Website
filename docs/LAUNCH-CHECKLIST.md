@@ -1,4 +1,4 @@
-# SentryHaus — what is left before this can go public
+# Rivvo — what is left before this can go public
 
 Audit of the project (TanStack Start + Supabase). Based on reading the code;
 the project could not be built or run in the audit environment, so every item below is a code
@@ -60,9 +60,9 @@ Today a visitor cannot buy anything.
 - Newsletter form in the footer does nothing (`onSubmit` only prevents default). Wire it to `newsletter_subscribers`, with a confirmation email.
 - Transactional email: order confirmation, shipping, password reset, welcome. The `email_templates` admin page exists but there is no sender integration.
 - Admin `Support` page is "Coming soon"; the public `/support` and `/contact` need a working form or ticket flow.
-- Per-page SEO: unique titles, descriptions, canonical URLs and Open Graph for every route; product pages need Product/Offer/Review structured data; stub pages currently use titles like "shop — SentryHaus". The social-share (Open Graph) image was removed; add your own.
+- Per-page SEO: unique titles, descriptions, canonical URLs and Open Graph for every route; product pages need Product/Offer/Review structured data; stub pages currently use titles like "shop — Rivvo". The social-share (Open Graph) image was removed; add your own.
 - The sitemap was removed; generate a new one (with product URLs) once the real domain is known, and add the `Sitemap:` line back to `robots.txt`.
-- Brand name inconsistency: store is "SentryHaus"; original brief and repo README said "Aegis". Pick one.
+- Brand name inconsistency: store is "Rivvo"; original brief and repo README said "Aegis". Pick one.
 - Cookie consent and analytics (GA4 or equivalent), error monitoring (Sentry), uptime check.
 - Accessibility pass: keyboard navigation, focus states, contrast, labels (the admin and auth forms need review).
 - Performance pass: real product images (only 5 bundled), responsive image sizes, Lighthouse run.

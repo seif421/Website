@@ -9,7 +9,7 @@ export const Route = createFileRoute("/checkout/success")({
     total: Number.isFinite(Number(s.total)) ? Number(s.total) : 0,
     emailed: Number(s.emailed) === 1,
   }),
-  head: () => ({ meta: [{ title: "Order received — SentryHaus" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Order received — Rivvo" }, { name: "robots", content: "noindex" }] }),
   component: SuccessPage,
 });
 

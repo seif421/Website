@@ -43,10 +43,10 @@ export const Route = createFileRoute("/shop")({
   loader: ({ deps }) => fetchShop(deps),
   head: ({ loaderData }) => {
     const cat = loaderData?.activeCategory;
-    const title = cat ? `${cat.name} — SentryHaus` : "Shop smart home security — SentryHaus";
+    const title = cat ? `${cat.name} — Rivvo` : "Shop — Rivvo";
     const description = cat
-      ? `Shop ${cat.name.toLowerCase()} at SentryHaus.`
-      : "Browse smart cameras, doorbells, locks, sensors and more at SentryHaus.";
+      ? `Shop ${cat.name.toLowerCase()} at Rivvo.`
+      : "Browse our products and pay cash on delivery at Rivvo.";
     return {
       meta: [
         { title },

@@ -11,8 +11,8 @@ import { Loader2, Package, MapPin, Heart, ShieldCheck, LogOut } from "lucide-rea
 export const Route = createFileRoute("/account")({
   head: () => ({
     meta: [
-      { title: "My account — SentryHaus" },
-      { name: "description", content: "Manage your SentryHaus orders, addresses, wishlist, and account security." },
+      { title: "My account — Rivvo" },
+      { name: "description", content: "Manage your Rivvo orders, addresses, wishlist, and account security." },
       { name: "robots", content: "noindex" },
     ],
   }),
