@@ -5,6 +5,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/store/format";
+import { sendOrderConfirmation } from "@/lib/store/order-email";
 
 export const Route = createFileRoute("/checkout/")({
   head: () => ({ meta: [{ title: "Checkout — SentryHaus" }, { name: "robots", content: "noindex" }] }),
@@ -92,7 +93,12 @@ function CheckoutPage() {
     }
     const order = data as { order_number: string; total: number };
     cart.clear();
-    navigate({ to: "/checkout/success", search: { order: order.order_number, total: order.total } });
+    // The order is already saved, so an email problem must never block the customer: wait at most 6 seconds.
+    const emailed = await Promise.race([
+      sendOrderConfirmation({ data: { orderNumber: order.order_number } }).then((r) => r.sent).catch(() => false),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 6000)),
+    ]);
+    navigate({ to: "/checkout/success", search: { order: order.order_number, total: order.total, emailed: emailed ? 1 : 0 } });
   }
 
   if (!cart.ready) {
@@ -173,8 +179,9 @@ function CheckoutPage() {
               <input name="line2" maxLength={150} className={input} />
             </label>
             <label className="block text-sm font-medium">
-              Email <span className="font-normal text-muted-foreground">(optional)</span>
-              <input name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className={input} />
+              Email
+              <input name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className={input} />
+              <span className="mt-1 block text-xs font-normal text-muted-foreground">We email your order confirmation here.</span>
             </label>
             <label className="block text-sm font-medium">
               Notes <span className="font-normal text-muted-foreground">(optional)</span>

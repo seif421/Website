@@ -16,6 +16,8 @@ export const SITE = {
   // Your real contact details. Leave empty to hide them. WhatsApp number in international format, e.g. "201012345678".
   whatsapp: "",
   phone: "",
+  // Where customers can write to you. Also used as the reply address of order emails. Leave empty to hide.
+  supportEmail: "",
   // Set real links to show social icons in the footer. Leave empty to hide them.
   social: { instagram: "", x: "", facebook: "", youtube: "" },
   lastUpdated: "30 October 2026",
