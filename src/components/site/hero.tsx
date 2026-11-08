@@ -1,7 +1,6 @@
-import { ArrowRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { CATEGORIES } from "./categories";
-import heroImage from "@/assets/hero-camera.jpg";
+import heroImage from "@/assets/hero-rivvo.webp";
 
 export function Hero() {
   return (
@@ -24,32 +23,21 @@ export function Hero() {
           </ul>
         </nav>
 
-        <div className="relative overflow-hidden rounded-xl gradient-hero text-primary-foreground">
+        <Link
+          to="/shop"
+          aria-label="Rivvo. Shop smarter, live better. Shop now."
+          className="group relative block overflow-hidden rounded-xl bg-[#2a1b6b]"
+        >
+          <h1 className="sr-only">Rivvo, online store in Egypt</h1>
           <img
             src={heroImage}
             alt=""
-            width={1600}
-            height={1200}
+            width={1672}
+            height={941}
             fetchPriority="high"
-            className="absolute inset-0 size-full object-cover opacity-40"
+            className="aspect-video size-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
           />
-          <div className="relative flex min-h-[320px] max-w-md flex-col justify-center gap-4 p-7 sm:min-h-[380px] sm:p-10">
-            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-              Cameras, locks and sensors for every door.
-            </h1>
-            <p className="text-primary-foreground/80">
-              Browse home security products with clear prices, easy returns and delivery across Egypt. Pay cash on delivery.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                to="/shop"
-                className="inline-flex h-11 items-center gap-2 rounded-md bg-brand px-6 text-sm font-semibold text-brand-foreground hover:bg-brand/90"
-              >
-                Shop all products <ArrowRight className="size-4" aria-hidden />
-              </Link>
-            </div>
-          </div>
-        </div>
+        </Link>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
           <Link
