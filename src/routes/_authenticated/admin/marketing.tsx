@@ -161,7 +161,7 @@ function Subscribers() {
 }
 
 function Campaigns() {
-  return <Card className="p-6 mt-4 text-sm text-muted-foreground">Email campaigns will send from the newsletter list. Connect an email provider from Settings to activate delivery. Templates live under <a className="underline" href="/admin/email-templates">Email Templates</a>.</Card>;
+  return <Card className="p-6 mt-4 text-sm text-muted-foreground">Email campaigns will send from the newsletter list. Connect an email provider from Settings to activate delivery.</Card>;
 }
 function Abandoned() {
   return <Card className="p-6 mt-4 text-sm text-muted-foreground">Abandoned cart tracking hooks into checkout events. Recovery emails send 1h, 24h and 72h after abandonment when campaigns are enabled.</Card>;
