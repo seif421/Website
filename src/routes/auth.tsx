@@ -16,6 +16,10 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [{ title: "Sign in — Rivvo" }, { name: "description", content: "Sign in or create your Rivvo account." }],
   }),
+  // Where to go after signing in, e.g. back to checkout. Only paths inside the site are accepted.
+  validateSearch: (s: Record<string, unknown>) => ({
+    redirect: typeof s.redirect === "string" && /^\/[^/\\]/.test(s.redirect) ? s.redirect : undefined,
+  }),
   component: AuthPage,
 });
 
@@ -33,17 +37,18 @@ const signUpSchema = signInSchema.extend({
 function AuthPage() {
   const { user, loading, roles, homePath } = useAuth();
   const navigate = useNavigate();
+  const { redirect: after } = Route.useSearch();
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: homePath, replace: true }).catch(() => navigate({ to: "/" }));
-  }, [loading, user, homePath, navigate, roles]);
+    if (!loading && user) navigate({ to: after ?? homePath, replace: true }).catch(() => navigate({ to: "/" }));
+  }, [loading, user, homePath, navigate, roles, after]);
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <Logo />
-          <p className="mt-3 text-sm text-muted-foreground">Premium smart home security.</p>
+          <p className="mt-3 text-sm text-muted-foreground">{after ? "Sign in or create an account to place your order." : "Shop online in Egypt."}</p>
         </div>
         <Card className="p-6 shadow-soft">
           <Tabs defaultValue="signin" className="w-full">
@@ -72,6 +77,7 @@ function AuthPage() {
 }
 
 function SignInForm() {
+  const { redirect: after } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -104,7 +110,7 @@ function SignInForm() {
       const roles = ((rows ?? []).map((r) => r.role)) as AppRole[];
       target = homeForRoles(roles);
     }
-    navigate({ to: target, replace: true }).catch(() => navigate({ to: "/" }));
+    navigate({ to: after ?? target, replace: true }).catch(() => navigate({ to: "/" }));
   }
 
   return (

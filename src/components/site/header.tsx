@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, ShoppingBag, User, Menu, X, LayoutDashboard, ChevronDown } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, LayoutDashboard, ChevronDown, Home } from "lucide-react";
 import { CATEGORIES } from "./categories";
 import { useEffect, useRef, useState } from "react";
 import { AnnouncementBar } from "./announcement-bar";
@@ -139,6 +139,14 @@ export function Header() {
           <div className="mx-auto flex h-12 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
             <Departments />
             <nav aria-label="Primary" className="flex items-center gap-6">
+              <Link
+                to="/"
+                activeOptions={{ exact: true }}
+                activeProps={{ className: "text-foreground" }}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Home className="size-4" aria-hidden /> Home
+              </Link>
               {NAV.map((item) => (
                 <Link
                   key={item.label}
@@ -168,6 +176,15 @@ export function Header() {
                 />
               </form>
               <ul className="flex flex-col gap-1">
+                <li>
+                  <Link
+                    to="/"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface"
+                  >
+                    <Home className="size-4" aria-hidden /> Home
+                  </Link>
+                </li>
                 {NAV.map((item) => (
                   <li key={item.label}>
                     <Link

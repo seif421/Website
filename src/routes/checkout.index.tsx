@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { SiteLayout } from "@/components/site/layout";
 import { useCart } from "@/hooks/use-cart";
@@ -8,6 +8,12 @@ import { formatMoney } from "@/lib/store/format";
 import { sendOrderConfirmation } from "@/lib/store/order-email";
 
 export const Route = createFileRoute("/checkout/")({
+  // Only signed-in customers can reach checkout. The database also refuses orders from signed-out visitors.
+  ssr: false,
+  beforeLoad: async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) throw redirect({ to: "/auth", search: { redirect: "/checkout" } });
+  },
   head: () => ({ meta: [{ title: "Checkout — Rivvo" }, { name: "robots", content: "noindex" }] }),
   component: CheckoutPage,
 });
