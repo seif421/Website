@@ -1,6 +1,7 @@
 import { useEffect, useState, createContext, useContext, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { sendWelcomeEmail } from "@/lib/store/status-emails";
 
 export type AppRole = "super_admin" | "admin" | "manager" | "staff" | "customer";
 
@@ -29,6 +30,9 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Welcome email is claimed once per account in the database; this only avoids repeat calls in one tab.
+const welcomeTried = new Set<string>();
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -36,12 +40,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
         // defer to avoid deadlocks
         setTimeout(() => {
+          if (event === "SIGNED_IN" && !welcomeTried.has(s.user.id)) {
+            welcomeTried.add(s.user.id);
+            sendWelcomeEmail({ data: { accessToken: s.access_token } }).catch(() => {});
+          }
           supabase
             .from("user_roles")
             .select("role")

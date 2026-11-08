@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendOrderStatusEmail } from "@/lib/store/status-emails";
 import {
   ORDER_STATUSES, ORDER_STATUS_LABEL, ORDER_STATUS_CLASS,
   money, shortDate, addOrderTimeline,
@@ -90,6 +91,11 @@ function OrderDetail() {
     }
     await updateOrder(patch);
     await addOrderTimeline(id, `status_${newStatus}`, `Status set to ${ORDER_STATUS_LABEL[newStatus] ?? newStatus}`);
+    // Shipped and delivered each send the customer one email (never twice, even if you change the status back and forth).
+    if (order && (newStatus === "shipped" || newStatus === "delivered")) {
+      const r = await sendOrderStatusEmail({ data: { orderNumber: order.order_number, kind: newStatus } }).catch(() => ({ sent: false }));
+      if (r.sent) toast.success(`Email sent to ${order.email}`);
+    }
     load();
   }
   async function addNote() {

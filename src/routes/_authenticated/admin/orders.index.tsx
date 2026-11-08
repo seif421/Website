@@ -13,6 +13,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendOrderStatusEmail } from "@/lib/store/status-emails";
 import {
   ORDER_STATUSES, ORDER_STATUS_LABEL, ORDER_STATUS_CLASS,
   money, shortDate, toCsv, downloadBlob, addOrderTimeline,
@@ -71,7 +72,13 @@ function OrdersPage() {
     const { error } = await supabase.from("orders").update({ status: newStatus as never }).in("id", ids);
     if (error) return toast.error(error.message);
     await Promise.all(ids.map((id) => addOrderTimeline(id, `status_${newStatus}`, `Bulk set to ${newStatus}`)));
-    toast.success(`${ids.length} orders updated`);
+    let emailed = 0;
+    if (newStatus === "shipped" || newStatus === "delivered") {
+      const numbers = rows.filter((r) => ids.includes(r.id)).map((r) => r.order_number);
+      const results = await Promise.all(numbers.map((n) => sendOrderStatusEmail({ data: { orderNumber: n, kind: newStatus } }).then((x) => x.sent).catch(() => false)));
+      emailed = results.filter(Boolean).length;
+    }
+    toast.success(`${ids.length} orders updated${emailed ? `, ${emailed} customer email${emailed === 1 ? "" : "s"} sent` : ""}`);
     setSelected(new Set()); load();
   }
   async function bulkArchive() {

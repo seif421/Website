@@ -24,10 +24,10 @@ function db() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-const esc = (v: unknown) =>
+export const esc = (v: unknown) =>
   String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-const egp = (n: number) => `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(Number(n) || 0)} EGP`;
+export const egp = (n: number) => `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(Number(n) || 0)} EGP`;
 
 export function buildConfirmationEmail(c: Confirmation) {
   const a = c.address ?? {};
