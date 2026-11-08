@@ -3,7 +3,7 @@
 export const SITE = {
   name: "Rivvo",
   // Public address of the website, used for links inside emails. Change it when you buy a domain.
-  url: "https://website-seif-8b3f.vercel.app",
+  url: "https://rivvo-shop.vercel.app",
   // Days a customer has to return an item after it arrives.
   returnDays: 30,
   // Warranty length in months. Check with your supplier before you advertise a longer one.

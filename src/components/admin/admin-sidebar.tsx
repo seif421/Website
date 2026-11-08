@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Boxes,
   Tag, Star, BarChart3, LineChart, Megaphone, Settings, UserCog,
   ScrollText, LifeBuoy, ShieldCheck, Award, Truck, ListTree,
-  Ship, Undo2, Bell, Gift, Mail,
+  Ship, Undo2, Bell, Gift,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -35,7 +35,6 @@ const commerce: Item[] = [
 ];
 const growth: Item[] = [
   { title: "Marketing", url: "/admin/marketing", icon: Megaphone, roles: ["admin", "manager"] },
-  { title: "Email Templates", url: "/admin/email-templates", icon: Mail, roles: ["admin", "manager"] },
   { title: "Notifications", url: "/admin/notifications", icon: Bell },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
 ];
