@@ -186,12 +186,13 @@ function SignUpForm() {
 }
 
 function GoogleButton() {
+  const { redirect: after } = Route.useSearch();
   const [busy, setBusy] = useState(false);
   async function handle() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: `${window.location.origin}${after ?? ""}` },
     });
     if (error) {
       setBusy(false);
