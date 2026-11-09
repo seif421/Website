@@ -237,3 +237,43 @@ export const sendOrderStatusEmail = createServerFn({ method: "POST" })
       return { sent: false };
     }
   });
+
+export function buildSupportReplyEmail(m: { name: string; order_number: string | null; message: string; reply: string }): Mail {
+  const first = m.name.trim().split(/\s+/)[0] || "";
+  const html = (t: string) => esc(t).replace(/\r?\n/g, "<br>");
+  const inner = `<p style="margin:0 0 6px;font-size:14px;color:#111">Hi${first ? ` ${esc(first)}` : ""},</p>
+<p style="margin:0 0 20px;font-size:14px;color:#111;line-height:1.6">${html(m.reply)}</p>
+<div style="padding:14px 16px;background:#f6f6f6;border-radius:10px">
+<p style="margin:0 0 6px;font-size:12px;color:#888">Your message${m.order_number ? ` (order ${esc(m.order_number)})` : ""}</p>
+<p style="margin:0;font-size:13px;color:#555;line-height:1.5">${html(m.message)}</p>
+</div>`;
+  const footer = `Need anything else? Just reply to this email${contactLine() ? ` or contact us: ${contactLine()}` : ""}.`;
+  const text = [`Hi${first ? ` ${first}` : ""},`, "", m.reply, "", "---", `Your message${m.order_number ? ` (order ${m.order_number})` : ""}:`, m.message, "", `Need anything else? Just reply to this email.`].join("\n");
+  return { subject: `Re: your message to ${SITE.name}`, html: shell(`Your answer from ${SITE.name}`, inner, footer), text };
+}
+
+// Staff answer a contact-form message. The database checks that the caller is staff and saves the answer once;
+// this function then emails it to the customer and puts the message back if the email fails.
+export const sendSupportReply = createServerFn({ method: "POST" })
+  .inputValidator((d: { accessToken: string; id: string; reply: string }) => {
+    if (typeof d?.accessToken !== "string" || d.accessToken.length < 20 || d.accessToken.length > 4000) throw new Error("Invalid session");
+    if (typeof d.id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.id)) throw new Error("Invalid message");
+    if (typeof d.reply !== "string" || d.reply.length > 5000) throw new Error("Invalid answer");
+    return { accessToken: d.accessToken, id: d.id, reply: d.reply };
+  })
+  .handler(async ({ data }): Promise<{ sent: boolean; error?: string }> => {
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return { sent: false, error: "Email sending is not set up." };
+    const supabase = db(data.accessToken);
+    const { data: claim, error } = await supabase.rpc("claim_support_reply" as never, { p_id: data.id, p_reply: data.reply } as never);
+    if (error || !claim) return { sent: false, error: error?.message ?? "Could not save the answer." };
+    const m = claim as unknown as { name: string; email: string; order_number: string | null; message: string; reply: string };
+    try {
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m.email)) throw new Error("The customer's email address is not valid.");
+      await deliver(m.email, buildSupportReplyEmail(m));
+      return { sent: true };
+    } catch (e) {
+      console.error("[support reply] send failed", e instanceof Error ? e.message : e);
+      await supabase.rpc("release_support_reply" as never, { p_id: data.id } as never);
+      return { sent: false, error: "The email could not be sent. Your answer was not saved, so you can try again." };
+    }
+  });

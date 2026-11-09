@@ -23,7 +23,6 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
       { label: "Shipping Policy", to: "/shipping" },
       { label: "Refund Policy", to: "/refunds" },
       { label: "Contact Us", to: "/contact" },
-      { label: "Warranty", to: "/warranty" },
     ],
   },
   {

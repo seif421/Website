@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 
-const STATIC_PAGES = ["/", "/shop", "/about", "/contact", "/support", "/shipping", "/refunds", "/warranty", "/terms", "/privacy"];
+const STATIC_PAGES = ["/", "/shop", "/about", "/contact", "/support", "/shipping", "/refunds", "/terms", "/privacy"];
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 

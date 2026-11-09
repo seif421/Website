@@ -453,7 +453,6 @@ export function ProductEditor({ productId }: { productId?: string }) {
                 <Field label="Length (cm)"><Input type="number" min="0" value={form.dim_length} onChange={(e) => update("dim_length", e.target.value)} /></Field>
                 <Field label="Width (cm)"><Input type="number" min="0" value={form.dim_width} onChange={(e) => update("dim_width", e.target.value)} /></Field>
                 <Field label="Height (cm)"><Input type="number" min="0" value={form.dim_height} onChange={(e) => update("dim_height", e.target.value)} /></Field>
-                <Field label="Warranty"><Input value={form.warranty} onChange={(e) => update("warranty", e.target.value)} placeholder="1 year limited" /></Field>
               </div>
             </CardContent></Card>
           </TabsContent>

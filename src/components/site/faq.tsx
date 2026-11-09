@@ -6,7 +6,6 @@ import { SITE } from "@/lib/site-config";
 const FAQS = [
   { q: "How long does delivery take?", a: `Orders are processed within ${SITE.processingDays} business days and usually arrive ${SITE.deliveryDays} business days after dispatch. Exact shipping costs are shown at checkout.` },
   { q: "What is your return policy?", a: `You can return an item within ${SITE.returnDays} days of delivery if it is unused and in its original packaging. See the Refund Policy for the full details.` },
-  { q: "Is there a warranty?", a: `Yes. Products are covered against manufacturing defects for ${SITE.warrantyMonths} months from delivery.` },
   { q: "Do I need a subscription?", a: "Each product page explains what the device does on its own and whether any optional paid cloud features exist. Please read the product description before you buy." },
   { q: "How do I contact you?", a: "Use the contact form. A real person will reply by email." },
 ];
