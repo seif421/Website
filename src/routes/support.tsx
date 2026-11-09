@@ -3,7 +3,7 @@ import { LegalPage, pageHead } from "@/components/site/legal-page";
 import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/support")({
-  head: () => pageHead("Help Center", "Answers about orders, shipping, returns and warranty."),
+  head: () => pageHead("Help Center", "Answers about orders, shipping and returns."),
   component: Page,
 });
 
@@ -17,7 +17,7 @@ function Page() {
       sections={[
         { heading: "Where is my order?", body: <p>Orders are processed within {SITE.processingDays} business days and usually arrive {SITE.deliveryDays} business days after dispatch. See the <Link to="/shipping" className={link}>Shipping Policy</Link> for details.</p> },
         { heading: "How do I return something?", body: <p>You have {SITE.returnDays} days after delivery. Read the <Link to="/refunds" className={link}>Refund Policy</Link>, then send us your order number through the <Link to="/contact" className={link}>contact form</Link>.</p> },
-        { heading: "My product is faulty", body: <p>Products are covered for {SITE.warrantyMonths} months against manufacturing defects. See the <Link to="/warranty" className={link}>Warranty</Link> page and <Link to="/contact" className={link}>contact us</Link> with a photo or video.</p> },
+        { heading: "My product is faulty", body: <p>Tell us within {SITE.returnDays} days of delivery. <Link to="/contact" className={link}>Contact us</Link> with your order number and a photo or video, and we will help you.</p> },
         { heading: "I could not find my answer", body: <p>Send us a message through the <Link to="/contact" className={link}>contact form</Link> and we will reply by email.</p> },
       ]}
     />

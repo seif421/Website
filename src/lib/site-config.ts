@@ -6,8 +6,6 @@ export const SITE = {
   url: "https://rivvo-shop.vercel.app",
   // Days a customer has to return an item after it arrives.
   returnDays: 30,
-  // Warranty length in months. Check with your supplier before you advertise a longer one.
-  warrantyMonths: 12,
   // How long before an order is handed to the courier (business days).
   processingDays: "1–2",
   // Typical delivery time after dispatch (business days). Confirm with your supplier and courier.

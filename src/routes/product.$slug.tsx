@@ -270,12 +270,6 @@ function ProductPage() {
                   <dd className="font-medium">{p.sku}</dd>
                 </>
               )}
-              {p.warranty && (
-                <>
-                  <dt className="text-muted-foreground">Warranty</dt>
-                  <dd className="font-medium">{p.warranty}</dd>
-                </>
-              )}
             </dl>
 
             <div className="mt-6 rounded-2xl border border-border bg-surface p-4 text-sm text-muted-foreground">
