@@ -10,15 +10,9 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { relativeTime } from "@/lib/admin/formatters";
 import { useAuth } from "@/hooks/use-auth";
-
-const MOCK_NOTIFICATIONS = [
-  { id: 1, title: "New order #SH-A1B2C3D4", body: "$249.00 — Smart Doorbell Pro", time: "2m ago" },
-  { id: 2, title: "Low stock alert", body: "Indoor Cam 2K — 3 left", time: "1h ago" },
-  { id: 3, title: "New review", body: "5★ on Smart Lock Vault", time: "3h ago" },
-  { id: 4, title: "Payment failed", body: "Order #SH-9F8E7D — retry needed", time: "Yesterday" },
-];
 
 export function AdminTopbar() {
   const { user, signOut } = useAuth();
@@ -56,28 +50,7 @@ export function AdminTopbar() {
       <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
         {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
       </Button>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-            <Bell className="size-4" />
-            <Badge className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px]">{MOCK_NOTIFICATIONS.length}</Badge>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent align="end" className="w-80 p-0">
-          <div className="border-b px-4 py-3">
-            <p className="text-sm font-semibold">Notifications</p>
-          </div>
-          <ul className="max-h-80 divide-y overflow-y-auto">
-            {MOCK_NOTIFICATIONS.map((n) => (
-              <li key={n.id} className="px-4 py-3 hover:bg-muted/40">
-                <p className="text-sm font-medium">{n.title}</p>
-                <p className="text-xs text-muted-foreground">{n.body}</p>
-                <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">{n.time}</p>
-              </li>
-            ))}
-          </ul>
-        </PopoverContent>
-      </Popover>
+      <NotificationBell />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex items-center gap-2 rounded-full hover:opacity-80">
@@ -98,5 +71,82 @@ export function AdminTopbar() {
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
+  );
+}
+type Note = { id: string; type: string; title: string; message: string | null; link: string | null; is_read: boolean; created_at: string };
+
+// The bell shows real staff notifications (new orders, messages, low stock, reviews, returns, new customers)
+// and checks for new ones every 30 seconds.
+function NotificationBell() {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [items, setItems] = useState<Note[]>([]);
+  const [unread, setUnread] = useState(0);
+
+  async function load() {
+    const [list, count] = await Promise.all([
+      supabase.from("notifications").select("id,type,title,message,link,is_read,created_at").eq("audience", "staff").order("created_at", { ascending: false }).limit(8),
+      supabase.from("notifications").select("id", { count: "exact", head: true }).eq("audience", "staff").eq("is_read", false),
+    ]);
+    if (!list.error) setItems((list.data ?? []) as Note[]);
+    if (!count.error) setUnread(count.count ?? 0);
+  }
+
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  async function openNote(n: Note) {
+    if (!n.is_read) await supabase.from("notifications").update({ is_read: true }).eq("id", n.id);
+    setOpen(false);
+    if (n.link) navigate({ to: n.link as never });
+    load();
+  }
+  async function markAll() {
+    await supabase.from("notifications").update({ is_read: true }).eq("audience", "staff").eq("is_read", false);
+    load();
+  }
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) load(); }}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative" aria-label={unread ? `Notifications, ${unread} new` : "Notifications"}>
+          <Bell className="size-4" />
+          {unread > 0 && (
+            <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 p-0">
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <p className="text-sm font-semibold">Notifications</p>
+          {unread > 0 && (
+            <button type="button" onClick={markAll} className="text-xs font-medium text-brand hover:underline">Mark all read</button>
+          )}
+        </div>
+        <ul className="max-h-80 divide-y overflow-y-auto">
+          {items.length === 0 && <li className="px-4 py-8 text-center text-sm text-muted-foreground">You're all caught up.</li>}
+          {items.map((n) => (
+            <li key={n.id}>
+              <button type="button" onClick={() => openNote(n)} className="flex w-full items-start gap-2 px-4 py-3 text-left hover:bg-muted/40">
+                <span className={`mt-1.5 size-2 shrink-0 rounded-full ${n.is_read ? "bg-transparent" : "bg-brand"}`} aria-hidden />
+                <span className="min-w-0">
+                  <span className={`block text-sm ${n.is_read ? "font-normal" : "font-semibold"}`}>{n.title}</span>
+                  {n.message && <span className="block truncate text-xs text-muted-foreground">{n.message}</span>}
+                  <span className="mt-0.5 block text-[10px] uppercase tracking-wider text-muted-foreground">{relativeTime(n.created_at)}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="border-t px-4 py-2 text-center">
+          <Link to="/admin/notifications" onClick={() => setOpen(false)} className="text-xs font-medium text-brand hover:underline">See all notifications</Link>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

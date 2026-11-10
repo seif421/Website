@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Check, Trash2 } from "lucide-react";
 import { PageShell } from "@/components/admin/page-shell";
@@ -36,7 +36,8 @@ function NotificationsPage() {
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">{n.type} · {relativeTime(n.created_at)}</p>
             </div>
             <div className="flex gap-1">
-              {!n.is_read && <Button size="icon" variant="ghost" onClick={() => markRead(n.id)}><Check className="size-4" /></Button>}
+              {n.link && <Button size="sm" variant="outline" asChild><Link to={n.link as never} onClick={() => !n.is_read && markRead(n.id)}>Open</Link></Button>}
+              {!n.is_read && <Button size="icon" variant="ghost" onClick={() => markRead(n.id)} aria-label="Mark as read"><Check className="size-4" /></Button>}
               <Button size="icon" variant="ghost" onClick={() => del(n.id)}><Trash2 className="size-4" /></Button>
             </div>
           </Card>
