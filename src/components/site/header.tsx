@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   ChevronDown,
   Home,
+  Heart,
 } from "lucide-react";
 import { CategoryThumb } from "./categories";
 import { navCategories, topCategories, useSiteData } from "@/hooks/use-site-data";
@@ -16,6 +17,7 @@ import { AnnouncementBar } from "./announcement-bar";
 import { Logo } from "./logo";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
 
 function Departments() {
   const cats = topCategories(useSiteData());
@@ -76,6 +78,7 @@ export function Header() {
   const [term, setTerm] = useState("");
   const { user, isStaff } = useAuth();
   const { count } = useCart();
+  const wishlist = useWishlist();
   const site = useSiteData();
   const NAV: { label: string; category?: string }[] = [
     { label: "Shop All" },
@@ -139,6 +142,9 @@ export function Header() {
             <IconLink to={user ? "/account" : "/auth"} label={user ? "Account" : "Sign in"}>
               <User className="size-5" />
             </IconLink>
+            <IconLink to="/wishlist" label="Wishlist" badge={wishlist.count}>
+              <Heart className="size-5" />
+            </IconLink>
             <IconLink
               to="/cart"
               label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"}
@@ -181,13 +187,6 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
-              <Link
-                to="/shop"
-                search={{ sort: "newest" }}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground"
-              >
-                New arrivals
-              </Link>
               <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground">
                 About
               </Link>
