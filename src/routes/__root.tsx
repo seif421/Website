@@ -15,7 +15,8 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { trackPageView } from "@/lib/store/track";
 import { CartProvider } from "@/hooks/use-cart";
 import { WishlistProvider } from "@/hooks/use-wishlist";
-import { fetchSiteData } from "@/lib/store/content";
+import { defaultSiteData, fetchSiteData, type SiteData } from "@/lib/store/content";
+import { imageUrl } from "@/lib/store/format";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -77,46 +78,38 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   loader: () => fetchSiteData(),
   staleTime: 30_000,
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Rivvo — Online store in Egypt" },
-      {
-        name: "description",
-        content:
-          "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.",
-      },
-      { name: "author", content: "Rivvo" },
-      { property: "og:title", content: "Rivvo — Online store in Egypt" },
-      {
-        property: "og:description",
-        content:
-          "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "Rivvo" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Rivvo — Online store in Egypt" },
-      {
-        name: "twitter:description",
-        content:
-          "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.",
-      },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const brand = (loaderData as SiteData | undefined)?.brand ?? defaultSiteData().brand;
+    const og = imageUrl(brand.ogImage);
+    const icon = imageUrl(brand.favicon);
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { title: brand.seoTitle },
+        { name: "description", content: brand.seoDescription },
+        { name: "author", content: brand.name },
+        { property: "og:title", content: brand.seoTitle },
+        { property: "og:description", content: brand.seoDescription },
+        { property: "og:type", content: "website" },
+        { property: "og:site_name", content: brand.name },
+        ...(og ? [{ property: "og:image", content: og }] : []),
+        { name: "twitter:card", content: og ? "summary_large_image" : "summary" },
+        { name: "twitter:title", content: brand.seoTitle },
+        { name: "twitter:description", content: brand.seoDescription },
+      ],
+      links: [
+        { rel: "stylesheet", href: appCss },
+        ...(icon ? [{ rel: "icon", href: icon }] : []),
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" as const },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
+        },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
