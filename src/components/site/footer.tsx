@@ -2,20 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 import { Logo } from "./logo";
 import { SITE } from "@/lib/site-config";
+import { navCategories, useSiteData } from "@/hooks/use-site-data";
 
 type FooterLink = { label: string; to: string; category?: string };
 
 const COLUMNS: { title: string; links: FooterLink[] }[] = [
-  {
-    title: "Shop",
-    links: [
-      { label: "Smart Cameras", to: "/shop", category: "smart-cameras" },
-      { label: "Doorbell Cameras", to: "/shop", category: "doorbell-cameras" },
-      { label: "Smart Locks", to: "/shop", category: "smart-locks" },
-      { label: "Sensors", to: "/shop", category: "motion-sensors" },
-      { label: "Accessories", to: "/shop", category: "accessories" },
-    ],
-  },
   {
     title: "Support",
     links: [
@@ -36,6 +27,13 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
 ];
 
 export function Footer() {
+  const site = useSiteData();
+  const shopLinks: FooterLink[] = [
+    { label: "All products", to: "/shop" },
+    ...navCategories(site).map((c) => ({ label: c.name, to: "/shop", category: c.slug })),
+  ];
+  const columns = [{ title: "Shop", links: shopLinks }, ...COLUMNS];
+  const email = site.contact.email;
   const socials = [
     { Icon: Instagram, href: SITE.social.instagram, label: "Instagram" },
     { Icon: Twitter, href: SITE.social.x, label: "X (Twitter)" },
@@ -49,7 +47,7 @@ export function Footer() {
           <div>
             <Logo className="[&_span:last-child]:text-primary-foreground [&_span:last-child_span]:text-accent" />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-primary-foreground/70">
-              Smart cameras, doorbells, locks and sensors for your home.
+              {site.general.footerTagline}
             </p>
             {socials.length > 0 && (
               <div className="mt-6 flex items-center gap-3">
@@ -70,7 +68,7 @@ export function Footer() {
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
-            {COLUMNS.map((col) => (
+            {columns.map((col) => (
               <div key={col.title}>
                 <h3 className="font-display text-sm font-semibold tracking-wide uppercase text-primary-foreground">
                   {col.title}
@@ -96,12 +94,12 @@ export function Footer() {
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-primary-foreground/10 pt-6 text-xs text-primary-foreground/60 sm:flex-row sm:items-center">
           <p>
             © {new Date().getFullYear()} Rivvo. All rights reserved.
-            {SITE.supportEmail && (
+            {email && (
               <>
                 {" "}
                 ·{" "}
-                <a href={`mailto:${SITE.supportEmail}`} className="underline">
-                  {SITE.supportEmail}
+                <a href={`mailto:${email}`} className="underline">
+                  {email}
                 </a>
               </>
             )}

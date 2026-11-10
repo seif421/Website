@@ -6,6 +6,7 @@ import { ProductRow } from "@/components/site/product-row";
 import { WhyUs } from "@/components/site/why-us";
 import { FAQ } from "@/components/site/faq";
 import { fetchHomeRows } from "@/lib/store/queries";
+import { useSiteData } from "@/hooks/use-site-data";
 
 const DESC =
   "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.";
@@ -26,6 +27,8 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { bestSellers, newest, deals } = Route.useLoaderData();
+  const { home } = useSiteData();
+  const sec = home.sections;
   const empty = bestSellers.length === 0 && newest.length === 0;
   return (
     <SiteLayout>
@@ -42,9 +45,9 @@ function Index() {
         </section>
       ) : (
         <>
-          <ProductRow title="Deals" products={deals} seeAll={{ sort: "price-asc" }} />
-          <ProductRow title="Best sellers" products={bestSellers} seeAll={{ sort: "rating" }} />
-          <ProductRow title="New arrivals" products={newest} seeAll={{ sort: "newest" }} />
+          {sec.deals.show && <ProductRow title={sec.deals.title} products={deals} seeAll={{ sort: "price-asc" }} />}
+          {sec.bestSellers.show && <ProductRow title={sec.bestSellers.title} products={bestSellers} seeAll={{ sort: "rating" }} />}
+          {sec.newArrivals.show && <ProductRow title={sec.newArrivals.title} products={newest} seeAll={{ sort: "newest" }} />}
         </>
       )}
       <WhyUs />

@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { trackPageView } from "@/lib/store/track";
 import { CartProvider } from "@/hooks/use-cart";
+import { fetchSiteData } from "@/lib/store/content";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -73,6 +74,8 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: () => fetchSiteData(),
+  staleTime: 30_000,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
