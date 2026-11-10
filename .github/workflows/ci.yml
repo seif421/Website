@@ -49,23 +49,13 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Check for test files
-        id: test-files
+      - name: Run tests (pass if none exist)
         run: |
-          if find . \( -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" \) -print -quit | grep -q .; then
-            echo "has_tests=true" >> $GITHUB_OUTPUT
+          if find . \( -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" \) -print -quit 2>/dev/null | grep -q .; then
+            bun test
           else
-            echo "has_tests=false" >> $GITHUB_OUTPUT
+            echo "No test files found, skipping tests"
           fi
-
-      - name: Run tests
-        if: steps.test-files.outputs.has_tests == 'true'
-        run: bun test
-        # Add when tests exist: run: bun test --coverage
-
-      - name: Skip tests (no test files found)
-        if: steps.test-files.outputs.has_tests == 'false'
-        run: echo "No test files found, skipping tests"
 
   build:
     name: Build
