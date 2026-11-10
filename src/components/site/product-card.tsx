@@ -11,7 +11,12 @@ export function ProductCard({ product }: { product: StoreProduct }) {
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:border-brand/40 hover:shadow-elevated">
-      <Link to="/product/$slug" params={{ slug: product.slug }} className="block" aria-label={product.name}>
+      <Link
+        to="/product/$slug"
+        params={{ slug: product.slug }}
+        className="block"
+        aria-label={product.name}
+      >
         <div className="relative aspect-square overflow-hidden bg-white">
           {product.image ? (
             <img
@@ -40,7 +45,9 @@ export function ProductCard({ product }: { product: StoreProduct }) {
         </div>
       </Link>
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        {product.categoryName && <p className="text-xs font-medium text-muted-foreground">{product.categoryName}</p>}
+        {product.categoryName && (
+          <p className="text-xs font-medium text-muted-foreground">{product.categoryName}</p>
+        )}
         <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-snug text-foreground hover:text-brand">
           <Link to="/product/$slug" params={{ slug: product.slug }}>
             {product.name}
@@ -56,9 +63,13 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           </div>
         )}
         <div className="mt-auto flex items-baseline gap-2 pt-1">
-          <span className="font-display text-lg font-bold text-foreground">{formatMoney(product.price)}</span>
+          <span className="font-display text-lg font-bold text-foreground">
+            {formatMoney(product.price)}
+          </span>
           {product.compareAt && (
-            <span className="text-sm text-muted-foreground line-through">{formatMoney(product.compareAt)}</span>
+            <span className="text-sm text-muted-foreground line-through">
+              {formatMoney(product.compareAt)}
+            </span>
           )}
         </div>
         <button

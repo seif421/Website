@@ -1,4 +1,14 @@
-import { Camera, DoorOpen, KeyRound, Lightbulb, Radar, Siren, Video, AlarmClock, Cable } from "lucide-react";
+import {
+  Camera,
+  DoorOpen,
+  KeyRound,
+  Lightbulb,
+  Radar,
+  Siren,
+  Video,
+  AlarmClock,
+  Cable,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 // The slugs match the categories created in the database (see supabase/migrations).

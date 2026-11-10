@@ -45,23 +45,56 @@ function ContactPage() {
       <section className="mx-auto max-w-xl px-4 py-16 sm:px-6">
         <h1 className="font-display text-4xl font-bold tracking-tight">Contact us</h1>
         <p className="mt-3 text-muted-foreground">
-          Questions about a product or an order? Send us a message and we will reply by email, or write to us at <a href={`mailto:${SITE.supportEmail}`} className="font-medium text-foreground underline">{SITE.supportEmail}</a>{SITE.whatsapp && <>, or message us on <a href={`https://wa.me/${SITE.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline">WhatsApp</a></>}.
+          Questions about a product or an order? Send us a message and we will reply by email, or
+          write to us at{" "}
+          <a href={`mailto:${SITE.supportEmail}`} className="font-medium text-foreground underline">
+            {SITE.supportEmail}
+          </a>
+          {SITE.whatsapp && (
+            <>
+              , or message us on{" "}
+              <a
+                href={`https://wa.me/${SITE.whatsapp.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground underline"
+              >
+                WhatsApp
+              </a>
+            </>
+          )}
+          .
         </p>
 
         {state === "sent" ? (
           <div className="mt-8 rounded-2xl border border-border bg-card p-6" role="status">
             <p className="font-display text-lg font-semibold">Thank you, your message was sent.</p>
-            <p className="mt-1 text-sm text-muted-foreground">We will reply to the email address you gave us.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              We will reply to the email address you gave us.
+            </p>
           </div>
         ) : (
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
             <label className="block text-sm font-medium">
               Your name
-              <input name="name" required maxLength={100} autoComplete="name" className={`${input} mt-1`} />
+              <input
+                name="name"
+                required
+                maxLength={100}
+                autoComplete="name"
+                className={`${input} mt-1`}
+              />
             </label>
             <label className="block text-sm font-medium">
               Email
-              <input name="email" type="email" required maxLength={200} autoComplete="email" className={`${input} mt-1`} />
+              <input
+                name="email"
+                type="email"
+                required
+                maxLength={200}
+                autoComplete="email"
+                className={`${input} mt-1`}
+              />
             </label>
             <label className="block text-sm font-medium">
               Order number <span className="font-normal text-muted-foreground">(optional)</span>
@@ -69,9 +102,22 @@ function ContactPage() {
             </label>
             <label className="block text-sm font-medium">
               Message
-              <textarea name="message" required minLength={5} maxLength={3000} rows={6} className={`${input} mt-1`} />
+              <textarea
+                name="message"
+                required
+                minLength={5}
+                maxLength={3000}
+                rows={6}
+                className={`${input} mt-1`}
+              />
             </label>
-            <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
+            <input
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="hidden"
+            />
             {state === "error" && (
               <p className="text-sm text-destructive" role="alert">
                 Sorry, the message could not be sent. Please try again in a moment.

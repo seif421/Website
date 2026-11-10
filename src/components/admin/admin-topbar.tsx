@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,17 +59,32 @@ export function AdminTopbar() {
         <DropdownMenuTrigger asChild>
           <button className="flex items-center gap-2 rounded-full hover:opacity-80">
             <Avatar className="size-8">
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                {initials}
+              </AvatarFallback>
             </Avatar>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel className="truncate">{user?.email ?? "Account"}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild><Link to="/admin/profile"><User className="size-4" /> Profile</Link></DropdownMenuItem>
-          <DropdownMenuItem asChild><Link to="/admin/settings"><Settings className="size-4" /> Settings</Link></DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/admin/profile">
+              <User className="size-4" /> Profile
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/admin/settings">
+              <Settings className="size-4" /> Settings
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={async () => { await signOut(); navigate({ to: "/auth", replace: true }); }}>
+          <DropdownMenuItem
+            onClick={async () => {
+              await signOut();
+              navigate({ to: "/auth", replace: true });
+            }}
+          >
             <LogOut className="size-4" /> Sign out
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -73,7 +92,15 @@ export function AdminTopbar() {
     </header>
   );
 }
-type Note = { id: string; type: string; title: string; message: string | null; link: string | null; is_read: boolean; created_at: string };
+type Note = {
+  id: string;
+  type: string;
+  title: string;
+  message: string | null;
+  link: string | null;
+  is_read: boolean;
+  created_at: string;
+};
 
 // The bell shows real staff notifications (new orders, messages, low stock, reviews, returns, new customers)
 // and checks for new ones every 30 seconds.
@@ -85,8 +112,17 @@ function NotificationBell() {
 
   async function load() {
     const [list, count] = await Promise.all([
-      supabase.from("notifications").select("id,type,title,message,link,is_read,created_at").eq("audience", "staff").order("created_at", { ascending: false }).limit(8),
-      supabase.from("notifications").select("id", { count: "exact", head: true }).eq("audience", "staff").eq("is_read", false),
+      supabase
+        .from("notifications")
+        .select("id,type,title,message,link,is_read,created_at")
+        .eq("audience", "staff")
+        .order("created_at", { ascending: false })
+        .limit(8),
+      supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("audience", "staff")
+        .eq("is_read", false),
     ]);
     if (!list.error) setItems((list.data ?? []) as Note[]);
     if (!count.error) setUnread(count.count ?? 0);
@@ -105,14 +141,29 @@ function NotificationBell() {
     load();
   }
   async function markAll() {
-    await supabase.from("notifications").update({ is_read: true }).eq("audience", "staff").eq("is_read", false);
+    await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("audience", "staff")
+      .eq("is_read", false);
     load();
   }
 
   return (
-    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) load(); }}>
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) load();
+      }}
+    >
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label={unread ? `Notifications, ${unread} new` : "Notifications"}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unread ? `Notifications, ${unread} new` : "Notifications"}
+        >
           <Bell className="size-4" />
           {unread > 0 && (
             <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
@@ -125,26 +176,57 @@ function NotificationBell() {
         <div className="flex items-center justify-between border-b px-4 py-3">
           <p className="text-sm font-semibold">Notifications</p>
           {unread > 0 && (
-            <button type="button" onClick={markAll} className="text-xs font-medium text-brand hover:underline">Mark all read</button>
+            <button
+              type="button"
+              onClick={markAll}
+              className="text-xs font-medium text-brand hover:underline"
+            >
+              Mark all read
+            </button>
           )}
         </div>
         <ul className="max-h-80 divide-y overflow-y-auto">
-          {items.length === 0 && <li className="px-4 py-8 text-center text-sm text-muted-foreground">You're all caught up.</li>}
+          {items.length === 0 && (
+            <li className="px-4 py-8 text-center text-sm text-muted-foreground">
+              You're all caught up.
+            </li>
+          )}
           {items.map((n) => (
             <li key={n.id}>
-              <button type="button" onClick={() => openNote(n)} className="flex w-full items-start gap-2 px-4 py-3 text-left hover:bg-muted/40">
-                <span className={`mt-1.5 size-2 shrink-0 rounded-full ${n.is_read ? "bg-transparent" : "bg-brand"}`} aria-hidden />
+              <button
+                type="button"
+                onClick={() => openNote(n)}
+                className="flex w-full items-start gap-2 px-4 py-3 text-left hover:bg-muted/40"
+              >
+                <span
+                  className={`mt-1.5 size-2 shrink-0 rounded-full ${n.is_read ? "bg-transparent" : "bg-brand"}`}
+                  aria-hidden
+                />
                 <span className="min-w-0">
-                  <span className={`block text-sm ${n.is_read ? "font-normal" : "font-semibold"}`}>{n.title}</span>
-                  {n.message && <span className="block truncate text-xs text-muted-foreground">{n.message}</span>}
-                  <span className="mt-0.5 block text-[10px] uppercase tracking-wider text-muted-foreground">{relativeTime(n.created_at)}</span>
+                  <span className={`block text-sm ${n.is_read ? "font-normal" : "font-semibold"}`}>
+                    {n.title}
+                  </span>
+                  {n.message && (
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {n.message}
+                    </span>
+                  )}
+                  <span className="mt-0.5 block text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {relativeTime(n.created_at)}
+                  </span>
                 </span>
               </button>
             </li>
           ))}
         </ul>
         <div className="border-t px-4 py-2 text-center">
-          <Link to="/admin/notifications" onClick={() => setOpen(false)} className="text-xs font-medium text-brand hover:underline">See all notifications</Link>
+          <Link
+            to="/admin/notifications"
+            onClick={() => setOpen(false)}
+            className="text-xs font-medium text-brand hover:underline"
+          >
+            See all notifications
+          </Link>
         </div>
       </PopoverContent>
     </Popover>

@@ -32,15 +32,25 @@ function ResetPassword() {
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8"><Logo /></div>
+        <div className="flex flex-col items-center mb-8">
+          <Logo />
+        </div>
         <Card className="p-6">
           <h1 className="text-xl font-semibold">Set a new password</h1>
           <form onSubmit={onSubmit} className="mt-5 space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="rp">New password</Label>
-              <Input id="rp" type="password" required value={pw} onChange={(e) => setPw(e.target.value)} />
+              <Input
+                id="rp"
+                type="password"
+                required
+                value={pw}
+                onChange={(e) => setPw(e.target.value)}
+              />
             </div>
-            <Button className="w-full" disabled={busy}>Update password</Button>
+            <Button className="w-full" disabled={busy}>
+              Update password
+            </Button>
           </form>
         </Card>
       </div>

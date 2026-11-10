@@ -18,19 +18,46 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 
 type Gateway = { enabled: boolean };
 type Gateways = {
-  stripe: Gateway; paypal: Gateway; apple_pay: Gateway; google_pay: Gateway; bank_transfer: Gateway; cod: Gateway;
+  stripe: Gateway;
+  paypal: Gateway;
+  apple_pay: Gateway;
+  google_pay: Gateway;
+  bank_transfer: Gateway;
+  cod: Gateway;
 };
-type Cj = { enabled: boolean; auto_sync: boolean; sync_interval_hours: number; last_sync_at: string | null };
+type Cj = {
+  enabled: boolean;
+  auto_sync: boolean;
+  sync_interval_hours: number;
+  last_sync_at: string | null;
+};
 
 const DEFAULT_GATEWAYS: Gateways = {
-  stripe: { enabled: false }, paypal: { enabled: false }, apple_pay: { enabled: false },
-  google_pay: { enabled: false }, bank_transfer: { enabled: false }, cod: { enabled: false },
+  stripe: { enabled: false },
+  paypal: { enabled: false },
+  apple_pay: { enabled: false },
+  google_pay: { enabled: false },
+  bank_transfer: { enabled: false },
+  cod: { enabled: false },
 };
-const DEFAULT_CJ: Cj = { enabled: false, auto_sync: false, sync_interval_hours: 6, last_sync_at: null };
+const DEFAULT_CJ: Cj = {
+  enabled: false,
+  auto_sync: false,
+  sync_interval_hours: 6,
+  last_sync_at: null,
+};
 
 const SECTIONS = [
-  "general", "branding", "payments", "integrations", "tax", "shipping",
-  "email", "notifications", "security", "seo",
+  "general",
+  "branding",
+  "payments",
+  "integrations",
+  "tax",
+  "shipping",
+  "email",
+  "notifications",
+  "security",
+  "seo",
 ] as const;
 
 function SettingsPage() {
@@ -42,9 +69,13 @@ function SettingsPage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("site_settings").select("key,value").in("key", ["payment_gateways", "cj_dropshipping"]);
+      const { data } = await supabase
+        .from("site_settings")
+        .select("key,value")
+        .in("key", ["payment_gateways", "cj_dropshipping"]);
       (data ?? []).forEach((row) => {
-        if (row.key === "payment_gateways") setGateways({ ...DEFAULT_GATEWAYS, ...(row.value as Partial<Gateways>) });
+        if (row.key === "payment_gateways")
+          setGateways({ ...DEFAULT_GATEWAYS, ...(row.value as Partial<Gateways>) });
         if (row.key === "cj_dropshipping") setCj({ ...DEFAULT_CJ, ...(row.value as Partial<Cj>) });
       });
       setLoading(false);
@@ -53,32 +84,52 @@ function SettingsPage() {
 
   async function saveGateways() {
     setSavingGw(true);
-    const { error } = await supabase.from("site_settings").upsert({ key: "payment_gateways", value: gateways });
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert({ key: "payment_gateways", value: gateways });
     setSavingGw(false);
     if (error) return toast.error(error.message);
     toast.success("Payment gateways saved");
   }
   async function saveCj() {
     setSavingCj(true);
-    const { error } = await supabase.from("site_settings").upsert({ key: "cj_dropshipping", value: cj });
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert({ key: "cj_dropshipping", value: cj });
     setSavingCj(false);
     if (error) return toast.error(error.message);
     toast.success("CJ Dropshipping settings saved");
   }
 
   return (
-    <PageShell title="Settings" description="Configure your store." breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Settings" }]}>
+    <PageShell
+      title="Settings"
+      description="Configure your store."
+      breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Settings" }]}
+    >
       <Tabs defaultValue="general">
         <TabsList className="flex flex-wrap h-auto">
-          {SECTIONS.map((s) => <TabsTrigger key={s} value={s} className="capitalize">{s}</TabsTrigger>)}
+          {SECTIONS.map((s) => (
+            <TabsTrigger key={s} value={s} className="capitalize">
+              {s}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value="general">
           <Card className="p-6 space-y-4 max-w-2xl">
             <h3 className="font-semibold">General</h3>
             <Field id="site-name" label="Site name" defaultValue="Rivvo" />
-            <Field id="contact-email" label="Contact email" type="email" defaultValue="rivvo.shops@gmail.com" />
-            <div className="space-y-1.5"><Label htmlFor="tag">Tagline</Label><Textarea id="tag" defaultValue="Premium smart home security." /></div>
+            <Field
+              id="contact-email"
+              label="Contact email"
+              type="email"
+              defaultValue="rivvo.shops@gmail.com"
+            />
+            <div className="space-y-1.5">
+              <Label htmlFor="tag">Tagline</Label>
+              <Textarea id="tag" defaultValue="Premium smart home security." />
+            </div>
             <Button>Save changes</Button>
           </Card>
         </TabsContent>
@@ -96,8 +147,12 @@ function SettingsPage() {
         <TabsContent value="payments">
           <Card className="p-6 space-y-4 max-w-2xl">
             <h3 className="font-semibold">Payment gateways</h3>
-            <p className="text-sm text-muted-foreground">Enable or disable providers available at checkout.</p>
-            {loading ? <Loader2 className="size-4 animate-spin text-muted-foreground" /> : (
+            <p className="text-sm text-muted-foreground">
+              Enable or disable providers available at checkout.
+            </p>
+            {loading ? (
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            ) : (
               <>
                 {(Object.keys(DEFAULT_GATEWAYS) as (keyof Gateways)[]).map((k) => (
                   <div key={k} className="flex items-center justify-between rounded-lg border p-3">
@@ -112,7 +167,10 @@ function SettingsPage() {
                         {k === "cod" && "Cash on delivery (regional availability)."}
                       </p>
                     </div>
-                    <Switch checked={gateways[k].enabled} onCheckedChange={(v) => setGateways({ ...gateways, [k]: { enabled: v } })} />
+                    <Switch
+                      checked={gateways[k].enabled}
+                      onCheckedChange={(v) => setGateways({ ...gateways, [k]: { enabled: v } })}
+                    />
                   </div>
                 ))}
                 <Button onClick={saveGateways} disabled={savingGw}>
@@ -127,22 +185,43 @@ function SettingsPage() {
           <Card className="p-6 space-y-4 max-w-2xl">
             <h3 className="font-semibold">CJ Dropshipping</h3>
             <p className="text-sm text-muted-foreground">
-              Configure the CJ Dropshipping supplier link. API credentials (<code>CJ_API_EMAIL</code>, <code>CJ_API_KEY</code>) are stored as server secrets, never in the browser.
+              Configure the CJ Dropshipping supplier link. API credentials (
+              <code>CJ_API_EMAIL</code>, <code>CJ_API_KEY</code>) are stored as server secrets,
+              never in the browser.
             </p>
             <div className="flex items-center justify-between rounded-lg border p-3">
-              <div><Label>Enable integration</Label><p className="text-xs text-muted-foreground">Requires API secrets configured.</p></div>
+              <div>
+                <Label>Enable integration</Label>
+                <p className="text-xs text-muted-foreground">Requires API secrets configured.</p>
+              </div>
               <Switch checked={cj.enabled} onCheckedChange={(v) => setCj({ ...cj, enabled: v })} />
             </div>
             <div className="flex items-center justify-between rounded-lg border p-3">
-              <div><Label>Auto sync</Label><p className="text-xs text-muted-foreground">Periodically sync inventory and orders.</p></div>
-              <Switch checked={cj.auto_sync} onCheckedChange={(v) => setCj({ ...cj, auto_sync: v })} />
+              <div>
+                <Label>Auto sync</Label>
+                <p className="text-xs text-muted-foreground">
+                  Periodically sync inventory and orders.
+                </p>
+              </div>
+              <Switch
+                checked={cj.auto_sync}
+                onCheckedChange={(v) => setCj({ ...cj, auto_sync: v })}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cj-interval">Sync interval (hours)</Label>
-              <Input id="cj-interval" type="number" min={1} max={168} value={cj.sync_interval_hours}
-                onChange={(e) => setCj({ ...cj, sync_interval_hours: Number(e.target.value) || 6 })} />
+              <Input
+                id="cj-interval"
+                type="number"
+                min={1}
+                max={168}
+                value={cj.sync_interval_hours}
+                onChange={(e) => setCj({ ...cj, sync_interval_hours: Number(e.target.value) || 6 })}
+              />
             </div>
-            <p className="text-xs text-muted-foreground">Last sync: {cj.last_sync_at ? new Date(cj.last_sync_at).toLocaleString() : "never"}</p>
+            <p className="text-xs text-muted-foreground">
+              Last sync: {cj.last_sync_at ? new Date(cj.last_sync_at).toLocaleString() : "never"}
+            </p>
             <Button onClick={saveCj} disabled={savingCj}>
               {savingCj && <Loader2 className="size-4 animate-spin" />} Save
             </Button>
@@ -161,7 +240,12 @@ function SettingsPage() {
         <TabsContent value="shipping">
           <Card className="p-6 space-y-4 max-w-2xl">
             <h3 className="font-semibold">Shipping</h3>
-            <Field id="free-thr" label="Free shipping threshold ($)" type="number" defaultValue="100" />
+            <Field
+              id="free-thr"
+              label="Free shipping threshold ($)"
+              type="number"
+              defaultValue="100"
+            />
             <Field id="flat" label="Flat rate ($)" type="number" defaultValue="8.99" />
             <Button>Save</Button>
           </Card>
@@ -199,9 +283,18 @@ function SettingsPage() {
         <TabsContent value="seo">
           <Card className="p-6 space-y-4 max-w-2xl">
             <h3 className="font-semibold">SEO</h3>
-            <Field id="seo-title" label="Default meta title" defaultValue="Rivvo — Premium Smart Home Security" />
-            <div className="space-y-1.5"><Label htmlFor="seo-desc">Default meta description</Label>
-              <Textarea id="seo-desc" defaultValue="Studio-grade smart cameras, doorbells, locks, and sensors." /></div>
+            <Field
+              id="seo-title"
+              label="Default meta title"
+              defaultValue="Rivvo — Premium Smart Home Security"
+            />
+            <div className="space-y-1.5">
+              <Label htmlFor="seo-desc">Default meta description</Label>
+              <Textarea
+                id="seo-desc"
+                defaultValue="Studio-grade smart cameras, doorbells, locks, and sensors."
+              />
+            </div>
             <Field id="seo-og" label="Default OG image URL" />
             <Button>Save</Button>
           </Card>
@@ -211,7 +304,11 @@ function SettingsPage() {
   );
 }
 
-function Field({ id, label, ...rest }: { id: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+function Field({
+  id,
+  label,
+  ...rest
+}: { id: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>

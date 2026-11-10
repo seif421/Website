@@ -9,7 +9,9 @@ export const Route = createFileRoute("/checkout/success")({
     total: Number.isFinite(Number(s.total)) ? Number(s.total) : 0,
     emailed: Number(s.emailed) === 1,
   }),
-  head: () => ({ meta: [{ title: "Order received — Rivvo" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Order received — Rivvo" }, { name: "robots", content: "noindex" }],
+  }),
   component: SuccessPage,
 });
 
@@ -24,19 +26,31 @@ function SuccessPage() {
         <h1 className="font-display text-3xl font-bold">Thank you, we received your order</h1>
         {order && (
           <p className="mt-4 text-muted-foreground">
-            Order number <strong className="text-foreground">{order}</strong>. Please have <strong className="text-foreground">{formatMoney(total)}</strong> ready
-            to pay the courier in cash.
+            Order number <strong className="text-foreground">{order}</strong>. Please have{" "}
+            <strong className="text-foreground">{formatMoney(total)}</strong> ready to pay the
+            courier in cash.
           </p>
         )}
         <p className="mt-3 text-sm text-muted-foreground">
-          {emailed && "We sent a confirmation to your email (check your spam folder if you do not see it). "}We will call or message you shortly to confirm your order. Delivery usually takes {SITE.deliveryDays} business days after confirmation.
+          {emailed &&
+            "We sent a confirmation to your email (check your spam folder if you do not see it). "}
+          We will call or message you shortly to confirm your order. Delivery usually takes{" "}
+          {SITE.deliveryDays} business days after confirmation.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link to="/shop" className="inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground">
+          <Link
+            to="/shop"
+            className="inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground"
+          >
             Continue shopping
           </Link>
           {wa && (
-            <a href={wa} target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center rounded-full border border-input px-6 text-sm font-semibold">
+            <a
+              href={wa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center rounded-full border border-input px-6 text-sm font-semibold"
+            >
               Message us on WhatsApp
             </a>
           )}

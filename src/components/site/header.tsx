@@ -1,5 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, ShoppingBag, User, Menu, X, LayoutDashboard, ChevronDown, Home } from "lucide-react";
+import {
+  Search,
+  ShoppingBag,
+  User,
+  Menu,
+  X,
+  LayoutDashboard,
+  ChevronDown,
+  Home,
+} from "lucide-react";
 import { CATEGORIES } from "./categories";
 import { useEffect, useRef, useState } from "react";
 import { AnnouncementBar } from "./announcement-bar";
@@ -42,7 +51,8 @@ function Departments() {
         aria-haspopup="true"
         className="flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
       >
-        <Menu className="size-4" aria-hidden /> All categories <ChevronDown className="size-4" aria-hidden />
+        <Menu className="size-4" aria-hidden /> All categories{" "}
+        <ChevronDown className="size-4" aria-hidden />
       </button>
       {open && (
         <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-border bg-card p-2 shadow-elevated">
@@ -101,9 +111,16 @@ export function Header() {
           </div>
 
           <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
-            <form role="search" onSubmit={submitSearch} className="hidden max-w-2xl flex-1 md:block">
+            <form
+              role="search"
+              onSubmit={submitSearch}
+              className="hidden max-w-2xl flex-1 md:block"
+            >
               <label className="relative block">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden
+                />
                 <input
                   type="search"
                   value={term}
@@ -116,10 +133,18 @@ export function Header() {
             </form>
 
             {isStaff && (
-              <IconLink to="/admin" label="Admin"><LayoutDashboard className="size-5" /></IconLink>
+              <IconLink to="/admin" label="Admin">
+                <LayoutDashboard className="size-5" />
+              </IconLink>
             )}
-            <IconLink to={user ? "/account" : "/auth"} label={user ? "Account" : "Sign in"}><User className="size-5" /></IconLink>
-            <IconLink to="/cart" label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"} badge={count}>
+            <IconLink to={user ? "/account" : "/auth"} label={user ? "Account" : "Sign in"}>
+              <User className="size-5" />
+            </IconLink>
+            <IconLink
+              to="/cart"
+              label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"}
+              badge={count}
+            >
               <ShoppingBag className="size-5" />
             </IconLink>
 
@@ -157,7 +182,13 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
-              <Link to="/shop" search={{ sort: "newest" }} className="text-sm font-medium text-muted-foreground hover:text-foreground">New arrivals</Link>
+              <Link
+                to="/shop"
+                search={{ sort: "newest" }}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground"
+              >
+                New arrivals
+              </Link>
             </nav>
           </div>
         </div>

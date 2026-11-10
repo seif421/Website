@@ -17,7 +17,9 @@ function Page() {
       <section className="mx-auto max-w-3xl px-4 py-24 sm:px-6 lg:px-8">
         <p className="text-sm font-medium text-brand">Coming soon</p>
         <h1 className="mt-2 font-display text-4xl font-bold tracking-tight capitalize">wishlist</h1>
-        <p className="mt-4 text-muted-foreground">This page will be built in an upcoming part of the project.</p>
+        <p className="mt-4 text-muted-foreground">
+          This page will be built in an upcoming part of the project.
+        </p>
       </section>
     </SiteLayout>
   );

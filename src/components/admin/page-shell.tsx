@@ -21,7 +21,13 @@ export function PageShell({
         <nav className="flex items-center gap-1 text-xs text-muted-foreground">
           {breadcrumbs.map((c, i) => (
             <span key={i} className="flex items-center gap-1">
-              {c.to ? <Link to={c.to} className="hover:text-foreground">{c.label}</Link> : <span>{c.label}</span>}
+              {c.to ? (
+                <Link to={c.to} className="hover:text-foreground">
+                  {c.label}
+                </Link>
+              ) : (
+                <span>{c.label}</span>
+              )}
               {i < breadcrumbs.length - 1 && <ChevronRight className="size-3" />}
             </span>
           ))}
@@ -43,7 +49,9 @@ export function ComingSoon({ feature }: { feature: string }) {
   return (
     <div className="rounded-xl border border-dashed bg-card p-10 text-center">
       <p className="text-sm font-medium text-foreground">{feature}</p>
-      <p className="mt-1 text-xs text-muted-foreground">Full management UI ships in the next part.</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Full management UI ships in the next part.
+      </p>
     </div>
   );
 }

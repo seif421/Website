@@ -15,10 +15,12 @@ Today a visitor cannot buy anything.
 ## P0 — blockers (cannot launch without these)
 
 ### Storefront pages that are stubs
+
 `/shop`, `/cart`, `/wishlist`, `/about`, `/contact`, `/support`, `/shipping`, `/refunds`,
 `/warranty`, `/terms`, `/privacy`, `/reviews` each render only "Coming soon".
 
 ### Missing pages that do not exist at all
+
 - Product detail page (`/product/$slug`): gallery, price, stock, specs, reviews, related products.
 - Category / collection pages.
 - Search results page.
@@ -27,27 +29,32 @@ Today a visitor cannot buy anything.
 - Email-verification landing page.
 
 ### Shopping engine
+
 - Product cards use 4 hard-coded products (`src/components/site/products.ts`); the storefront never reads the `products` table the admin edits.
 - "Add to cart", wishlist hearts, header search box and the cart badge (hard-coded 0) do nothing.
 - The `cart` and `wishlist` tables exist but are unused; guests have no persistent cart.
 - Product cards all link to `/shop` instead of a product.
 
 ### Checkout, payments and orders
+
 - No payment provider is integrated (Stripe/PayPal appear only as toggles in admin settings).
 - Order creation must happen on the server. Right now the RLS policy lets a logged-in user insert their own order row, which means totals could be forged from the browser. Create orders in a server function, recompute prices from the database, then charge.
 - Needs: shipping address + method, tax and shipping calculation, coupon and gift-card redemption, stock decrement, order confirmation email, payment webhooks.
 
 ### Dropshipping fulfilment
+
 - `src/lib/integrations/cj-dropshipping.ts` is written but nothing calls it: no server function, no product import, no order forwarding, no stock sync, no tracking sync.
 - Needs `CJ_API_EMAIL` and `CJ_API_KEY` as server secrets.
 
 ### Legal and trust content (and claims that may not be true)
+
 - Privacy, Terms, Refund, Shipping and Warranty pages must be written (a US store also needs CCPA wording, a cookie notice and an ADA/accessibility statement).
 - The site currently promises: "Designed in California", "California-based support", "ships within 24 hours", "2–4 day delivery", "2-year warranty", "end-to-end encryption", "no monthly fees". With a CJ dropshipping supply chain several of these are likely untrue or unverifiable. False claims like these create FTC and chargeback risk. Rewrite them to match what you can actually deliver.
 - The homepage shows "12,000+ five-star reviews" and three named testimonials that are hard-coded. Unless these are real, remove them; fabricated reviews are illegal in the US. Replace with reviews from the `reviews` table.
 - Business identity: real company name/address, support email, and phone for Contact and footer. Social links in the footer point to `#`.
 
 ### Security
+
 - `.env` was committed to the repo (contains the Supabase project URL and publishable key; those are public-safe but the file should not be tracked). Fixed in the reorganized copy; keep real values in the host's environment settings.
 - Supabase service-role key and CJ credentials must exist only as server environment variables.
 - `/setup-admin` lets the first account that clicks the button become super admin. Claim it yourself immediately after deploy, and confirm it then reports "Setup already completed".

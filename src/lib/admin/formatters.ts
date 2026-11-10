@@ -1,11 +1,22 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const ORDER_STATUSES = [
-  "pending","confirmed","paid","processing","packed","ready_to_ship",
-  "shipped","delivered","completed","cancelled","refund_requested",
-  "refunded","returned","failed_payment",
+  "pending",
+  "confirmed",
+  "paid",
+  "processing",
+  "packed",
+  "ready_to_ship",
+  "shipped",
+  "delivered",
+  "completed",
+  "cancelled",
+  "refund_requested",
+  "refunded",
+  "returned",
+  "failed_payment",
 ] as const;
-export type OrderStatus = typeof ORDER_STATUSES[number];
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export const ORDER_STATUS_LABEL: Record<string, string> = {
   pending: "Pending",
@@ -51,7 +62,11 @@ export function money(v: number | string | null | undefined) {
 
 export function shortDate(d: string | Date | null | undefined) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  return new Date(d).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export function relativeTime(d: string | Date | null | undefined) {
@@ -84,22 +99,41 @@ export function downloadBlob(name: string, content: string, mime = "text/csv") {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = name; a.click();
+  a.href = url;
+  a.download = name;
+  a.click();
   URL.revokeObjectURL(url);
 }
 
-export async function addOrderTimeline(order_id: string, event: string, message?: string, metadata?: Record<string, unknown>) {
-  const { data: { user } } = await supabase.auth.getUser();
+export async function addOrderTimeline(
+  order_id: string,
+  event: string,
+  message?: string,
+  metadata?: Record<string, unknown>,
+) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   await supabase.from("order_timeline").insert({
-    order_id, event, message: message ?? null,
+    order_id,
+    event,
+    message: message ?? null,
     metadata: (metadata ?? {}) as never,
     actor_id: user?.id ?? null,
   });
 }
 
-export async function notifyStaff(type: string, title: string, message?: string, link?: string, metadata?: Record<string, unknown>) {
+export async function notifyStaff(
+  type: string,
+  title: string,
+  message?: string,
+  link?: string,
+  metadata?: Record<string, unknown>,
+) {
   await supabase.from("notifications").insert({
-    audience: "staff", type, title,
+    audience: "staff",
+    type,
+    title,
     message: message ?? null,
     link: link ?? null,
     metadata: (metadata ?? {}) as never,

@@ -78,7 +78,11 @@ function isInStock(stock: StockInfo | undefined): boolean {
   return stock.available > 0 || stock.allowBackorder;
 }
 
-function toStoreProduct(row: ListRow, categories: Map<string, string>, stock: Map<string, StockInfo>): StoreProduct {
+function toStoreProduct(
+  row: ListRow,
+  categories: Map<string, string>,
+  stock: Map<string, StockInfo>,
+): StoreProduct {
   const p = pricing(row);
   return {
     id: row.id,
@@ -125,7 +129,11 @@ async function hydrate(rows: ListRow[], categories: Category[]): Promise<StorePr
 
 // Characters that have a meaning inside a PostgREST filter string.
 function sanitizeSearch(term: string): string {
-  return term.replace(/[%,()*\\"'`:;]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+  return term
+    .replace(/[%,()*\\"'`:;]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 60);
 }
 
 export type ShopParams = {
@@ -149,7 +157,9 @@ export type ShopResult = {
 export async function fetchShop(params: ShopParams): Promise<ShopResult> {
   const categories = await fetchCategories();
   const page = Math.max(1, params.page ?? 1);
-  const activeCategory = params.category ? (categories.find((c) => c.slug === params.category) ?? null) : null;
+  const activeCategory = params.category
+    ? (categories.find((c) => c.slug === params.category) ?? null)
+    : null;
 
   if (params.category && !activeCategory) {
     return { products: [], categories, activeCategory: null, total: 0, page: 1, pageCount: 1 };
@@ -158,14 +168,19 @@ export async function fetchShop(params: ShopParams): Promise<ShopResult> {
   let query = published();
 
   if (activeCategory) {
-    const ids = [activeCategory.id, ...categories.filter((c) => c.parent_id === activeCategory.id).map((c) => c.id)];
+    const ids = [
+      activeCategory.id,
+      ...categories.filter((c) => c.parent_id === activeCategory.id).map((c) => c.id),
+    ];
     const list = ids.join(",");
     query = query.or(`category_id.in.(${list}),subcategory_id.in.(${list})`);
   }
 
   const term = params.q ? sanitizeSearch(params.q) : "";
   if (term) {
-    query = query.or(`name.ilike.%${term}%,short_description.ilike.%${term}%,search_keywords.ilike.%${term}%`);
+    query = query.or(
+      `name.ilike.%${term}%,short_description.ilike.%${term}%,search_keywords.ilike.%${term}%`,
+    );
   }
   if (params.min != null) query = query.gte("price", params.min);
   if (params.max != null) query = query.lte("price", params.max);
@@ -181,10 +196,14 @@ export async function fetchShop(params: ShopParams): Promise<ShopResult> {
       query = query.order("price", { ascending: false });
       break;
     case "rating":
-      query = query.order("rating", { ascending: false, nullsFirst: false }).order("review_count", { ascending: false });
+      query = query
+        .order("rating", { ascending: false, nullsFirst: false })
+        .order("review_count", { ascending: false });
       break;
     default:
-      query = query.order("is_featured", { ascending: false }).order("created_at", { ascending: false });
+      query = query
+        .order("is_featured", { ascending: false })
+        .order("created_at", { ascending: false });
   }
 
   const from = (page - 1) * PAGE_SIZE;
@@ -221,7 +240,11 @@ export async function fetchNewest(limit = 12): Promise<StoreProduct[]> {
   return hydrate((data ?? []) as unknown as ListRow[], categories);
 }
 
-export type HomeRows = { bestSellers: StoreProduct[]; newest: StoreProduct[]; deals: StoreProduct[] };
+export type HomeRows = {
+  bestSellers: StoreProduct[];
+  newest: StoreProduct[];
+  deals: StoreProduct[];
+};
 
 /** Product rows for the homepage. A row is simply left out when it has no products. */
 export async function fetchHomeRows(): Promise<HomeRows> {
@@ -234,7 +257,13 @@ export async function fetchHomeRows(): Promise<HomeRows> {
   return { bestSellers, newest, deals };
 }
 
-export type Review = { id: string; rating: number; title: string | null; body: string | null; createdAt: string };
+export type Review = {
+  id: string;
+  rating: number;
+  title: string | null;
+  body: string | null;
+  createdAt: string;
+};
 
 export type ProductDetail = StoreProduct & {
   description: string | null;
@@ -329,9 +358,21 @@ export async function fetchProductPage(slug: string): Promise<ProductPageData | 
     brandName: (brandRes.data as { name: string } | null)?.name ?? null,
   };
 
-  const reviews = ((reviewsRes.data ?? []) as { id: string; rating: number; title: string | null; body: string | null; created_at: string }[]).map(
-    (r) => ({ id: r.id, rating: r.rating, title: r.title, body: r.body, createdAt: r.created_at }),
-  );
+  const reviews = (
+    (reviewsRes.data ?? []) as {
+      id: string;
+      rating: number;
+      title: string | null;
+      body: string | null;
+      created_at: string;
+    }[]
+  ).map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    title: r.title,
+    body: r.body,
+    createdAt: r.created_at,
+  }));
 
   return { product, related, reviews };
 }

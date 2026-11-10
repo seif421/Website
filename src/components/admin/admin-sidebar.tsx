@@ -1,17 +1,49 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Boxes,
-  Tag, Star, BarChart3, LineChart, Megaphone, Settings, UserCog,
-  ScrollText, LifeBuoy, ShieldCheck, Award, Truck, ListTree,
-  Ship, Undo2, Bell, Gift,
+  LayoutDashboard,
+  Package,
+  FolderTree,
+  ShoppingCart,
+  Users,
+  Boxes,
+  Tag,
+  Star,
+  BarChart3,
+  LineChart,
+  Megaphone,
+  Settings,
+  UserCog,
+  ScrollText,
+  LifeBuoy,
+  ShieldCheck,
+  Award,
+  Truck,
+  ListTree,
+  Ship,
+  Undo2,
+  Bell,
+  Gift,
 } from "lucide-react";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, useSidebar,
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/use-auth";
 
-type Item = { title: string; url: string; icon: React.ComponentType<{ className?: string }>; roles?: ("admin" | "manager" | "staff")[] };
+type Item = {
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles?: ("admin" | "manager" | "staff")[];
+};
 
 const overview: Item[] = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
@@ -56,7 +88,8 @@ export function AdminSidebar() {
     return hasAnyRole(item.roles);
   };
 
-  const isActive = (url: string) => (url === "/admin" ? pathname === "/admin" : pathname.startsWith(url));
+  const isActive = (url: string) =>
+    url === "/admin" ? pathname === "/admin" : pathname.startsWith(url);
 
   const renderGroup = (label: string, items: Item[]) => {
     const visible = items.filter(can);
@@ -92,7 +125,9 @@ export function AdminSidebar() {
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-sm font-bold tracking-tight">Rivvo</span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Admin</span>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Admin
+              </span>
             </div>
           )}
         </Link>

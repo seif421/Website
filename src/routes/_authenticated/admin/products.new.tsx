@@ -7,7 +7,11 @@ export const Route = createFileRoute("/_authenticated/admin/products/new")({
     <PageShell
       title="New product"
       description="Create a new product for your catalog."
-      breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Products", to: "/admin/products" }, { label: "New" }]}
+      breadcrumbs={[
+        { label: "Admin", to: "/admin" },
+        { label: "Products", to: "/admin/products" },
+        { label: "New" },
+      ]}
     >
       <ProductEditor />
     </PageShell>

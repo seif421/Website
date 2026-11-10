@@ -18,8 +18,15 @@ function AdminLayout() {
   const [suspended, setSuspended] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!user) { setSuspended(null); return; }
-    supabase.from("profiles").select("suspended").eq("id", user.id).maybeSingle()
+    if (!user) {
+      setSuspended(null);
+      return;
+    }
+    supabase
+      .from("profiles")
+      .select("suspended")
+      .eq("id", user.id)
+      .maybeSingle()
       .then(({ data }) => setSuspended(Boolean(data?.suspended)));
   }, [user]);
 
@@ -43,7 +50,15 @@ function AdminLayout() {
             This account has been suspended. Contact an administrator to restore access.
           </p>
           <div className="mt-6 flex justify-center gap-2">
-            <Button variant="outline" onClick={async () => { await signOut(); navigate({ to: "/auth", replace: true }); }}>Sign out</Button>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await signOut();
+                navigate({ to: "/auth", replace: true });
+              }}
+            >
+              Sign out
+            </Button>
           </div>
         </div>
       </div>
@@ -63,8 +78,12 @@ function AdminLayout() {
             to access the admin dashboard. Contact your administrator to be granted access.
           </p>
           <div className="mt-6 flex justify-center gap-2">
-            <Button asChild><Link to="/">Back to store</Link></Button>
-            <Button asChild variant="outline"><Link to="/account">My account</Link></Button>
+            <Button asChild>
+              <Link to="/">Back to store</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/account">My account</Link>
+            </Button>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ site online). Takes about 20 minutes. Do the steps in order.
 
 1. Go to https://supabase.com and sign up (the "Sign in with GitHub" button is easiest).
 2. Click **New project**. Name it `sentryhaus`, choose a database password (save it somewhere
-   safe), pick the region closest to your customers (for the U.S. choose *East US*), click
+   safe), pick the region closest to your customers (for the U.S. choose _East US_), click
    **Create new project**. Wait about 2 minutes.
 3. Build the tables:
    1. In the left menu click **SQL Editor** → **New query**.
@@ -20,7 +20,7 @@ site online). Takes about 20 minutes. Do the steps in order.
 4. Copy your keys: left menu → **Project Settings** (gear) → **API**. You will see:
    - **Project URL** (looks like `https://abcdxyz.supabase.co`)
    - **anon / public key** (or "publishable key")
-   - **service_role key** (click *Reveal*). This one is a **secret**: never post it publicly.
+   - **service_role key** (click _Reveal_). This one is a **secret**: never post it publicly.
 5. Allow your website's address to sign people in: **Authentication** → **URL Configuration**.
    Set **Site URL** to your website address (use `http://localhost:3000` for now, and change
    it to your real address after Part 2). Add the same address under **Redirect URLs**
@@ -32,13 +32,13 @@ site online). Takes about 20 minutes. Do the steps in order.
 2. Click **Add New… → Project**, choose the `Website` repository, click **Import**.
 3. Open **Environment Variables** and add these (name on the left, value on the right):
 
-   | Name | Value |
-   | --- | --- |
-   | `VITE_SUPABASE_URL` | the Project URL |
-   | `VITE_SUPABASE_PUBLISHABLE_KEY` | the anon/public key |
-   | `SUPABASE_URL` | the Project URL (again) |
-   | `SUPABASE_PUBLISHABLE_KEY` | the anon/public key (again) |
-   | `SUPABASE_SERVICE_ROLE_KEY` | the service_role key |
+   | Name                            | Value                       |
+   | ------------------------------- | --------------------------- |
+   | `VITE_SUPABASE_URL`             | the Project URL             |
+   | `VITE_SUPABASE_PUBLISHABLE_KEY` | the anon/public key         |
+   | `SUPABASE_URL`                  | the Project URL (again)     |
+   | `SUPABASE_PUBLISHABLE_KEY`      | the anon/public key (again) |
+   | `SUPABASE_SERVICE_ROLE_KEY`     | the service_role key        |
 
 4. Click **Deploy**. When it finishes you get an address like `https://website-xxxx.vercel.app`.
    Put that address into Supabase (Part 1, step 5), replacing `localhost`.

@@ -7,7 +7,8 @@ import { WhyUs } from "@/components/site/why-us";
 import { FAQ } from "@/components/site/faq";
 import { fetchHomeRows } from "@/lib/store/queries";
 
-const DESC = "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.";
+const DESC =
+  "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.";
 
 export const Route = createFileRoute("/")({
   loader: () => fetchHomeRows(),
@@ -34,7 +35,9 @@ function Index() {
         <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
           <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
             <p className="font-display text-lg font-semibold">New products are on the way.</p>
-            <p className="mt-2 text-sm text-muted-foreground">We are stocking the shop. Please check back soon.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We are stocking the shop. Please check back soon.
+            </p>
           </div>
         </section>
       ) : (

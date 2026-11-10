@@ -78,15 +78,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Rivvo — Online store in Egypt" },
-      { name: "description", content: "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns." },
+      {
+        name: "description",
+        content:
+          "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.",
+      },
       { name: "author", content: "Rivvo" },
       { property: "og:title", content: "Rivvo — Online store in Egypt" },
-      { property: "og:description", content: "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns." },
+      {
+        property: "og:description",
+        content:
+          "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.",
+      },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Rivvo" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Rivvo — Online store in Egypt" },
-      { name: "twitter:description", content: "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns." },
+      {
+        name: "twitter:description",
+        content:
+          "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.",
+      },
     ],
     links: [
       {

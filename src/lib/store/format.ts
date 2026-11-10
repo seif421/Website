@@ -7,7 +7,10 @@ export function formatMoney(value: number): string {
   return `${egp.format(Number.isFinite(value) ? value : 0)} EGP`;
 }
 
-const SUPABASE_URL = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? "").replace(/\/$/, "");
+const SUPABASE_URL = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? "").replace(
+  /\/$/,
+  "",
+);
 const IMAGE_BASE = `${SUPABASE_URL}/storage/v1/object/public/product-images/`;
 
 /**
@@ -54,7 +57,11 @@ function text(v: unknown): string | null {
 
 /** "features" is stored as JSON; accept a list of strings or a list of small objects. */
 export function toStringList(value: unknown): string[] {
-  const items = Array.isArray(value) ? value : value && typeof value === "object" ? Object.values(value) : [];
+  const items = Array.isArray(value)
+    ? value
+    : value && typeof value === "object"
+      ? Object.values(value)
+      : [];
   const out: string[] = [];
   for (const item of items) {
     if (typeof item === "string") {

@@ -16,7 +16,11 @@ export function ProductRow({ title, products, seeAll }: Props) {
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="font-display text-xl font-bold tracking-tight">{title}</h2>
-          <Link to="/shop" search={seeAll} className="text-sm font-medium text-brand hover:underline">
+          <Link
+            to="/shop"
+            search={seeAll}
+            className="text-sm font-medium text-brand hover:underline"
+          >
             See all
           </Link>
         </div>

@@ -29,7 +29,9 @@ async function getToken(): Promise<string> {
     data?: { accessToken: string; refreshToken: string; accessTokenExpiryDate: string };
   };
   if (!res.ok || !json.result || !json.data) {
-    throw new Error(`CJ login failed: ${json.message ?? res.status}. Check that CJ_API_KEY is correct.`);
+    throw new Error(
+      `CJ login failed: ${json.message ?? res.status}. Check that CJ_API_KEY is correct.`,
+    );
   }
   cached = {
     accessToken: json.data.accessToken,
@@ -89,7 +91,12 @@ export function firstPrice(v: unknown): number {
   return m ? Number(m[0]) : 0;
 }
 
-export async function cjSearch(params: { keyword: string; page: number; size?: number; usOnly?: boolean }) {
+export async function cjSearch(params: {
+  keyword: string;
+  page: number;
+  size?: number;
+  usOnly?: boolean;
+}) {
   const q = new URLSearchParams({
     keyWord: params.keyword,
     page: String(params.page),

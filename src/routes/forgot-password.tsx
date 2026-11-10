@@ -34,19 +34,33 @@ function ForgotPassword() {
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8"><Logo /></div>
+        <div className="flex flex-col items-center mb-8">
+          <Logo />
+        </div>
         <Card className="p-6">
           <h1 className="text-xl font-semibold">Forgot your password?</h1>
-          <p className="mt-1 text-sm text-muted-foreground">We'll send a reset link to your email.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            We'll send a reset link to your email.
+          </p>
           <form onSubmit={onSubmit} className="mt-5 space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="fp-email">Email</Label>
-              <Input id="fp-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input
+                id="fp-email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
-            <Button className="w-full" disabled={busy}>Send reset link</Button>
+            <Button className="w-full" disabled={busy}>
+              Send reset link
+            </Button>
           </form>
           <p className="mt-6 text-center text-sm">
-            <Link to="/auth" className="text-brand hover:underline">← Back to sign in</Link>
+            <Link to="/auth" className="text-brand hover:underline">
+              ← Back to sign in
+            </Link>
           </p>
         </Card>
       </div>

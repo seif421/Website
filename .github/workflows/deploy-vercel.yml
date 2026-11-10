@@ -38,7 +38,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--scope=${{ secrets.VERCEL_ORG_ID }}'
+          vercel-args: "--scope=${{ secrets.VERCEL_ORG_ID }}"
           working-directory: ./
 
   deploy-production:
@@ -70,5 +70,5 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod --scope=${{ secrets.VERCEL_ORG_ID }}'
+          vercel-args: "--prod --scope=${{ secrets.VERCEL_ORG_ID }}"
           working-directory: ./

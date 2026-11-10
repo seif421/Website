@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 // A simple cart that lives in the visitor's browser (works without an account).
 // Prices saved here are only for display: the real price is always re-checked on the server at checkout.
@@ -48,7 +56,11 @@ function readStored(): CartItem[] {
           typeof i.price === "number" &&
           typeof i.quantity === "number",
       )
-      .map((i) => ({ ...i, image: typeof i.image === "string" ? i.image : null, quantity: clampQty(i.quantity) }));
+      .map((i) => ({
+        ...i,
+        image: typeof i.image === "string" ? i.image : null,
+        quantity: clampQty(i.quantity),
+      }));
   } catch {
     return [];
   }
@@ -78,7 +90,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev.find((i) => i.productId === item.productId);
       if (existing) {
         return prev.map((i) =>
-          i.productId === item.productId ? { ...i, ...item, quantity: clampQty(i.quantity + quantity) } : i,
+          i.productId === item.productId
+            ? { ...i, ...item, quantity: clampQty(i.quantity + quantity) }
+            : i,
         );
       }
       return [...prev, { ...item, quantity: clampQty(quantity) }];
@@ -86,7 +100,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setQuantity = useCallback((productId: string, quantity: number) => {
-    setItems((prev) => prev.map((i) => (i.productId === productId ? { ...i, quantity: clampQty(quantity) } : i)));
+    setItems((prev) =>
+      prev.map((i) => (i.productId === productId ? { ...i, quantity: clampQty(quantity) } : i)),
+    );
   }, []);
 
   const remove = useCallback((productId: string) => {

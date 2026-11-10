@@ -2,9 +2,21 @@ import { RotateCcw, PhoneCall, Truck, Headphones } from "lucide-react";
 import { SITE } from "@/lib/site-config";
 
 const ITEMS = [
-  { icon: Truck, title: "Cash on delivery", body: `Pay when it arrives. Usually ${SITE.deliveryDays} business days.` },
-  { icon: RotateCcw, title: `${SITE.returnDays}-day returns`, body: "Return unused items within the return window." },
-  { icon: PhoneCall, title: "Confirmed by phone", body: "We call you to confirm every order before it ships." },
+  {
+    icon: Truck,
+    title: "Cash on delivery",
+    body: `Pay when it arrives. Usually ${SITE.deliveryDays} business days.`,
+  },
+  {
+    icon: RotateCcw,
+    title: `${SITE.returnDays}-day returns`,
+    body: "Return unused items within the return window.",
+  },
+  {
+    icon: PhoneCall,
+    title: "Confirmed by phone",
+    body: "We call you to confirm every order before it ships.",
+  },
   { icon: Headphones, title: "Real people", body: "Message us and a person replies by email." },
 ];
 

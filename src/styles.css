@@ -96,11 +96,17 @@
   --input: oklch(0.92 0.012 255);
   --ring: oklch(0.55 0.21 260);
   /* Gradients + shadows */
-  --gradient-hero: linear-gradient(135deg, oklch(0.22 0.045 265) 0%, oklch(0.32 0.09 265) 55%, oklch(0.55 0.21 260) 100%);
+  --gradient-hero: linear-gradient(
+    135deg,
+    oklch(0.22 0.045 265) 0%,
+    oklch(0.32 0.09 265) 55%,
+    oklch(0.55 0.21 260) 100%
+  );
   --gradient-brand: linear-gradient(135deg, oklch(0.55 0.21 260), oklch(0.78 0.13 230));
   --gradient-surface: linear-gradient(180deg, oklch(0.985 0.003 247), oklch(0.96 0.008 250));
   --shadow-soft: 0 1px 2px oklch(0.18 0.04 265 / 0.04), 0 4px 16px oklch(0.18 0.04 265 / 0.06);
-  --shadow-elevated: 0 8px 24px -8px oklch(0.18 0.04 265 / 0.12), 0 24px 48px -16px oklch(0.18 0.04 265 / 0.14);
+  --shadow-elevated:
+    0 8px 24px -8px oklch(0.18 0.04 265 / 0.12), 0 24px 48px -16px oklch(0.18 0.04 265 / 0.14);
   --shadow-glow: 0 12px 40px -8px oklch(0.55 0.21 260 / 0.35);
   /* Easing */
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
@@ -175,7 +181,10 @@
     text-rendering: optimizeLegibility;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }

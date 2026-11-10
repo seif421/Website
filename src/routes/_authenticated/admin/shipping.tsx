@@ -41,10 +41,15 @@ function DeliveryFeesPage() {
       setCodMax(v.cod_max_total);
     }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   async function saveFee(governorate: string) {
-    const { error } = await rpc("admin_set_delivery_fee", { p_governorate: governorate, p_fee: Number(fees[governorate]) });
+    const { error } = await rpc("admin_set_delivery_fee", {
+      p_governorate: governorate,
+      p_fee: Number(fees[governorate]),
+    });
     if (error) return toast.error(error.message);
     toast.success(`${governorate} fee saved`);
   }
@@ -66,25 +71,51 @@ function DeliveryFeesPage() {
           <div className="space-y-1">
             <Label htmlFor="free">Free delivery over (EGP)</Label>
             <div className="flex gap-2">
-              <Input id="free" type="number" min={0} placeholder="Empty = never free" value={freeOver} onChange={(e) => setFreeOver(e.target.value)} />
-              <Button size="sm" onClick={() => saveSetting("free_shipping_over", freeOver)}><Save className="size-4" /> Save</Button>
+              <Input
+                id="free"
+                type="number"
+                min={0}
+                placeholder="Empty = never free"
+                value={freeOver}
+                onChange={(e) => setFreeOver(e.target.value)}
+              />
+              <Button size="sm" onClick={() => saveSetting("free_shipping_over", freeOver)}>
+                <Save className="size-4" /> Save
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">If you use this, also set the same number in the site settings file so the announcement bar matches.</p>
+            <p className="text-xs text-muted-foreground">
+              If you use this, also set the same number in the site settings file so the
+              announcement bar matches.
+            </p>
           </div>
           <div className="space-y-1">
             <Label htmlFor="cod">Largest cash on delivery order (EGP)</Label>
             <div className="flex gap-2">
-              <Input id="cod" type="number" min={0} placeholder="Empty = no limit" value={codMax} onChange={(e) => setCodMax(e.target.value)} />
-              <Button size="sm" onClick={() => saveSetting("cod_max_total", codMax)}><Save className="size-4" /> Save</Button>
+              <Input
+                id="cod"
+                type="number"
+                min={0}
+                placeholder="Empty = no limit"
+                value={codMax}
+                onChange={(e) => setCodMax(e.target.value)}
+              />
+              <Button size="sm" onClick={() => saveSetting("cod_max_total", codMax)}>
+                <Save className="size-4" /> Save
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">Bigger orders are refused at checkout. A limit reduces the loss from refused parcels.</p>
+            <p className="text-xs text-muted-foreground">
+              Bigger orders are refused at checkout. A limit reduces the loss from refused parcels.
+            </p>
           </div>
         </div>
       </Card>
 
       <Card className="p-5">
         <p className="font-semibold text-sm mb-1">Fee per governorate</p>
-        <p className="mb-4 text-xs text-muted-foreground">The starting numbers are placeholders. Replace them with your courier's real rates before you sell.</p>
+        <p className="mb-4 text-xs text-muted-foreground">
+          The starting numbers are placeholders. Replace them with your courier's real rates before
+          you sell.
+        </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {zones.map((z) => (
             <div key={z.governorate} className="flex items-center gap-2">
@@ -96,7 +127,9 @@ function DeliveryFeesPage() {
                 onChange={(e) => setFees({ ...fees, [z.governorate]: e.target.value })}
                 aria-label={`${z.governorate} delivery fee`}
               />
-              <Button size="sm" variant="outline" onClick={() => saveFee(z.governorate)}>Save</Button>
+              <Button size="sm" variant="outline" onClick={() => saveFee(z.governorate)}>
+                Save
+              </Button>
             </div>
           ))}
         </div>

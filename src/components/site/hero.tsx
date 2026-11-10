@@ -6,7 +6,10 @@ export function Hero() {
   return (
     <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
       <div className="grid gap-4 lg:grid-cols-[220px_1fr_250px]">
-        <nav aria-label="Departments" className="hidden rounded-xl border border-border bg-card p-2 lg:block">
+        <nav
+          aria-label="Departments"
+          className="hidden rounded-xl border border-border bg-card p-2 lg:block"
+        >
           <p className="px-3 pb-1 pt-2 text-sm font-semibold">Departments</p>
           <ul>
             {CATEGORIES.map(({ label, slug, icon: Icon }) => (

@@ -9,15 +9,15 @@ the database and put the site online.
 
 ## Tech stack
 
-| Layer | Technology |
-| --- | --- |
-| Framework | TanStack Start (React 19, file-based routing, SSR) + Vite |
-| Styling | Tailwind CSS v4, shadcn/ui (Radix), lucide-react |
-| Data | Supabase (Postgres, Auth, Storage) via `@supabase/supabase-js` |
-| Forms / validation | React Hook Form, Zod |
-| Charts | Recharts |
-| Hosting | Vercel |
-| Tooling | TypeScript, ESLint, Prettier, Bun (lockfile: `bun.lock`) |
+| Layer              | Technology                                                     |
+| ------------------ | -------------------------------------------------------------- |
+| Framework          | TanStack Start (React 19, file-based routing, SSR) + Vite      |
+| Styling            | Tailwind CSS v4, shadcn/ui (Radix), lucide-react               |
+| Data               | Supabase (Postgres, Auth, Storage) via `@supabase/supabase-js` |
+| Forms / validation | React Hook Form, Zod                                           |
+| Charts             | Recharts                                                       |
+| Hosting            | Vercel                                                         |
+| Tooling            | TypeScript, ESLint, Prettier, Bun (lockfile: `bun.lock`)       |
 
 The original brief is preserved in [`docs/original-brief.md`](docs/original-brief.md);
 what is still to build is in [`docs/LAUNCH-CHECKLIST.md`](docs/LAUNCH-CHECKLIST.md).

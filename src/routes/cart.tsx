@@ -47,7 +47,12 @@ function CartPage() {
                     aria-label={item.name}
                   >
                     {item.image ? (
-                      <img src={item.image} alt="" loading="lazy" className="size-full object-cover" />
+                      <img
+                        src={item.image}
+                        alt=""
+                        loading="lazy"
+                        className="size-full object-cover"
+                      />
                     ) : (
                       <span className="grid size-full place-items-center text-muted-foreground">
                         <ShieldCheck className="size-8 opacity-30" aria-hidden />
@@ -56,13 +61,21 @@ function CartPage() {
                   </Link>
                   <div className="flex flex-1 flex-col justify-between gap-3">
                     <div className="flex items-start justify-between gap-3">
-                      <Link to="/product/$slug" params={{ slug: item.slug }} className="font-semibold hover:underline">
+                      <Link
+                        to="/product/$slug"
+                        params={{ slug: item.slug }}
+                        className="font-semibold hover:underline"
+                      >
                         {item.name}
                       </Link>
                       <p className="font-semibold">{formatMoney(item.price * item.quantity)}</p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="inline-flex h-9 items-center rounded-full border border-input" role="group" aria-label={`Quantity for ${item.name}`}>
+                      <div
+                        className="inline-flex h-9 items-center rounded-full border border-input"
+                        role="group"
+                        aria-label={`Quantity for ${item.name}`}
+                      >
                         <button
                           type="button"
                           onClick={() => cart.setQuantity(item.productId, item.quantity - 1)}
@@ -72,7 +85,9 @@ function CartPage() {
                         >
                           <Minus className="size-4" aria-hidden />
                         </button>
-                        <span className="w-6 text-center text-sm font-semibold" aria-live="polite">{item.quantity}</span>
+                        <span className="w-6 text-center text-sm font-semibold" aria-live="polite">
+                          {item.quantity}
+                        </span>
                         <button
                           type="button"
                           onClick={() => cart.setQuantity(item.productId, item.quantity + 1)}
@@ -96,11 +111,16 @@ function CartPage() {
               ))}
             </ul>
 
-            <aside className="h-fit rounded-2xl border border-border bg-card p-5" aria-label="Order summary">
+            <aside
+              className="h-fit rounded-2xl border border-border bg-card p-5"
+              aria-label="Order summary"
+            >
               <h2 className="font-display text-lg font-bold">Order summary</h2>
               <dl className="mt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Subtotal ({cart.count} item{cart.count === 1 ? "" : "s"})</dt>
+                  <dt className="text-muted-foreground">
+                    Subtotal ({cart.count} item{cart.count === 1 ? "" : "s"})
+                  </dt>
                   <dd className="font-semibold">{formatMoney(cart.subtotal)}</dd>
                 </div>
                 <div className="flex justify-between">
@@ -114,7 +134,10 @@ function CartPage() {
               >
                 Checkout
               </Link>
-              <Link to="/shop" className="mt-3 block text-center text-sm font-medium text-brand hover:underline">
+              <Link
+                to="/shop"
+                className="mt-3 block text-center text-sm font-medium text-brand hover:underline"
+              >
                 Continue shopping
               </Link>
             </aside>

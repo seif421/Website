@@ -5,7 +5,13 @@ import { SITE } from "@/lib/site-config";
 // Sends the order confirmation email. Runs only on the server, so the Gmail app password and the
 // order secret never reach the browser. A failure here never blocks the order itself.
 
-type ConfirmationItem = { name: string; quantity: number; unit_price: number; subtotal: number; image: string | null };
+type ConfirmationItem = {
+  name: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  image: string | null;
+};
 type Confirmation = {
   order_number: string;
   email: string;
@@ -25,9 +31,13 @@ function db() {
 }
 
 export const esc = (v: unknown) =>
-  String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  String(v ?? "").replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+  );
 
-export const egp = (n: number) => `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(Number(n) || 0)} EGP`;
+export const egp = (n: number) =>
+  `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(Number(n) || 0)} EGP`;
 
 export function buildConfirmationEmail(c: Confirmation) {
   const a = c.address ?? {};
@@ -36,7 +46,9 @@ export function buildConfirmationEmail(c: Confirmation) {
     .map(
       (i) => `<tr>
   <td style="padding:12px 0;border-bottom:1px solid #eee;width:72px">${
-    i.image ? `<img src="${esc(i.image)}" width="64" height="64" alt="" style="display:block;border-radius:8px;object-fit:cover;background:#f4f4f4">` : ""
+    i.image
+      ? `<img src="${esc(i.image)}" width="64" height="64" alt="" style="display:block;border-radius:8px;object-fit:cover;background:#f4f4f4">`
+      : ""
   }</td>
   <td style="padding:12px 8px;border-bottom:1px solid #eee;font-size:14px;color:#111">${esc(i.name)}<br><span style="color:#666;font-size:13px">${esc(i.quantity)} × ${egp(i.unit_price)}</span></td>
   <td style="padding:12px 0;border-bottom:1px solid #eee;font-size:14px;color:#111;text-align:right;white-space:nowrap">${egp(i.subtotal)}</td>
@@ -46,7 +58,11 @@ export function buildConfirmationEmail(c: Confirmation) {
   const payLine = c.cod
     ? `<p style="margin:16px 0 0;font-size:14px;color:#111"><strong>Payment:</strong> cash on delivery. Please have <strong>${egp(c.total)}</strong> ready for the courier.</p>`
     : "";
-  const contact = [SITE.whatsapp && `WhatsApp: ${esc(SITE.whatsapp)}`, SITE.phone && `Phone: ${esc(SITE.phone)}`, SITE.supportEmail && esc(SITE.supportEmail)]
+  const contact = [
+    SITE.whatsapp && `WhatsApp: ${esc(SITE.whatsapp)}`,
+    SITE.phone && `Phone: ${esc(SITE.phone)}`,
+    SITE.supportEmail && esc(SITE.supportEmail),
+  ]
     .filter(Boolean)
     .join(" · ");
 
@@ -85,7 +101,8 @@ ${payLine}
 
 export const sendOrderConfirmation = createServerFn({ method: "POST" })
   .inputValidator((d: { orderNumber: string }) => {
-    if (typeof d?.orderNumber !== "string" || !/^[A-Z0-9-]{4,30}$/i.test(d.orderNumber)) throw new Error("Invalid order number");
+    if (typeof d?.orderNumber !== "string" || !/^[A-Z0-9-]{4,30}$/i.test(d.orderNumber))
+      throw new Error("Invalid order number");
     return { orderNumber: d.orderNumber };
   })
   .handler(async ({ data }): Promise<{ sent: boolean }> => {
@@ -94,15 +111,20 @@ export const sendOrderConfirmation = createServerFn({ method: "POST" })
     const pass = process.env.GMAIL_APP_PASSWORD;
     const secret = process.env.ORDER_SECRET;
     if (!user || !pass || !secret) {
-      console.warn("[order email] not configured: set GMAIL_USER, GMAIL_APP_PASSWORD and ORDER_SECRET");
+      console.warn(
+        "[order email] not configured: set GMAIL_USER, GMAIL_APP_PASSWORD and ORDER_SECRET",
+      );
       return { sent: false };
     }
     const supabase = db();
     // The database hands the order over only once, only for a new order, and only with the secret.
-    const { data: order, error } = await supabase.rpc("claim_order_confirmation" as never, {
-      p_order_number: data.orderNumber,
-      p_secret: secret,
-    } as never);
+    const { data: order, error } = await supabase.rpc(
+      "claim_order_confirmation" as never,
+      {
+        p_order_number: data.orderNumber,
+        p_secret: secret,
+      } as never,
+    );
     if (error || !order) {
       if (error) console.error("[order email] could not load order", error.message);
       return { sent: false };
@@ -130,7 +152,10 @@ export const sendOrderConfirmation = createServerFn({ method: "POST" })
       return { sent: true };
     } catch (e) {
       console.error("[order email] send failed", e instanceof Error ? e.message : e);
-      await supabase.rpc("release_order_confirmation" as never, { p_order_number: data.orderNumber, p_secret: secret } as never);
+      await supabase.rpc(
+        "release_order_confirmation" as never,
+        { p_order_number: data.orderNumber, p_secret: secret } as never,
+      );
       return { sent: false };
     }
   });

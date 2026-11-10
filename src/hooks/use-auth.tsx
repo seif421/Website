@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .select("role")
             .eq("user_id", s.user.id)
             .then(({ data }) => {
-              setRoles(((data ?? []).map((r) => r.role)) as AppRole[]);
+              setRoles((data ?? []).map((r) => r.role) as AppRole[]);
             });
         }, 0);
       } else {
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .select("role")
           .eq("user_id", data.session.user.id)
           .then(({ data: rdata }) => {
-            setRoles(((rdata ?? []).map((r) => r.role)) as AppRole[]);
+            setRoles((rdata ?? []).map((r) => r.role) as AppRole[]);
             setLoading(false);
           });
       } else {

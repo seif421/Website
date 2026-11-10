@@ -43,15 +43,33 @@ export function csvEscape(v: unknown): string {
 }
 
 export const PRODUCT_CSV_COLUMNS = [
-  "id", "name", "slug", "sku", "barcode", "status", "price", "sale_price",
-  "compare_at_price", "cost", "stock", "category", "brand", "tags",
-  "is_featured", "is_best_seller", "is_new_arrival", "is_trending",
-  "short_description", "description",
+  "id",
+  "name",
+  "slug",
+  "sku",
+  "barcode",
+  "status",
+  "price",
+  "sale_price",
+  "compare_at_price",
+  "cost",
+  "stock",
+  "category",
+  "brand",
+  "tags",
+  "is_featured",
+  "is_best_seller",
+  "is_new_arrival",
+  "is_trending",
+  "short_description",
+  "description",
 ] as const;
 
 export function productsToCsv(rows: Array<Record<string, unknown>>): string {
   const head = PRODUCT_CSV_COLUMNS.join(",");
-  const body = rows.map((r) => PRODUCT_CSV_COLUMNS.map((c) => csvEscape(r[c])).join(",")).join("\n");
+  const body = rows
+    .map((r) => PRODUCT_CSV_COLUMNS.map((c) => csvEscape(r[c])).join(","))
+    .join("\n");
   return `${head}\n${body}`;
 }
 
@@ -64,17 +82,32 @@ export function parseCsv(text: string): string[][] {
     const ch = text[i];
     if (inQ) {
       if (ch === '"') {
-        if (text[i + 1] === '"') { cur += '"'; i++; } else { inQ = false; }
+        if (text[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQ = false;
+        }
       } else cur += ch;
     } else {
       if (ch === '"') inQ = true;
-      else if (ch === ",") { row.push(cur); cur = ""; }
-      else if (ch === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
-      else if (ch === "\r") { /* skip */ }
-      else cur += ch;
+      else if (ch === ",") {
+        row.push(cur);
+        cur = "";
+      } else if (ch === "\n") {
+        row.push(cur);
+        rows.push(row);
+        row = [];
+        cur = "";
+      } else if (ch === "\r") {
+        /* skip */
+      } else cur += ch;
     }
   }
-  if (cur.length || row.length) { row.push(cur); rows.push(row); }
+  if (cur.length || row.length) {
+    row.push(cur);
+    rows.push(row);
+  }
   return rows.filter((r) => r.some((c) => c.length > 0));
 }
 
@@ -121,7 +154,9 @@ export async function logAdminActivity(
   entity_id: string,
   metadata?: Record<string, unknown>,
 ) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return;
   await supabase.from("activity_logs").insert({
     user_id: user.id,
@@ -132,8 +167,14 @@ export async function logAdminActivity(
   });
 }
 
-export async function logActivity(action: string, entity_id: string, metadata?: Record<string, unknown>) {
-  const { data: { user } } = await supabase.auth.getUser();
+export async function logActivity(
+  action: string,
+  entity_id: string,
+  metadata?: Record<string, unknown>,
+) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return;
   await supabase.from("activity_logs").insert({
     user_id: user.id,

@@ -32,7 +32,10 @@ export const Route = createFileRoute("/shop")({
     const page = positiveNumber(s.page);
     return {
       q: typeof s.q === "string" && s.q.trim() ? s.q.trim().slice(0, 60) : undefined,
-      category: typeof s.category === "string" && /^[a-z0-9-]{1,60}$/.test(s.category) ? s.category : undefined,
+      category:
+        typeof s.category === "string" && /^[a-z0-9-]{1,60}$/.test(s.category)
+          ? s.category
+          : undefined,
       sort: SORTS.includes(s.sort as SortKey) ? (s.sort as SortKey) : undefined,
       min: positiveNumber(s.min),
       max: positiveNumber(s.max),
@@ -78,7 +81,9 @@ function ShopPage() {
 
   const topCategories = data.categories.filter((c) => !c.parent_id);
   const sort: SortKey = search.sort ?? "featured";
-  const hasFilters = Boolean(search.q || search.category || search.min != null || search.max != null);
+  const hasFilters = Boolean(
+    search.q || search.category || search.min != null || search.max != null,
+  );
 
   function applyForm(e: React.FormEvent) {
     e.preventDefault();
@@ -104,7 +109,9 @@ function ShopPage() {
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">Home</Link>
+          <Link to="/" className="hover:text-foreground">
+            Home
+          </Link>
           <span className="mx-2">/</span>
           <span className="text-foreground">Shop</span>
         </nav>
@@ -112,7 +119,9 @@ function ShopPage() {
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
             <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">
-              {data.total === 0 ? "No products found" : `${data.total} product${data.total === 1 ? "" : "s"}`}
+              {data.total === 0
+                ? "No products found"
+                : `${data.total} product${data.total === 1 ? "" : "s"}`}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -140,7 +149,9 @@ function ShopPage() {
                 className="h-10 rounded-full border border-input bg-background px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
               >
                 {SORTS.map((s) => (
-                  <option key={s} value={s}>{SORT_LABELS[s]}</option>
+                  <option key={s} value={s}>
+                    {SORT_LABELS[s]}
+                  </option>
                 ))}
               </select>
             </label>
@@ -148,10 +159,16 @@ function ShopPage() {
         </div>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[240px_1fr]">
-          <aside className={`${showFilters ? "block" : "hidden"} space-y-8 lg:block`} aria-label="Filters">
+          <aside
+            className={`${showFilters ? "block" : "hidden"} space-y-8 lg:block`}
+            aria-label="Filters"
+          >
             <form onSubmit={applyForm} role="search" className="space-y-3">
               <label className="relative block">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden
+                />
                 <input
                   type="search"
                   value={term}
@@ -201,9 +218,15 @@ function ShopPage() {
                 <li>
                   <Link
                     to="/shop"
-                    search={(prev: ShopSearch) => ({ ...prev, category: undefined, page: undefined })}
+                    search={(prev: ShopSearch) => ({
+                      ...prev,
+                      category: undefined,
+                      page: undefined,
+                    })}
                     className={`block rounded-lg px-3 py-2 text-sm transition-colors hover:bg-surface ${
-                      !search.category ? "bg-surface font-semibold text-foreground" : "text-muted-foreground"
+                      !search.category
+                        ? "bg-surface font-semibold text-foreground"
+                        : "text-muted-foreground"
                     }`}
                   >
                     All products
@@ -213,9 +236,15 @@ function ShopPage() {
                   <li key={c.id}>
                     <Link
                       to="/shop"
-                      search={(prev: ShopSearch) => ({ ...prev, category: c.slug, page: undefined })}
+                      search={(prev: ShopSearch) => ({
+                        ...prev,
+                        category: c.slug,
+                        page: undefined,
+                      })}
                       className={`block rounded-lg px-3 py-2 text-sm transition-colors hover:bg-surface ${
-                        search.category === c.slug ? "bg-surface font-semibold text-foreground" : "text-muted-foreground"
+                        search.category === c.slug
+                          ? "bg-surface font-semibold text-foreground"
+                          : "text-muted-foreground"
                       }`}
                     >
                       {c.name}
@@ -226,7 +255,11 @@ function ShopPage() {
             </div>
 
             {hasFilters && (
-              <Link to="/shop" search={{}} className="inline-block text-sm font-medium text-brand hover:underline">
+              <Link
+                to="/shop"
+                search={{}}
+                className="inline-block text-sm font-medium text-brand hover:underline"
+              >
                 Clear all filters
               </Link>
             )}
@@ -239,10 +272,16 @@ function ShopPage() {
                   {hasFilters ? "No products match your filters." : "New products are on the way."}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {hasFilters ? "Try removing a filter or searching for something else." : "We are stocking the shop. Please check back soon."}
+                  {hasFilters
+                    ? "Try removing a filter or searching for something else."
+                    : "We are stocking the shop. Please check back soon."}
                 </p>
                 {hasFilters && (
-                  <Link to="/shop" search={{}} className="mt-5 inline-flex h-10 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground">
+                  <Link
+                    to="/shop"
+                    search={{}}
+                    className="mt-5 inline-flex h-10 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
+                  >
                     Clear filters
                   </Link>
                 )}
@@ -255,7 +294,10 @@ function ShopPage() {
                   ))}
                 </div>
                 {data.pageCount > 1 && (
-                  <nav aria-label="Pagination" className="mt-10 flex items-center justify-center gap-3">
+                  <nav
+                    aria-label="Pagination"
+                    className="mt-10 flex items-center justify-center gap-3"
+                  >
                     <button
                       type="button"
                       disabled={data.page <= 1}

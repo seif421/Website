@@ -30,16 +30,21 @@ function ProfilePage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle().then(({ data }) => {
-      if (data) {
-        setForm({
-          full_name: data.full_name ?? "",
-          phone: data.phone ?? "",
-          company_name: data.company_name ?? "",
-          avatar_url: data.avatar_url ?? "",
-        });
-      }
-    });
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setForm({
+            full_name: data.full_name ?? "",
+            phone: data.phone ?? "",
+            company_name: data.company_name ?? "",
+            avatar_url: data.avatar_url ?? "",
+          });
+        }
+      });
   }, [user]);
 
   async function save() {
@@ -48,7 +53,8 @@ function ProfilePage() {
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     setBusy(true);
     const { error } = await supabase.from("profiles").upsert({
-      id: user.id, email: user.email,
+      id: user.id,
+      email: user.email,
       ...parsed.data,
       phone: parsed.data.phone || null,
       company_name: parsed.data.company_name || null,
@@ -72,7 +78,11 @@ function ProfilePage() {
   const initials = (form.full_name || user?.email || "A").slice(0, 1).toUpperCase();
 
   return (
-    <PageShell title="My Profile" description="Update your personal information." breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Profile" }]}>
+    <PageShell
+      title="My Profile"
+      description="Update your personal information."
+      breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Profile" }]}
+    >
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="p-6 lg:col-span-2 space-y-4">
           <div className="flex items-center gap-4">
@@ -82,12 +92,21 @@ function ProfilePage() {
             </Avatar>
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="av">Avatar URL</Label>
-              <Input id="av" value={form.avatar_url} onChange={(e) => setForm({ ...form, avatar_url: e.target.value })} placeholder="https://…" />
+              <Input
+                id="av"
+                value={form.avatar_url}
+                onChange={(e) => setForm({ ...form, avatar_url: e.target.value })}
+                placeholder="https://…"
+              />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="fn">Full name</Label>
-            <Input id="fn" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
+            <Input
+              id="fn"
+              value={form.full_name}
+              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Email</Label>
@@ -95,22 +114,44 @@ function ProfilePage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="ph">Phone</Label>
-            <Input id="ph" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <Input
+              id="ph"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="co">Company name</Label>
-            <Input id="co" value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
+            <Input
+              id="co"
+              value={form.company_name}
+              onChange={(e) => setForm({ ...form, company_name: e.target.value })}
+            />
           </div>
-          <Button onClick={save} disabled={busy}>Save changes</Button>
+          <Button onClick={save} disabled={busy}>
+            Save changes
+          </Button>
         </Card>
 
         <Card className="p-6 space-y-4 h-fit">
           <h3 className="font-semibold">Change password</h3>
           <div className="space-y-1.5">
             <Label htmlFor="np">New password</Label>
-            <Input id="np" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
+            <Input
+              id="np"
+              type="password"
+              value={newPw}
+              onChange={(e) => setNewPw(e.target.value)}
+            />
           </div>
-          <Button onClick={changePassword} disabled={busy || !newPw} variant="outline" className="w-full">Update password</Button>
+          <Button
+            onClick={changePassword}
+            disabled={busy || !newPw}
+            variant="outline"
+            className="w-full"
+          >
+            Update password
+          </Button>
         </Card>
       </div>
     </PageShell>

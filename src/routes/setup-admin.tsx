@@ -12,7 +12,10 @@ export const Route = createFileRoute("/setup-admin")({
   head: () => ({
     meta: [
       { title: "Initial setup — Rivvo" },
-      { name: "description", content: "One-time super admin setup for a fresh Rivvo installation." },
+      {
+        name: "description",
+        content: "One-time super admin setup for a fresh Rivvo installation.",
+      },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -39,7 +42,9 @@ function SetupPage() {
       }
       setChecking(false);
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   async function claim() {
@@ -51,7 +56,11 @@ function SetupPage() {
     const { error } = await supabase.rpc("setup_first_admin");
     setBusy(false);
     if (error) {
-      toast.error(error.message.includes("setup_already_completed") ? "Setup already completed." : "Setup failed.");
+      toast.error(
+        error.message.includes("setup_already_completed")
+          ? "Setup already completed."
+          : "Setup failed.",
+      );
       setAdminExists(true);
       return;
     }
@@ -66,7 +75,9 @@ function SetupPage() {
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8"><Logo /></div>
+        <div className="flex flex-col items-center mb-8">
+          <Logo />
+        </div>
         <Card className="p-6 shadow-soft">
           <div className="flex items-center gap-3">
             <div className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground">
@@ -87,21 +98,25 @@ function SetupPage() {
               <p className="text-sm">
                 Setup is already completed. This page is permanently disabled.
               </p>
-              <Button asChild variant="outline" className="w-full"><Link to="/auth">Sign in</Link></Button>
+              <Button asChild variant="outline" className="w-full">
+                <Link to="/auth">Sign in</Link>
+              </Button>
             </div>
           ) : !user ? (
             <div className="mt-6 space-y-3">
               <p className="text-sm">
-                To claim Super Admin, first sign in or create your account. The very next
-                click will make that account the store's Super Admin.
+                To claim Super Admin, first sign in or create your account. The very next click will
+                make that account the store's Super Admin.
               </p>
-              <Button asChild className="w-full"><Link to="/auth">Sign in / create account</Link></Button>
+              <Button asChild className="w-full">
+                <Link to="/auth">Sign in / create account</Link>
+              </Button>
             </div>
           ) : (
             <div className="mt-6 space-y-3">
               <p className="text-sm">
-                Signed in as <span className="font-medium">{user.email}</span>. Click below to
-                claim the Super Admin role. This can only be done once.
+                Signed in as <span className="font-medium">{user.email}</span>. Click below to claim
+                the Super Admin role. This can only be done once.
               </p>
               <Button className="w-full" onClick={claim} disabled={busy}>
                 {busy && <Loader2 className="size-4 animate-spin" />} Claim Super Admin
@@ -110,7 +125,9 @@ function SetupPage() {
           )}
         </Card>
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">← Back to store</Link>
+          <Link to="/" className="hover:text-foreground">
+            ← Back to store
+          </Link>
         </p>
       </div>
     </div>
