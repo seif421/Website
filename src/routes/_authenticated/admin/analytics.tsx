@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { PageShell } from "@/components/admin/page-shell";
 import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { money } from "@/lib/admin/formatters";
+import { toast } from "sonner";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart,
   Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
@@ -10,105 +14,183 @@ export const Route = createFileRoute("/_authenticated/admin/analytics")({
   component: AnalyticsPage,
 });
 
-const daily = Array.from({ length: 30 }, (_, i) => ({ d: `${i + 1}`, sales: 1000 + Math.round(Math.random() * 2400) }));
-const weekly = ["W1","W2","W3","W4","W5","W6","W7","W8"].map((w, i) => ({ w, sales: 8000 + i * 1200 + Math.round(Math.random() * 4000) }));
-const monthlyRev = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((m, i) => ({ m, revenue: 30000 + Math.round(Math.sin(i) * 6000 + i * 1200) }));
-const traffic = [
-  { name: "Organic", value: 4820, fill: "hsl(var(--brand))" },
-  { name: "Direct", value: 2410, fill: "hsl(var(--accent))" },
-  { name: "Paid", value: 1820, fill: "hsl(var(--primary))" },
-  { name: "Social", value: 980, fill: "#10b981" },
-  { name: "Referral", value: 540, fill: "#f59e0b" },
-];
-const topCategories = [{ n: "Cameras", v: 24800 }, { n: "Doorbells", v: 18200 }, { n: "Locks", v: 15600 }, { n: "Sensors", v: 9800 }, { n: "Accessories", v: 4200 }];
-const topProducts = [{ n: "Doorbell Pro", v: 312 }, { n: "Indoor Cam 2K", v: 248 }, { n: "Lock Vault", v: 198 }, { n: "Motion 4-pk", v: 175 }, { n: "Outdoor Solar", v: 142 }];
-const customerGrowth = Array.from({ length: 12 }, (_, i) => ({ m: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][i], new: 120 + i * 18, returning: 60 + i * 12 }));
-const devices = [{ name: "Mobile", value: 58, fill: "hsl(var(--brand))" }, { name: "Desktop", value: 32, fill: "hsl(var(--accent))" }, { name: "Tablet", value: 10, fill: "hsl(var(--primary))" }];
-const countries = [{ n: "USA", v: 6200 }, { n: "Canada", v: 1820 }, { n: "UK", v: 940 }, { n: "Germany", v: 620 }, { n: "Australia", v: 410 }];
+type Named = { name: string; value: number };
+type A = {
+  days: number; visitors: number; page_views: number; orders: number; sales: number;
+  daily_sales: { d: string; sales: number; orders: number }[];
+  weekly_sales: { w: string; sales: number }[];
+  monthly_revenue: { m: string; revenue: number }[];
+  traffic_sources: Named[];
+  devices: Named[];
+  top_categories: { n: string; v: number }[];
+  top_products: { n: string; v: number }[];
+  customer_growth: { m: string; new: number; returning: number }[];
+  governorates: { n: string; orders: number; v: number }[];
+};
+
+const PALETTE = ["hsl(var(--brand))", "hsl(var(--accent))", "hsl(var(--primary))", "#10b981", "#f59e0b"];
+const SOURCE_LABEL: Record<string, string> = { Direct: "Direct", Organic: "Search engines", Social: "Social media", Paid: "Paid ads", Referral: "Other websites" };
+const PERIODS = [7, 30, 90] as const;
 
 function AnalyticsPage() {
+  const [days, setDays] = useState<number>(30);
+  const [a, setA] = useState<A | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      // This database function is new, so the generated types do not list it yet.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any).rpc("admin_analytics", { p_days: days });
+      if (!live) return;
+      if (error) return toast.error(error.message);
+      setA(data as A);
+    })();
+    return () => { live = false; };
+  }, [days]);
+
+  const sources = (a?.traffic_sources ?? []).map((s) => ({ ...s, name: SOURCE_LABEL[s.name] ?? s.name }));
+  const conversion = a && a.visitors > 0 ? (a.orders / a.visitors) * 100 : null;
+
   return (
-    <PageShell title="Analytics" description="Deep dive into store performance.">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ChartCard title="Daily Sales (30 days)">
-          <AreaChart data={daily}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="d" fontSize={11} /><YAxis fontSize={11} />
-            <Tooltip /><Area type="monotone" dataKey="sales" stroke="hsl(var(--brand))" fill="hsl(var(--brand) / 0.2)" />
-          </AreaChart>
-        </ChartCard>
-        <ChartCard title="Weekly Sales">
-          <BarChart data={weekly}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="w" fontSize={11} /><YAxis fontSize={11} />
-            <Tooltip /><Bar dataKey="sales" fill="hsl(var(--brand))" radius={[4,4,0,0]} />
-          </BarChart>
-        </ChartCard>
-        <ChartCard title="Monthly Revenue">
-          <LineChart data={monthlyRev}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="m" fontSize={11} /><YAxis fontSize={11} />
-            <Tooltip /><Line type="monotone" dataKey="revenue" stroke="hsl(var(--brand))" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ChartCard>
-        <ChartCard title="Traffic Sources">
-          <PieChart>
-            <Pie data={traffic} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label />
-            <Tooltip /><Legend />
-          </PieChart>
-        </ChartCard>
-        <ChartCard title="Top Categories">
-          <BarChart data={topCategories} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis type="number" fontSize={11} /><YAxis dataKey="n" type="category" fontSize={11} width={90} />
-            <Tooltip /><Bar dataKey="v" fill="hsl(var(--brand))" radius={[0,4,4,0]} />
-          </BarChart>
-        </ChartCard>
-        <ChartCard title="Top Products">
-          <BarChart data={topProducts} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis type="number" fontSize={11} /><YAxis dataKey="n" type="category" fontSize={11} width={90} />
-            <Tooltip /><Bar dataKey="v" fill="hsl(var(--accent))" radius={[0,4,4,0]} />
-          </BarChart>
-        </ChartCard>
-        <ChartCard title="Customer Growth">
-          <LineChart data={customerGrowth}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="m" fontSize={11} /><YAxis fontSize={11} />
-            <Tooltip /><Legend />
-            <Line type="monotone" dataKey="new" stroke="hsl(var(--brand))" strokeWidth={2} />
-            <Line type="monotone" dataKey="returning" stroke="hsl(var(--accent))" strokeWidth={2} />
-          </LineChart>
-        </ChartCard>
-        <ChartCard title="Device Types">
-          <PieChart>
-            <Pie data={devices} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} label>
-              {devices.map((d, i) => <Cell key={i} fill={d.fill} />)}
-            </Pie>
-            <Tooltip /><Legend />
-          </PieChart>
-        </ChartCard>
-        <Card className="p-5 lg:col-span-2">
-          <p className="text-sm font-semibold mb-3">Top Countries</p>
-          <ul className="divide-y">
-            {countries.map((c) => (
-              <li key={c.n} className="flex items-center justify-between py-2.5">
-                <span className="text-sm">{c.n}</span>
-                <span className="text-sm font-semibold">{c.v.toLocaleString()} visits</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </div>
+    <PageShell
+      title="Analytics"
+      description="Live numbers from your orders and shop visits. Visits are counted from the day tracking started."
+      actions={
+        <div className="flex gap-1 rounded-lg bg-muted p-1">
+          {PERIODS.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setDays(p)}
+              className={`rounded-md px-3 py-1 text-xs font-medium ${days === p ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {p} days
+            </button>
+          ))}
+        </div>
+      }
+    >
+      {!a ? (
+        <p className="py-10 text-center text-sm text-muted-foreground">Loading…</p>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <Tile label="Visitors" value={a.visitors.toLocaleString()} />
+            <Tile label="Pages viewed" value={a.page_views.toLocaleString()} />
+            <Tile label="Orders" value={a.orders.toLocaleString()} />
+            <Tile label="Sales" value={money(a.sales)} />
+            <Tile label="Conversion" value={conversion === null ? "—" : `${conversion.toFixed(1)}%`} />
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ChartCard title={`Daily sales (${a.days} days)`}>
+              <AreaChart data={a.daily_sales}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="d" fontSize={11} interval="preserveStartEnd" /><YAxis fontSize={11} />
+                <Tooltip formatter={(v) => money(Number(v))} />
+                <Area type="monotone" dataKey="sales" name="Sales" stroke="hsl(var(--brand))" fill="hsl(var(--brand) / 0.2)" />
+              </AreaChart>
+            </ChartCard>
+            <ChartCard title="Weekly sales (8 weeks)">
+              <BarChart data={a.weekly_sales}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="w" fontSize={11} /><YAxis fontSize={11} />
+                <Tooltip formatter={(v) => money(Number(v))} />
+                <Bar dataKey="sales" name="Sales" fill="hsl(var(--brand))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ChartCard>
+            <ChartCard title="Monthly sales (12 months)">
+              <LineChart data={a.monthly_revenue}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="m" fontSize={11} /><YAxis fontSize={11} />
+                <Tooltip formatter={(v) => money(Number(v))} />
+                <Line type="monotone" dataKey="revenue" name="Sales" stroke="hsl(var(--brand))" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ChartCard>
+            <ChartCard title="Where visitors come from" empty={sources.length === 0} emptyText="No visits counted yet.">
+              <PieChart>
+                <Pie data={sources} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  {sources.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+                </Pie>
+                <Tooltip /><Legend />
+              </PieChart>
+            </ChartCard>
+            <ChartCard title="Best-selling categories (EGP)" empty={a.top_categories.length === 0} emptyText="No sales in this period.">
+              <BarChart data={a.top_categories} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis type="number" fontSize={11} /><YAxis dataKey="n" type="category" fontSize={11} width={100} />
+                <Tooltip formatter={(v) => money(Number(v))} />
+                <Bar dataKey="v" name="Sales" fill="hsl(var(--brand))" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ChartCard>
+            <ChartCard title="Best-selling products (units)" empty={a.top_products.length === 0} emptyText="No sales in this period.">
+              <BarChart data={a.top_products} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis type="number" fontSize={11} allowDecimals={false} /><YAxis dataKey="n" type="category" fontSize={11} width={110} />
+                <Tooltip />
+                <Bar dataKey="v" name="Units sold" fill="hsl(var(--accent))" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ChartCard>
+            <ChartCard title="Customers (12 months)">
+              <LineChart data={a.customer_growth}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="m" fontSize={11} /><YAxis fontSize={11} allowDecimals={false} />
+                <Tooltip /><Legend />
+                <Line type="monotone" dataKey="new" name="New accounts" stroke="hsl(var(--brand))" strokeWidth={2} />
+                <Line type="monotone" dataKey="returning" name="Customers ordering again" stroke="hsl(var(--accent))" strokeWidth={2} />
+              </LineChart>
+            </ChartCard>
+            <ChartCard title="Devices" empty={a.devices.length === 0} emptyText="No visits counted yet.">
+              <PieChart>
+                <Pie data={a.devices} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} label>
+                  {a.devices.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+                </Pie>
+                <Tooltip /><Legend />
+              </PieChart>
+            </ChartCard>
+            <Card className="p-5 lg:col-span-2">
+              <p className="mb-3 text-sm font-semibold">Orders by governorate</p>
+              {a.governorates.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">No orders in this period.</p>
+              ) : (
+                <ul className="divide-y">
+                  {a.governorates.map((g) => (
+                    <li key={g.n} className="flex items-center justify-between py-2.5">
+                      <span className="text-sm">{g.n}</span>
+                      <span className="text-sm font-semibold">
+                        {g.orders} {g.orders === 1 ? "order" : "orders"} · {money(g.v)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          </div>
+        </>
+      )}
     </PageShell>
   );
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactElement }) {
+function Tile({ label, value }: { label: string; value: string }) {
   return (
     <Card className="p-5">
-      <p className="text-sm font-semibold mb-3">{title}</p>
-      <ResponsiveContainer width="100%" height={220}>{children}</ResponsiveContainer>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
+    </Card>
+  );
+}
+
+function ChartCard({ title, children, empty, emptyText }: { title: string; children: React.ReactElement; empty?: boolean; emptyText?: string }) {
+  return (
+    <Card className="p-5">
+      <p className="mb-3 text-sm font-semibold">{title}</p>
+      {empty ? (
+        <p className="py-16 text-center text-sm text-muted-foreground">{emptyText}</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={220}>{children}</ResponsiveContainer>
+      )}
     </Card>
   );
 }

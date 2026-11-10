@@ -1,93 +1,98 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
-  DollarSign, ShoppingCart, Users, TrendingUp, Package,
-  AlertTriangle, Clock, ArrowUpRight, ArrowDownRight,
+  Banknote, ShoppingCart, Users, TrendingUp, Package, Percent, Wallet, CalendarDays,
+  AlertTriangle, Clock, ArrowUpRight, ArrowDownRight, MessageSquare, Star, PhoneCall,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageShell } from "@/components/admin/page-shell";
+import { supabase } from "@/integrations/supabase/client";
+import { money, ORDER_STATUS_CLASS, ORDER_STATUS_LABEL } from "@/lib/admin/formatters";
+import { toast } from "sonner";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart,
-  ResponsiveContainer, Tooltip, XAxis, YAxis,
+  ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
 } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: Dashboard,
 });
 
-const salesData = [
-  { d: "Mon", sales: 1240, orders: 14 },
-  { d: "Tue", sales: 1820, orders: 22 },
-  { d: "Wed", sales: 1510, orders: 18 },
-  { d: "Thu", sales: 2210, orders: 28 },
-  { d: "Fri", sales: 2850, orders: 34 },
-  { d: "Sat", sales: 3420, orders: 41 },
-  { d: "Sun", sales: 2980, orders: 36 },
-];
-const revenueData = Array.from({ length: 12 }, (_, i) => ({
-  m: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][i],
-  revenue: 18000 + Math.round(Math.sin(i / 2) * 6000 + i * 1800),
-}));
-const trafficData = [
-  { d: "Mon", direct: 540, organic: 820, paid: 310 },
-  { d: "Tue", direct: 620, organic: 910, paid: 380 },
-  { d: "Wed", direct: 580, organic: 870, paid: 360 },
-  { d: "Thu", direct: 710, organic: 1020, paid: 420 },
-  { d: "Fri", direct: 820, organic: 1190, paid: 470 },
-  { d: "Sat", direct: 940, organic: 1320, paid: 510 },
-  { d: "Sun", direct: 870, organic: 1240, paid: 480 },
-];
+type Dash = {
+  today_sales: number; yesterday_sales: number; month_sales: number; prev_month_sales: number;
+  orders_30d: number; prev_orders_30d: number; visitors_30d: number; prev_visitors_30d: number;
+  avg_order_30d: number; prev_avg_order_30d: number; delivered_revenue: number; delivered_orders: number; profit: number;
+  sales_7d: { d: string; sales: number; orders: number }[];
+  traffic_7d: { d: string; direct: number; organic: number; social: number; paid: number; referral: number }[];
+  revenue_12m: { m: string; revenue: number }[];
+  top_products: { name: string; sold: number; revenue: number }[];
+  low_stock: { name: string; stock: number; threshold: number }[];
+  recent_orders: { id: string; order_number: string; customer: string; total: number; status: string; created_at: string }[];
+  recent_customers: { name: string; email: string; orders: number }[];
+  attention: { pending_orders: number; new_messages: number; reviews_waiting: number; low_stock: number };
+};
 
-const topProducts = [
-  { name: "Smart Doorbell Pro", sold: 312, revenue: 77688 },
-  { name: "Indoor Cam 2K", sold: 248, revenue: 37200 },
-  { name: "Smart Lock Vault", sold: 198, revenue: 51480 },
-  { name: "Motion Sensor 4-pk", sold: 175, revenue: 17500 },
-  { name: "Outdoor Cam Solar", sold: 142, revenue: 35500 },
-];
-const lowStock = [
-  { name: "Indoor Cam 2K", stock: 3, threshold: 5 },
-  { name: "Smart Hub Mini", stock: 2, threshold: 10 },
-  { name: "Window Sensor", stock: 4, threshold: 8 },
-];
-const recentOrders = [
-  { id: "SH-A1B2C3D4", customer: "Alex Johnson", total: 249, status: "processing" },
-  { id: "SH-9F8E7D6C", customer: "Maya Patel", total: 489, status: "shipped" },
-  { id: "SH-3K2L1M0N", customer: "Chris Rivera", total: 129, status: "pending" },
-  { id: "SH-7Q6P5O4N", customer: "Jordan Lee", total: 712, status: "delivered" },
-  { id: "SH-X9Y8Z7W6", customer: "Sam Carter", total: 199, status: "processing" },
-];
-const recentCustomers = [
-  { name: "Alex Johnson", email: "alex@example.com", orders: 4 },
-  { name: "Maya Patel", email: "maya@example.com", orders: 2 },
-  { name: "Chris Rivera", email: "chris@example.com", orders: 1 },
-  { name: "Jordan Lee", email: "jordan@example.com", orders: 7 },
-];
+const pct = (cur: number, prev: number) => (prev > 0 ? ((cur - prev) / prev) * 100 : null);
+const tip = { borderRadius: 8, border: "1px solid hsl(var(--border))" };
 
 function Dashboard() {
+  const [d, setD] = useState<Dash | null>(null);
+
+  async function load() {
+    // These database functions are new, so the generated types do not list them yet.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any).rpc("admin_dashboard");
+    if (error) return toast.error(error.message);
+    setD(data as Dash);
+  }
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 60000);
+    return () => clearInterval(t);
+  }, []);
+
+  if (!d) {
+    return (
+      <PageShell title="Dashboard" description="Live numbers from your store.">
+        <p className="py-10 text-center text-sm text-muted-foreground">Loading…</p>
+      </PageShell>
+    );
+  }
+
+  const conversion = d.visitors_30d > 0 ? (d.orders_30d / d.visitors_30d) * 100 : null;
+  const noTraffic = d.traffic_7d.every((x) => x.direct + x.organic + x.social + x.paid + x.referral === 0);
+  const att = d.attention;
+
   return (
-    <PageShell title="Dashboard" description="Welcome back. Here's what's happening today.">
+    <PageShell title="Dashboard" description="Live numbers from your store. Sales count every order that was not cancelled, returned or refunded.">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Today's Sales" value="$3,420" delta="+12.4%" up icon={DollarSign} />
-        <Stat label="Monthly Sales" value="$48,920" delta="+8.1%" up icon={TrendingUp} />
-        <Stat label="Orders" value="248" delta="+5.2%" up icon={ShoppingCart} />
-        <Stat label="Visitors" value="12,480" delta="-1.4%" icon={Users} />
-        <Stat label="Revenue" value="$182,400" delta="+9.6%" up icon={DollarSign} />
-        <Stat label="Profit" value="$54,720" delta="+11.2%" up icon={TrendingUp} />
-        <Stat label="Conversion" value="3.42%" delta="+0.3%" up icon={ArrowUpRight} />
-        <Stat label="Avg. Order" value="$197" delta="+2.8%" up icon={Package} />
+        <Stat label="Today's sales" value={money(d.today_sales)} delta={pct(d.today_sales, d.yesterday_sales)} sub="vs yesterday" icon={Banknote} />
+        <Stat label="This month" value={money(d.month_sales)} delta={pct(d.month_sales, d.prev_month_sales)} sub="vs same days last month" icon={CalendarDays} />
+        <Stat label="Orders, 30 days" value={String(d.orders_30d)} delta={pct(d.orders_30d, d.prev_orders_30d)} sub="vs the 30 days before" icon={ShoppingCart} />
+        <Stat label="Visitors, 30 days" value={d.visitors_30d.toLocaleString()} delta={pct(d.visitors_30d, d.prev_visitors_30d)} sub="counted from the day tracking started" icon={Users} />
+        <Stat label="Delivered revenue" value={money(d.delivered_revenue)} sub={`${d.delivered_orders} delivered orders`} icon={Wallet} />
+        <Stat label="Profit (delivered)" value={money(d.profit)} sub="sales minus the cost set on each product" icon={TrendingUp} />
+        <Stat label="Conversion, 30 days" value={conversion === null ? "—" : `${conversion.toFixed(1)}%`} sub="orders ÷ visitors" icon={Percent} />
+        <Stat label="Average order, 30 days" value={money(d.avg_order_30d)} delta={pct(d.avg_order_30d, d.prev_avg_order_30d)} sub="vs the 30 days before" icon={Package} />
       </div>
+
+      <Card className="p-5">
+        <p className="text-sm font-semibold">Needs your attention</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Attention to="/admin/orders" icon={PhoneCall} count={att.pending_orders} label="orders waiting for a confirmation call" />
+          <Attention to="/admin/support" icon={MessageSquare} count={att.new_messages} label="new customer messages" />
+          <Attention to="/admin/reviews" icon={Star} count={att.reviews_waiting} label="reviews waiting for approval" />
+          <Attention to="/admin/inventory" icon={AlertTriangle} count={att.low_stock} label="products low on stock" />
+        </div>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="p-5 lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm font-semibold">Sales (last 7 days)</p>
-              <p className="text-xs text-muted-foreground">Daily sales and order counts</p>
-            </div>
-          </div>
+          <p className="text-sm font-semibold">Sales, last 7 days</p>
+          <p className="mb-4 text-xs text-muted-foreground">Daily sales in EGP (Cairo time)</p>
           <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={salesData}>
+            <AreaChart data={d.sales_7d}>
               <defs>
                 <linearGradient id="grad-sales" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--brand))" stopOpacity={0.5} />
@@ -96,86 +101,107 @@ function Dashboard() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
               <XAxis dataKey="d" fontSize={12} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={12} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))" }} />
-              <Area type="monotone" dataKey="sales" stroke="hsl(var(--brand))" fill="url(#grad-sales)" strokeWidth={2} />
+              <YAxis fontSize={12} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+              <Tooltip contentStyle={tip} formatter={(v, n) => (n === "sales" ? money(Number(v)) : v)} />
+              <Area type="monotone" dataKey="sales" name="sales" stroke="hsl(var(--brand))" fill="url(#grad-sales)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </Card>
 
         <Card className="p-5">
-          <p className="text-sm font-semibold">Traffic Sources</p>
+          <p className="text-sm font-semibold">Visitors by source</p>
           <p className="text-xs text-muted-foreground">Last 7 days</p>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={trafficData}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis dataKey="d" fontSize={12} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={12} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ borderRadius: 8 }} />
-              <Bar dataKey="organic" stackId="a" fill="hsl(var(--brand))" />
-              <Bar dataKey="direct" stackId="a" fill="hsl(var(--accent))" />
-              <Bar dataKey="paid" stackId="a" fill="hsl(var(--primary))" />
-            </BarChart>
-          </ResponsiveContainer>
+          {noTraffic ? (
+            <p className="py-24 text-center text-sm text-muted-foreground">No visits counted yet. Numbers appear as people open your shop.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={d.traffic_7d}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="d" fontSize={11} stroke="hsl(var(--muted-foreground))" />
+                <YAxis fontSize={12} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                <Tooltip contentStyle={tip} />
+                <Legend />
+                <Bar dataKey="direct" name="Direct" stackId="a" fill="hsl(var(--accent))" />
+                <Bar dataKey="organic" name="Search" stackId="a" fill="hsl(var(--brand))" />
+                <Bar dataKey="social" name="Social" stackId="a" fill="#10b981" />
+                <Bar dataKey="paid" name="Paid ads" stackId="a" fill="hsl(var(--primary))" />
+                <Bar dataKey="referral" name="Other sites" stackId="a" fill="#f59e0b" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </Card>
       </div>
 
       <Card className="p-5">
-        <p className="text-sm font-semibold">Revenue (12 months)</p>
+        <p className="text-sm font-semibold">Sales, last 12 months</p>
         <ResponsiveContainer width="100%" height={240}>
-          <LineChart data={revenueData}>
+          <LineChart data={d.revenue_12m}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
             <XAxis dataKey="m" fontSize={12} stroke="hsl(var(--muted-foreground))" />
             <YAxis fontSize={12} stroke="hsl(var(--muted-foreground))" />
-            <Tooltip contentStyle={{ borderRadius: 8 }} />
-            <Line type="monotone" dataKey="revenue" stroke="hsl(var(--brand))" strokeWidth={2.5} dot={false} />
+            <Tooltip contentStyle={tip} formatter={(v) => money(Number(v))} />
+            <Line type="monotone" dataKey="revenue" name="Sales" stroke="hsl(var(--brand))" strokeWidth={2.5} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="p-5 lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-semibold">Recent Orders</p>
-            <Badge variant="secondary">{recentOrders.length}</Badge>
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-sm font-semibold">Recent orders</p>
+            <Link to="/admin/orders" className="text-xs font-medium text-brand hover:underline">View all</Link>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase text-muted-foreground">
-                <tr className="text-left">
-                  <th className="py-2 font-medium">Order</th>
-                  <th className="py-2 font-medium">Customer</th>
-                  <th className="py-2 font-medium">Status</th>
-                  <th className="py-2 font-medium text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {recentOrders.map((o) => (
-                  <tr key={o.id}>
-                    <td className="py-2.5 font-mono text-xs">{o.id}</td>
-                    <td className="py-2.5">{o.customer}</td>
-                    <td className="py-2.5"><StatusBadge status={o.status} /></td>
-                    <td className="py-2.5 text-right font-medium">${o.total}</td>
+          {d.recent_orders.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">No orders yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-xs text-muted-foreground">
+                  <tr className="text-left">
+                    <th className="py-2 font-medium">Order</th>
+                    <th className="py-2 font-medium">Customer</th>
+                    <th className="py-2 font-medium">Status</th>
+                    <th className="py-2 text-right font-medium">Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y">
+                  {d.recent_orders.map((o) => (
+                    <tr key={o.id}>
+                      <td className="py-2.5 font-mono text-xs">
+                        <Link to="/admin/orders/$id" params={{ id: o.id }} className="hover:underline">{o.order_number}</Link>
+                      </td>
+                      <td className="py-2.5">{o.customer}</td>
+                      <td className="py-2.5">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${ORDER_STATUS_CLASS[o.status] ?? "bg-muted"}`}>
+                          {ORDER_STATUS_LABEL[o.status] ?? o.status}
+                        </span>
+                      </td>
+                      <td className="py-2.5 text-right font-medium">{money(o.total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Card>
 
         <Card className="p-5">
-          <p className="text-sm font-semibold">Top Products</p>
-          <ul className="mt-4 space-y-3">
-            {topProducts.map((p) => (
-              <li key={p.name} className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{p.name}</p>
-                  <p className="text-xs text-muted-foreground">{p.sold} sold</p>
-                </div>
-                <p className="text-sm font-semibold">${p.revenue.toLocaleString()}</p>
-              </li>
-            ))}
-          </ul>
+          <p className="text-sm font-semibold">Top products</p>
+          {d.top_products.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">No sales yet.</p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {d.top_products.map((p) => (
+                <li key={p.name} className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{p.name}</p>
+                    <p className="text-xs text-muted-foreground">{p.sold} sold</p>
+                  </div>
+                  <p className="text-sm font-semibold">{money(p.revenue)}</p>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
       </div>
 
@@ -183,66 +209,82 @@ function Dashboard() {
         <Card className="p-5">
           <div className="flex items-center gap-2">
             <AlertTriangle className="size-4 text-amber-500" />
-            <p className="text-sm font-semibold">Low Stock</p>
+            <p className="text-sm font-semibold">Low stock</p>
           </div>
-          <ul className="mt-3 divide-y">
-            {lowStock.map((s) => (
-              <li key={s.name} className="flex items-center justify-between py-2.5">
-                <p className="text-sm font-medium">{s.name}</p>
-                <Badge variant="destructive">{s.stock} left</Badge>
-              </li>
-            ))}
-          </ul>
+          {d.low_stock.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">Nothing is running low.</p>
+          ) : (
+            <ul className="mt-3 divide-y">
+              {d.low_stock.map((s, i) => (
+                <li key={`${s.name}-${i}`} className="flex items-center justify-between py-2.5">
+                  <p className="text-sm font-medium">{s.name}</p>
+                  <Badge variant="destructive">{s.stock <= 0 ? "Out of stock" : `${s.stock} left`}</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
         <Card className="p-5">
           <div className="flex items-center gap-2">
             <Clock className="size-4 text-brand" />
-            <p className="text-sm font-semibold">Recent Customers</p>
+            <p className="text-sm font-semibold">Newest customers</p>
           </div>
-          <ul className="mt-3 divide-y">
-            {recentCustomers.map((c) => (
-              <li key={c.email} className="flex items-center justify-between py-2.5">
-                <div>
-                  <p className="text-sm font-medium">{c.name}</p>
-                  <p className="text-xs text-muted-foreground">{c.email}</p>
-                </div>
-                <Badge variant="secondary">{c.orders} orders</Badge>
-              </li>
-            ))}
-          </ul>
+          {d.recent_customers.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">No customers yet.</p>
+          ) : (
+            <ul className="mt-3 divide-y">
+              {d.recent_customers.map((c) => (
+                <li key={c.email} className="flex items-center justify-between py-2.5">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{c.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">{c.email}</p>
+                  </div>
+                  <Badge variant="secondary">{c.orders} {c.orders === 1 ? "order" : "orders"}</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
       </div>
+      <p className="text-center text-xs text-muted-foreground">This page refreshes itself every minute.</p>
     </PageShell>
   );
 }
 
+function Attention({ to, icon: Icon, count, label }: { to: string; icon: React.ComponentType<{ className?: string }>; count: number; label: string }) {
+  return (
+    <Link to={to as never} className={`flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 ${count > 0 ? "border-amber-300 bg-amber-50/50 dark:bg-amber-900/10" : ""}`}>
+      <Icon className={`size-5 shrink-0 ${count > 0 ? "text-amber-600" : "text-muted-foreground"}`} />
+      <div>
+        <p className="text-xl font-bold leading-none">{count}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+      </div>
+    </Link>
+  );
+}
+
 function Stat({
-  label, value, delta, up, icon: Icon,
-}: { label: string; value: string; delta?: string; up?: boolean; icon: React.ComponentType<{ className?: string }> }) {
+  label, value, delta, sub, icon: Icon,
+}: { label: string; value: string; delta?: number | null; sub?: string; icon: React.ComponentType<{ className?: string }> }) {
+  const up = (delta ?? 0) >= 0;
   return (
     <Card className="p-5">
       <div className="flex items-start justify-between">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
         <div className="grid size-8 place-items-center rounded-lg bg-brand/10 text-brand">
           <Icon className="size-4" />
         </div>
       </div>
       <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
-      {delta && (
-        <p className={`mt-1 inline-flex items-center gap-1 text-xs font-medium ${up ? "text-emerald-600" : "text-red-600"}`}>
-          {up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}{delta}
-        </p>
-      )}
+      <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+        {delta != null && (
+          <span className={`inline-flex items-center gap-0.5 font-medium ${up ? "text-emerald-600" : "text-red-600"}`}>
+            {up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+            {Math.abs(delta).toFixed(1)}%
+          </span>
+        )}
+        {sub}
+      </p>
     </Card>
   );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-    processing: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-    shipped: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-    delivered: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
-  };
-  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${map[status] ?? "bg-muted"}`}>{status}</span>;
 }

@@ -4,13 +4,15 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { trackPageView } from "@/lib/store/track";
 import { CartProvider } from "@/hooks/use-cart";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -119,6 +121,17 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+// Counts shop visits for the admin Analytics. Admin pages and staff browsing the shop are not counted.
+function PageTracker() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { loading, isStaff } = useAuth();
+  useEffect(() => {
+    if (loading || isStaff || pathname.startsWith("/admin")) return;
+    trackPageView(pathname);
+  }, [pathname, loading, isStaff]);
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -128,6 +141,7 @@ function RootComponent() {
         <CartProvider>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
+          <PageTracker />
           <Toaster richColors position="top-right" />
         </CartProvider>
       </AuthProvider>
