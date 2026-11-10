@@ -68,6 +68,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { money } from "@/lib/admin/formatters";
 import {
   STATUS_OPTIONS,
   STATUS_VARIANTS,
@@ -710,10 +711,10 @@ function ProductsPage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">${Number(p.price ?? 0).toFixed(2)}</div>
+                        <div className="font-medium">{money(Number(p.price ?? 0))}</div>
                         {p.sale_price && (
                           <div className="text-xs text-emerald-600">
-                            Sale ${Number(p.sale_price).toFixed(2)}
+                            Sale {money(Number(p.sale_price))}
                           </div>
                         )}
                       </TableCell>

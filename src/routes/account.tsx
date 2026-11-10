@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { formatMoney } from "@/lib/store/format";
 import { Loader2, Package, MapPin, Heart, ShieldCheck, LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/account")({
@@ -159,7 +160,7 @@ function AccountPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge variant="outline">{o.status}</Badge>
-                    <span className="font-medium">${Number(o.total ?? 0).toFixed(2)}</span>
+                    <span className="font-medium">{formatMoney(Number(o.total ?? 0))}</span>
                   </div>
                 </li>
               ))}

@@ -110,7 +110,7 @@ function CustomersPage() {
           : Infinity;
         switch (seg) {
           case "vip":
-            return r.ltv >= 1000;
+            return r.ltv >= 10000;
           case "new":
             return isNew;
           case "returning":
@@ -118,7 +118,7 @@ function CustomersPage() {
           case "inactive":
             return daysSince > 90;
           case "high_value":
-            return r.ltv >= 500;
+            return r.ltv >= 5000;
           default:
             return true;
         }
@@ -139,11 +139,11 @@ function CustomersPage() {
   const segCounts = useMemo(() => {
     const c = { all: rows.length, vip: 0, new: 0, returning: 0, inactive: 0, high_value: 0 };
     for (const r of rows) {
-      if (r.ltv >= 1000) c.vip++;
+      if (r.ltv >= 10000) c.vip++;
       if (now - new Date(r.created_at).getTime() < 30 * 86400_000) c.new++;
       if (r.orders >= 2) c.returning++;
       if (r.last_order && (now - new Date(r.last_order).getTime()) / 86400_000 > 90) c.inactive++;
-      if (r.ltv >= 500) c.high_value++;
+      if (r.ltv >= 5000) c.high_value++;
     }
     return c;
   }, [rows, now]);
@@ -191,11 +191,11 @@ function CustomersPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All customers</SelectItem>
-              <SelectItem value="vip">VIP (≥$1k LTV)</SelectItem>
+              <SelectItem value="vip">VIP (spent 10,000 EGP or more)</SelectItem>
               <SelectItem value="new">New (last 30d)</SelectItem>
               <SelectItem value="returning">Returning (2+ orders)</SelectItem>
               <SelectItem value="inactive">Inactive (90d+)</SelectItem>
-              <SelectItem value="high_value">High value (≥$500)</SelectItem>
+              <SelectItem value="high_value">High value (spent 5,000 EGP or more)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -237,7 +237,7 @@ function CustomersPage() {
                     >
                       {r.full_name ?? "Unnamed"}
                     </Link>
-                    {r.ltv >= 1000 && (
+                    {r.ltv >= 10000 && (
                       <Badge className="ml-2" variant="default">
                         VIP
                       </Badge>
