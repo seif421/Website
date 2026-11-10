@@ -71,6 +71,6 @@ export function trackPageView(path: string) {
   lastPath = path;
   lastAt = now;
   void Promise.resolve(
-    supabase.from("page_views" as never).insert({ session_id: visitId(), path: path.slice(0, 300), source: visitSource(), device: deviceType() } as never),
+    supabase.rpc("track_page_view" as never, { p_session: visitId(), p_path: path.slice(0, 200), p_source: visitSource(), p_device: deviceType() } as never),
   ).catch(() => {});
 }

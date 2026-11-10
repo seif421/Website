@@ -3,19 +3,43 @@
 -- Days and months follow Cairo time.
 
 -- ============ Visitor counting (no personal data: a random per-visit id, the page, source and device type) ============
+-- Visits are recorded only through track_page_view(), which checks the values and limits junk. Nobody can read or write the table directly.
 CREATE TABLE IF NOT EXISTS public.page_views (
-  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  session_id text NOT NULL CHECK (char_length(session_id) BETWEEN 8 AND 64),
-  path text NOT NULL CHECK (char_length(path) BETWEEN 1 AND 300),
-  source text NOT NULL DEFAULT 'direct' CHECK (source IN ('direct', 'organic', 'social', 'paid', 'referral')),
-  device text NOT NULL DEFAULT 'desktop' CHECK (device IN ('mobile', 'tablet', 'desktop'))
+  id bigserial PRIMARY KEY,
+  session_id text NOT NULL,
+  path text NOT NULL,
+  source text NOT NULL DEFAULT 'direct',
+  device text NOT NULL DEFAULT 'desktop',
+  created_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS page_views_created_at_idx ON public.page_views (created_at);
+CREATE INDEX IF NOT EXISTS page_views_created_idx ON public.page_views (created_at);
+CREATE INDEX IF NOT EXISTS page_views_session_idx ON public.page_views (session_id, created_at);
 ALTER TABLE public.page_views ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.page_views FROM anon, authenticated;
-GRANT INSERT ON public.page_views TO anon, authenticated;
-CREATE POLICY "anyone can record a visit" ON public.page_views FOR INSERT TO anon, authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "anyone can record a visit" ON public.page_views;
+REVOKE ALL ON public.page_views FROM PUBLIC, anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.track_page_view(p_session text, p_path text, p_source text, p_device text) RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, private AS $$
+BEGIN
+  IF p_session IS NULL OR char_length(p_session) NOT BETWEEN 8 AND 64 THEN RETURN; END IF;
+  IF p_path IS NULL OR left(p_path, 1) <> '/' OR char_length(p_path) > 200 OR p_path LIKE '/admin%' THEN RETURN; END IF;
+  IF p_source NOT IN ('direct', 'organic', 'social', 'referral', 'paid') THEN p_source := 'direct'; END IF;
+  IF p_device NOT IN ('mobile', 'tablet', 'desktop') THEN p_device := 'desktop'; END IF;
+  -- At most 300 page views per visitor per hour.
+  IF (SELECT count(*) FROM public.page_views WHERE session_id = p_session AND created_at > now() - interval '1 hour') >= 300 THEN RETURN; END IF;
+  INSERT INTO public.page_views (session_id, path, source, device) VALUES (p_session, p_path, p_source, p_device);
+END $$;
+REVOKE ALL ON FUNCTION public.track_page_view(text, text, text, text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.track_page_view(text, text, text, text) TO anon, authenticated;
+
+-- Clean-up of an earlier draft of this feature (safe to run when those objects do not exist).
+DROP TRIGGER IF EXISTS trg_notify_stock ON public.inventory;
+DROP FUNCTION IF EXISTS private.trg_notify_stock();
+DROP FUNCTION IF EXISTS private.trg_notify_order();
+DROP FUNCTION IF EXISTS private.trg_notify_contact();
+DROP FUNCTION IF EXISTS private.trg_notify_review();
+DROP FUNCTION IF EXISTS private.trg_notify_return();
+DROP FUNCTION IF EXISTS public.admin_analytics();
 
 -- ============ Dashboard ============
 CREATE OR REPLACE FUNCTION public.admin_dashboard() RETURNS jsonb
