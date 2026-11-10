@@ -91,7 +91,7 @@ const empty: FormState = {
   lead_time_days: null,
   external_supplier_id: "",
   payment_terms: "",
-  currency: "USD",
+  currency: "EGP",
   api_endpoint: "",
   logo_url: "",
 };
@@ -177,7 +177,7 @@ function SuppliersPage() {
         lead_time_days: f.lead_time_days ?? null,
         external_supplier_id: f.external_supplier_id || null,
         payment_terms: f.payment_terms || null,
-        currency: f.currency || "USD",
+        currency: f.currency || "EGP",
         api_endpoint: f.api_endpoint || null,
         logo_url: f.logo_url || null,
       };
