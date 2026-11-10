@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { LegalPage, pageHead } from "@/components/site/legal-page";
-import { SITE } from "@/lib/site-config";
+import { SiteLayout } from "@/components/site/layout";
+import { pageHead } from "@/components/site/legal-page";
+import { useSiteData } from "@/hooks/use-site-data";
+import { imageUrl } from "@/lib/store/format";
 
 export const Route = createFileRoute("/about")({
   head: () => pageHead("About", "About Rivvo."),
@@ -8,49 +10,32 @@ export const Route = createFileRoute("/about")({
 });
 
 function Page() {
+  const { about } = useSiteData();
+  const image = imageUrl(about.image);
   return (
-    <LegalPage
-      title="About"
-      showUpdated={false}
-      sections={[
-        {
-          heading: "What we do",
-          body: (
-            <>
-              <p>
-                {SITE.name} sells smart home security products: cameras, doorbells, locks and
-                sensors, chosen to be simple to set up and fair in price.
-              </p>
-            </>
-          ),
-        },
-        {
-          heading: "How we work",
-          body: (
-            <>
-              <p>
-                We pick products from established manufacturers, check what we list, and ship
-                directly to you. Delivery times and costs are shown honestly at checkout, and you
-                can read how returns work before you buy.
-              </p>
-            </>
-          ),
-        },
-        {
-          heading: "Talk to us",
-          body: (
-            <>
-              <p>
-                Questions about a product or an order? Use the{" "}
-                <Link to="/contact" className="font-medium text-foreground underline">
-                  contact form
-                </Link>{" "}
-                and a real person will reply.
-              </p>
-            </>
-          ),
-        },
-      ]}
-    />
+    <SiteLayout>
+      <article className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+        <h1 className="font-display text-4xl font-bold tracking-tight">{about.title}</h1>
+        {about.intro && (
+          <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-muted-foreground">{about.intro}</p>
+        )}
+        {image && <img src={image} alt="" className="mt-8 w-full rounded-2xl border border-border object-cover" />}
+        <div className="mt-10 space-y-8">
+          {about.sections.map((s, i) => (
+            <section key={i}>
+              {s.heading && <h2 className="font-display text-xl font-semibold">{s.heading}</h2>}
+              <p className="mt-2 whitespace-pre-line leading-relaxed text-muted-foreground">{s.body}</p>
+            </section>
+          ))}
+        </div>
+        <p className="mt-10 text-sm text-muted-foreground">
+          Need help?{" "}
+          <Link to="/contact" className="font-medium text-foreground underline">
+            Contact us
+          </Link>
+          .
+        </p>
+      </article>
+    </SiteLayout>
   );
 }

@@ -9,23 +9,16 @@ import {
   ChevronDown,
   Home,
 } from "lucide-react";
-import { CATEGORIES } from "./categories";
+import { CategoryThumb } from "./categories";
+import { navCategories, topCategories, useSiteData } from "@/hooks/use-site-data";
 import { useEffect, useRef, useState } from "react";
 import { AnnouncementBar } from "./announcement-bar";
 import { Logo } from "./logo";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 
-const NAV: { label: string; category?: string }[] = [
-  { label: "Shop All" },
-  { label: "Cameras", category: "smart-cameras" },
-  { label: "Doorbells", category: "doorbell-cameras" },
-  { label: "Locks", category: "smart-locks" },
-  { label: "Sensors", category: "motion-sensors" },
-  { label: "Accessories", category: "accessories" },
-];
-
 function Departments() {
+  const cats = topCategories(useSiteData());
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -55,20 +48,21 @@ function Departments() {
         <ChevronDown className="size-4" aria-hidden />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-border bg-card p-2 shadow-elevated">
+        <div className="absolute left-0 top-full z-50 mt-1 max-h-[70vh] w-72 overflow-y-auto rounded-lg border border-border bg-card p-2 shadow-elevated">
           <ul>
-            {CATEGORIES.map(({ label, slug, icon: Icon }) => (
-              <li key={slug}>
+            {cats.map((c) => (
+              <li key={c.id}>
                 <Link
                   to="/shop"
-                  search={{ category: slug }}
+                  search={{ category: c.slug }}
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-surface"
                 >
-                  <Icon className="size-4 text-brand" aria-hidden /> {label}
+                  <CategoryThumb c={c} className="size-7 shrink-0 rounded" /> {c.name}
                 </Link>
               </li>
             ))}
+            {cats.length === 0 && <li className="px-3 py-2 text-sm text-muted-foreground">No categories yet.</li>}
           </ul>
         </div>
       )}
@@ -82,6 +76,11 @@ export function Header() {
   const [term, setTerm] = useState("");
   const { user, isStaff } = useAuth();
   const { count } = useCart();
+  const site = useSiteData();
+  const NAV: { label: string; category?: string }[] = [
+    { label: "Shop All" },
+    ...navCategories(site).map((c) => ({ label: c.name, category: c.slug })),
+  ];
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -125,7 +124,7 @@ export function Header() {
                   type="search"
                   value={term}
                   onChange={(e) => setTerm(e.target.value)}
-                  placeholder="Search cameras, locks, sensors…"
+                  placeholder={site.general.searchPlaceholder}
                   className="h-10 w-full rounded-full border border-input bg-surface pl-9 pr-4 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-brand focus:bg-background focus:ring-2 focus:ring-brand/20"
                   aria-label="Search products"
                 />
@@ -189,6 +188,12 @@ export function Header() {
               >
                 New arrivals
               </Link>
+              <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+                About
+              </Link>
+              <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+                Contact
+              </Link>
             </nav>
           </div>
         </div>
@@ -201,7 +206,7 @@ export function Header() {
                   type="search"
                   value={term}
                   onChange={(e) => setTerm(e.target.value)}
-                  placeholder="Search products…"
+                  placeholder={site.general.searchPlaceholder}
                   className="h-10 w-full rounded-full border border-input bg-surface px-4 text-sm text-foreground outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                   aria-label="Search products"
                 />
@@ -225,6 +230,17 @@ export function Header() {
                       className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                     >
                       {item.label}
+                    </Link>
+                  </li>
+                ))}
+                {(["about", "contact"] as const).map((p) => (
+                  <li key={p}>
+                    <Link
+                      to={`/${p}`}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-lg px-3 py-2.5 text-sm font-medium capitalize text-foreground transition-colors hover:bg-surface"
+                    >
+                      {p}
                     </Link>
                   </li>
                 ))}

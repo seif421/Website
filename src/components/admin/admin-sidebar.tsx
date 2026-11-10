@@ -23,6 +23,7 @@ import {
   Undo2,
   Bell,
   Gift,
+  LayoutTemplate,
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,6 +67,7 @@ const commerce: Item[] = [
   { title: "Reviews", url: "/admin/reviews", icon: Star },
 ];
 const growth: Item[] = [
+  { title: "Website content", url: "/admin/homepage", icon: LayoutTemplate, roles: ["admin", "manager"] },
   { title: "Marketing", url: "/admin/marketing", icon: Megaphone, roles: ["admin", "manager"] },
   { title: "Notifications", url: "/admin/notifications", icon: Bell },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
