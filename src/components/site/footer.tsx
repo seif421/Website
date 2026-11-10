@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 import { Logo } from "./logo";
-import { SITE } from "@/lib/site-config";
 import { navCategories, useSiteData } from "@/hooks/use-site-data";
 
 type FooterLink = { label: string; to: string; category?: string };
@@ -28,18 +27,19 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
 
 export function Footer() {
   const site = useSiteData();
+  const { brand } = site;
+  const socials = [
+    { Icon: Instagram, href: brand.instagram, label: "Instagram" },
+    { Icon: Twitter, href: brand.x, label: "X (Twitter)" },
+    { Icon: Facebook, href: brand.facebook, label: "Facebook" },
+    { Icon: Youtube, href: brand.youtube, label: "YouTube" },
+  ].filter((s) => s.href);
   const shopLinks: FooterLink[] = [
     { label: "All products", to: "/shop" },
     ...navCategories(site).map((c) => ({ label: c.name, to: "/shop", category: c.slug })),
   ];
   const columns = [{ title: "Shop", links: shopLinks }, ...COLUMNS];
   const email = site.contact.email;
-  const socials = [
-    { Icon: Instagram, href: SITE.social.instagram, label: "Instagram" },
-    { Icon: Twitter, href: SITE.social.x, label: "X (Twitter)" },
-    { Icon: Facebook, href: SITE.social.facebook, label: "Facebook" },
-    { Icon: Youtube, href: SITE.social.youtube, label: "YouTube" },
-  ].filter((s) => s.href);
   return (
     <footer className="mt-24 border-t border-border bg-primary text-primary-foreground">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -93,7 +93,7 @@ export function Footer() {
 
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-primary-foreground/10 pt-6 text-xs text-primary-foreground/60 sm:flex-row sm:items-center">
           <p>
-            © {new Date().getFullYear()} Rivvo. All rights reserved.
+            © {new Date().getFullYear()} {brand.name}. All rights reserved.
             {email && (
               <>
                 {" "}

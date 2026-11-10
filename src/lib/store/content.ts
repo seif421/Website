@@ -55,7 +55,21 @@ export type ContactContent = {
   hours: string;
 };
 
+export type BrandContent = {
+  name: string;
+  logo: string;
+  favicon: string;
+  instagram: string;
+  facebook: string;
+  x: string;
+  youtube: string;
+  seoTitle: string;
+  seoDescription: string;
+  ogImage: string;
+};
+
 export type SiteData = {
+  brand: BrandContent;
   categories: MenuCategory[];
   home: HomeContent;
   general: GeneralContent;
@@ -225,8 +239,40 @@ export function mergeContact(raw: unknown): ContactContent {
   };
 }
 
+export const DEFAULT_BRAND: BrandContent = {
+  name: SITE.name,
+  logo: "",
+  favicon: "",
+  instagram: SITE.social.instagram,
+  facebook: SITE.social.facebook,
+  x: SITE.social.x,
+  youtube: SITE.social.youtube,
+  seoTitle: "Rivvo — Shop online in Egypt, pay on delivery",
+  seoDescription:
+    "Shop online in Egypt. Pay cash on delivery, clear prices, honest delivery times and easy returns.",
+  ogImage: "",
+};
+
+export function mergeBrand(raw: unknown): BrandContent {
+  const o = obj(raw);
+  const d = DEFAULT_BRAND;
+  return {
+    name: str(o.name, d.name).trim() || d.name,
+    logo: str(o.logo, d.logo),
+    favicon: str(o.favicon, d.favicon),
+    instagram: str(o.instagram, d.instagram),
+    facebook: str(o.facebook, d.facebook),
+    x: str(o.x, d.x),
+    youtube: str(o.youtube, d.youtube),
+    seoTitle: str(o.seoTitle, d.seoTitle),
+    seoDescription: str(o.seoDescription, d.seoDescription),
+    ogImage: str(o.ogImage, d.ogImage),
+  };
+}
+
 export function defaultSiteData(): SiteData {
   return {
+    brand: DEFAULT_BRAND,
     categories: [],
     home: DEFAULT_HOME,
     general: DEFAULT_GENERAL,
@@ -261,6 +307,7 @@ export async function fetchSiteData(): Promise<SiteData> {
       featured: c.is_featured === true,
     }));
     return {
+      brand: mergeBrand(byKey.brand),
       categories,
       home: mergeHome(byKey.home),
       general: mergeGeneral(byKey.general),
