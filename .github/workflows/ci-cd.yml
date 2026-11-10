@@ -173,4 +173,4 @@ jobs:
         with:
           commit_message: "chore: update Supabase types [skip ci]"
           file_pattern: src/integrations/supabase/types.gen.ts
-          commit_options: '--no-verify'
+          commit_options: "--no-verify"
