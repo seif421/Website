@@ -1,12 +1,15 @@
-import { ShieldCheck, Star } from "lucide-react";
+import { Heart, ShieldCheck, Star } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
 import { formatMoney } from "@/lib/store/format";
 import type { StoreProduct } from "@/lib/store/queries";
 
 export function ProductCard({ product }: { product: StoreProduct }) {
   const cart = useCart();
+  const wishlist = useWishlist();
+  const saved = wishlist.has(product.id);
   const badge = product.isBestSeller ? "Best Seller" : product.isNew ? "New" : null;
 
   return (
@@ -44,6 +47,15 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           )}
         </div>
       </Link>
+      <button
+        type="button"
+        onClick={() => wishlist.toggle(product.id)}
+        aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
+        aria-pressed={saved}
+        className="absolute right-2 top-9 grid size-8 place-items-center rounded-full bg-background/90 shadow-soft transition-colors hover:bg-background"
+      >
+        <Heart className={`size-4 ${saved ? "fill-destructive text-destructive" : "text-foreground"}`} />
+      </button>
       <div className="flex flex-1 flex-col gap-1.5 p-3">
         {product.categoryName && (
           <p className="text-xs font-medium text-muted-foreground">{product.categoryName}</p>

@@ -107,6 +107,7 @@ export async function fetchCategories(): Promise<Category[]> {
     .from("categories")
     .select("id, name, slug, parent_id")
     .eq("is_active", true)
+    .is("deleted_at", null)
     .order("sort_order", { ascending: true });
   if (error) throw new Error(error.message);
   return (data ?? []) as Category[];
@@ -229,6 +230,15 @@ export async function fetchFeatured(limit = 4): Promise<StoreProduct[]> {
     .order("is_best_seller", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (error) throw new Error(error.message);
+  return hydrate((data ?? []) as unknown as ListRow[], categories);
+}
+
+/** Published products for a list of ids (used by the wishlist). */
+export async function fetchProductsByIds(ids: string[]): Promise<StoreProduct[]> {
+  if (ids.length === 0) return [];
+  const categories = await fetchCategories();
+  const { data, error } = await published().in("id", ids.slice(0, 100));
   if (error) throw new Error(error.message);
   return hydrate((data ?? []) as unknown as ListRow[], categories);
 }
