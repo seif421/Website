@@ -141,8 +141,8 @@ function BrandsPage() {
       }
       setDialog({ open: false, form: empty });
       load();
-    } catch (e: any) {
-      toast.error("Save failed", { description: e.message });
+    } catch (e) {
+      toast.error("Save failed", { description: e instanceof Error ? e.message : "Unknown error" });
     } finally {
       setSaving(false);
     }
@@ -155,8 +155,10 @@ function BrandsPage() {
     try {
       const url = await uploadAsset(file, "brands");
       setDialog((d) => ({ ...d, form: { ...d.form, logo_url: url } }));
-    } catch (e: any) {
-      toast.error("Upload failed", { description: e.message });
+    } catch (e) {
+      toast.error("Upload failed", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
     } finally {
       setUploading(false);
     }

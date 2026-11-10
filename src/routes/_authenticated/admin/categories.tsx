@@ -183,8 +183,8 @@ function CategoriesPage() {
       }
       setDialog({ open: false, form: empty });
       load();
-    } catch (e: any) {
-      toast.error("Save failed", { description: e.message });
+    } catch (e) {
+      toast.error("Save failed", { description: e instanceof Error ? e.message : "Unknown error" });
     } finally {
       setSaving(false);
     }
@@ -197,8 +197,10 @@ function CategoriesPage() {
     try {
       const url = await uploadAsset(file, "categories");
       setDialog((d) => ({ ...d, form: { ...d.form, image_url: url } }));
-    } catch (e: any) {
-      toast.error("Upload failed", { description: e.message });
+    } catch (e) {
+      toast.error("Upload failed", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
     } finally {
       setUploading(false);
     }
@@ -254,7 +256,8 @@ function CategoriesPage() {
   const toggleExpanded = (id: string) => {
     setExpanded((s) => {
       const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
       return n;
     });
   };

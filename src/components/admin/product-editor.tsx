@@ -211,7 +211,16 @@ export function ProductEditor({ productId }: { productId?: string }) {
         navigate({ to: "/admin/products" });
         return;
       }
-      const inv = (p as any).inventory?.[0];
+      const inv = (
+        p as {
+          inventory?: {
+            stock: number;
+            low_stock_threshold: number;
+            allow_backorder: boolean;
+            reserved: number;
+          }[];
+        }
+      ).inventory?.[0];
       const dims = (p.dimensions ?? {}) as { length?: number; width?: number; height?: number };
       const attrEntries = Object.entries((p.attributes ?? {}) as Record<string, unknown>).map(
         ([key, value]) => ({ key, value: String(value) }),
@@ -315,8 +324,10 @@ export function ProductEditor({ productId }: { productId?: string }) {
         urls.push(await uploadProductImage(f));
       }
       update("images", [...form.images, ...urls]);
-    } catch (e: any) {
-      toast.error("Upload failed", { description: e.message });
+    } catch (e) {
+      toast.error("Upload failed", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
     } finally {
       setUploading(false);
     }
@@ -474,8 +485,8 @@ export function ProductEditor({ productId }: { productId?: string }) {
 
       toast.success(isNew ? "Product created" : "Product saved");
       if (isNew) navigate({ to: "/admin/products/$id", params: { id: id! } });
-    } catch (e: any) {
-      toast.error("Save failed", { description: e.message });
+    } catch (e) {
+      toast.error("Save failed", { description: e instanceof Error ? e.message : "Unknown error" });
     } finally {
       setSaving(false);
     }

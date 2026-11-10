@@ -96,8 +96,17 @@ function AttributesPage() {
       .select("id,name,slug,type,unit,options")
       .order("name");
     if (error) toast.error("Failed to load", { description: error.message });
+    interface AttributeRow {
+      id: string;
+      name: string;
+      slug: string;
+      type: AttrType;
+      unit: string | null;
+      options: unknown;
+    }
+
     setRows(
-      ((data ?? []) as any[]).map((r) => ({
+      ((data ?? []) as AttributeRow[]).map((r) => ({
         ...r,
         type: r.type as AttrType,
         options: Array.isArray(r.options) ? (r.options as string[]) : [],
@@ -161,8 +170,8 @@ function AttributesPage() {
       }
       setDialog({ open: false, form: empty });
       load();
-    } catch (e: any) {
-      toast.error("Save failed", { description: e.message });
+    } catch (e) {
+      toast.error("Save failed", { description: e instanceof Error ? e.message : "Unknown error" });
     } finally {
       setSaving(false);
     }
@@ -182,13 +191,20 @@ function AttributesPage() {
     const selectable = rows.filter((r) => r.type === "select" || r.type === "color");
     if (selectable.length === 0)
       return toast.info("Create at least one Select or Color attribute first.");
+    interface ProductOption {
+      id: string;
+      name: string;
+      sku: string | null;
+      price: number | null;
+    }
+
     const { data } = await supabase
       .from("products")
       .select("id,name,sku,price")
       .is("deleted_at", null)
       .order("name")
       .limit(200);
-    setProducts((data ?? []) as any);
+    setProducts((data ?? []) as ProductOption[]);
     setVariantGen({ productId: "", sets: selectable.map((a) => ({ attr: a, picks: new Set() })) });
   };
 
@@ -198,7 +214,8 @@ function AttributesPage() {
       const sets = v.sets.map((s, i) => {
         if (i !== idx) return s;
         const picks = new Set(s.picks);
-        picks.has(opt) ? picks.delete(opt) : picks.add(opt);
+        if (picks.has(opt)) picks.delete(opt);
+        else picks.add(opt);
         return { ...s, picks };
       });
       return { ...v, sets };

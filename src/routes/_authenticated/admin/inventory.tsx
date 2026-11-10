@@ -101,9 +101,27 @@ function InventoryPage() {
       )
       .order("stock");
     if (error) toast.error("Failed to load", { description: error.message });
+    interface InventoryRow {
+      product_id: string;
+      product: {
+        name: string;
+        slug: string;
+        sku: string | null;
+        price: number | null;
+        deleted_at: string | null;
+      } | null;
+      stock: number;
+      reserved: number;
+      incoming: number;
+      low_stock_threshold: number;
+      location: string | null;
+      allow_backorder: boolean;
+      allow_preorder: boolean;
+    }
+
     const mapped: Row[] = (data ?? [])
-      .filter((r: any) => r.product && !r.product.deleted_at)
-      .map((r: any) => ({
+      .filter((r: InventoryRow) => r.product && !r.product.deleted_at)
+      .map((r: InventoryRow) => ({
         product_id: r.product_id,
         product_name: r.product.name,
         product_slug: r.product.slug,
@@ -128,7 +146,7 @@ function InventoryPage() {
       .select("id,created_at,change,new_stock,reason,location,product:products(name)")
       .order("created_at", { ascending: false })
       .limit(100);
-    setHistory((data ?? []) as unknown as HistoryRow[]);
+    setHistory((data ?? []) as HistoryRow[]);
     setHistoryLoading(false);
   };
 
@@ -216,8 +234,10 @@ function InventoryPage() {
       setAdjust(null);
       load();
       loadHistory();
-    } catch (e: any) {
-      toast.error("Update failed", { description: e.message });
+    } catch (e) {
+      toast.error("Update failed", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
     } finally {
       setSaving(false);
     }
@@ -247,7 +267,7 @@ function InventoryPage() {
         <StatCard icon={PackageOpen} label="Incoming units" value={stats.incoming} tone="info" />
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as "stock" | "history")}>
         <TabsList>
           <TabsTrigger value="stock">Stock levels</TabsTrigger>
           <TabsTrigger value="history">
@@ -266,7 +286,10 @@ function InventoryPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as any)}>
+            <Select
+              value={stockFilter}
+              onValueChange={(v) => setStockFilter(v as "all" | "in" | "low" | "out")}
+            >
               <SelectTrigger className="w-[150px]">
                 <SelectValue />
               </SelectTrigger>
@@ -502,7 +525,7 @@ function StatCard({
   value,
   tone,
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number;
   tone: "default" | "ok" | "warn" | "bad" | "info";

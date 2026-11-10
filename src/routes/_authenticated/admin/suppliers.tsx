@@ -134,7 +134,10 @@ function SuppliersPage() {
       .not("supplier_id", "is", null)
       .is("deleted_at", null);
     const map: Record<string, number> = {};
-    (counts ?? []).forEach((r: any) => {
+    interface SupplierCountRow {
+      supplier_id: string | null;
+    }
+    (counts ?? []).forEach((r: SupplierCountRow) => {
       if (r.supplier_id) map[r.supplier_id] = (map[r.supplier_id] ?? 0) + 1;
     });
     setProductCounts(map);
@@ -198,8 +201,8 @@ function SuppliersPage() {
       }
       setDialog({ open: false, form: empty });
       load();
-    } catch (e: any) {
-      toast.error("Save failed", { description: e.message });
+    } catch (e) {
+      toast.error("Save failed", { description: e instanceof Error ? e.message : "Unknown error" });
     } finally {
       setSaving(false);
     }
@@ -212,8 +215,10 @@ function SuppliersPage() {
     try {
       const url = await uploadAsset(file, "suppliers");
       setDialog((d) => ({ ...d, form: { ...d.form, logo_url: url } }));
-    } catch (e: any) {
-      toast.error("Upload failed", { description: e.message });
+    } catch (e) {
+      toast.error("Upload failed", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
     } finally {
       setUploading(false);
     }

@@ -206,7 +206,8 @@ function ProductsPage() {
   };
   const toggleOne = (id: string) => {
     const next = new Set(selected);
-    next.has(id) ? next.delete(id) : next.add(id);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
     setSelected(next);
   };
   const clearSelection = () => setSelected(new Set());
@@ -284,7 +285,30 @@ function ProductsPage() {
       )
       .in("id", idsToExport);
     if (!data) return;
-    const flat = data.map((p: any) => ({
+    interface ProductExportRow {
+      id: string;
+      name: string;
+      slug: string;
+      sku: string | null;
+      barcode: string | null;
+      status: string;
+      price: number | null;
+      sale_price: number | null;
+      compare_at_price: number | null;
+      cost: number | null;
+      short_description: string | null;
+      description: string | null;
+      is_featured: boolean;
+      is_best_seller: boolean;
+      is_new_arrival: boolean;
+      is_trending: boolean;
+      tags: string[];
+      category: { name: string } | null;
+      brand: { name: string } | null;
+      inventory: { stock: number }[];
+    }
+
+    const flat = data.map((p: ProductExportRow) => ({
       ...p,
       category: p.category?.name ?? "",
       brand: p.brand?.name ?? "",

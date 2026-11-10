@@ -57,15 +57,13 @@ function GiftCardsPage() {
     const code = form.code.trim() || randomCode();
     const amt = Number(form.initial_balance);
     if (!amt || amt <= 0) return toast.error("Amount must be > 0");
-    const { error } = await supabase
-      .from("gift_cards")
-      .insert({
-        code,
-        initial_balance: amt,
-        balance: amt,
-        recipient_email: form.recipient_email || null,
-        expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
-      });
+    const { error } = await supabase.from("gift_cards").insert({
+      code,
+      initial_balance: amt,
+      balance: amt,
+      recipient_email: form.recipient_email || null,
+      expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
+    });
     if (error) return toast.error(error.code === "23505" ? "Code already exists" : error.message);
     setForm({ code: "", initial_balance: 50, recipient_email: "", expires_at: "" });
     load();
