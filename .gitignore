@@ -34,4 +34,11 @@ dist-ssr
 # Environment (never commit real values)
 .env
 .env.*
+.env*
 !.env.example
+
+# Vercel
+.vercel/
+
+# Supabase temporary files
+supabase/.temp/
