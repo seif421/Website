@@ -112,15 +112,19 @@ function HomeTab({ cats }: { cats: Cat[] }) {
         <p className="text-sm font-semibold">Two boxes next to the banner</p>
         <div className="grid gap-4 md:grid-cols-2">
           {[0, 1].map((i) => {
-            const p = h.promos[i] ?? { title: "", text: "", link: "/shop" };
+            const blank = { title: "", text: "", link: "/shop", image: "" };
+            const p = h.promos[i] ?? blank;
             const upd = (patch: Partial<typeof p>) => {
-              const next = [0, 1].map((j) => (j === i ? { ...p, ...patch } : (h.promos[j] ?? { title: "", text: "", link: "/shop" })));
+              const next = [0, 1].map((j) => (j === i ? { ...p, ...patch } : (h.promos[j] ?? blank)));
               set({ promos: next });
             };
             return (
               <div key={i} className="space-y-3 rounded-lg border p-4">
                 <Field label="Title"><Input value={p.title} onChange={(e) => upd({ title: e.target.value })} /></Field>
                 <Field label="Text"><Input value={p.text} onChange={(e) => upd({ text: e.target.value })} /></Field>
+                <Field label="Picture" hint="Shown behind the text. About 600 × 400.">
+                  <ImageField value={p.image} onChange={(image) => upd({ image })} />
+                </Field>
                 <Field label="Link"><LinkField value={p.link} cats={cats} onChange={(link) => upd({ link })} /></Field>
               </div>
             );

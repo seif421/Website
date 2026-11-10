@@ -18,7 +18,7 @@ export type MenuCategory = {
 export type Section = { show: boolean; title: string };
 export type WhyItem = { icon: string; title: string; body: string };
 export type Faq = { q: string; a: string };
-export type Promo = { title: string; text: string; link: string };
+export type Promo = { title: string; text: string; link: string; image: string };
 
 export type HomeContent = {
   hero: { image: string; link: string; alt: string };
@@ -80,8 +80,8 @@ export type SiteData = {
 export const DEFAULT_HOME: HomeContent = {
   hero: { image: "", link: "/shop", alt: "Rivvo. Shop smarter, live better." },
   promos: [
-    { title: "New arrivals", text: "See what just landed in the shop.", link: "/shop?sort=newest" },
-    { title: "Lowest prices", text: "Start with the best value.", link: "/shop?sort=price-asc" },
+    { title: "New arrivals", text: "See what just landed in the shop.", link: "/shop?sort=newest", image: "" },
+    { title: "Lowest prices", text: "Start with the best value.", link: "/shop?sort=price-asc", image: "" },
   ],
   sections: {
     categories: { show: true, title: "Shop by category" },
@@ -185,6 +185,7 @@ export function mergeHome(raw: unknown): HomeContent {
           title: str(p.title, d.promos[i]?.title ?? ""),
           text: str(p.text, d.promos[i]?.text ?? ""),
           link: str(p.link, d.promos[i]?.link ?? "/shop") || "/shop",
+          image: str(p.image, d.promos[i]?.image ?? ""),
         }))
       : d.promos,
     sections: {

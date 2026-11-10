@@ -50,16 +50,34 @@ export function Hero() {
         </CmsLink>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-          {promos.slice(0, 2).map((p, i) => (
-            <CmsLink
-              key={i}
-              href={p.link}
-              className="flex min-h-[120px] flex-col justify-end rounded-xl border border-border bg-surface p-5 transition-colors hover:border-brand/50"
-            >
-              <span className="font-display text-lg font-bold">{p.title}</span>
-              <span className="text-sm text-muted-foreground">{p.text}</span>
-            </CmsLink>
-          ))}
+          {promos.slice(0, 2).map((p, i) => {
+            const img = imageUrl(p.image);
+            return (
+              <CmsLink
+                key={i}
+                href={p.link}
+                className={`group relative flex min-h-[140px] flex-col justify-end overflow-hidden rounded-xl border p-5 transition-colors hover:border-brand/50 ${
+                  img ? "border-transparent text-white" : "border-border bg-surface"
+                }`}
+              >
+                {img && (
+                  <>
+                    <img
+                      src={img}
+                      alt=""
+                      loading="lazy"
+                      className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  </>
+                )}
+                <span className="relative font-display text-lg font-bold">{p.title}</span>
+                <span className={`relative text-sm ${img ? "text-white/85" : "text-muted-foreground"}`}>
+                  {p.text}
+                </span>
+              </CmsLink>
+            );
+          })}
         </div>
       </div>
     </section>
