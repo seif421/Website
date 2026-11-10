@@ -124,7 +124,7 @@ export const DEFAULT_HOME: HomeContent = {
 };
 
 export const DEFAULT_GENERAL: GeneralContent = {
-  announcement: `Cash on delivery · ${SITE.returnDays}-day returns`,
+  announcement: "",
   searchPlaceholder: "Search products…",
   footerTagline: "Shop online in Egypt and pay when your order arrives.",
 };
