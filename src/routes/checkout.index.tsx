@@ -110,7 +110,7 @@ function CheckoutPage() {
     ]);
     navigate({
       to: "/checkout/success",
-      search: { order: order.order_number, total: order.total, emailed: emailed ? 1 : 0 },
+      search: { order: order.order_number, total: order.total, emailed },
     });
   }
 

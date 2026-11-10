@@ -47,7 +47,7 @@ function AccountPage() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      navigate({ to: "/auth" });
+      navigate({ to: "/auth", search: { redirect: "/account" } });
       return;
     }
     (async () => {

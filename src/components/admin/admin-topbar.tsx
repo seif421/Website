@@ -82,7 +82,7 @@ export function AdminTopbar() {
           <DropdownMenuItem
             onClick={async () => {
               await signOut();
-              navigate({ to: "/auth", replace: true });
+              navigate({ to: "/auth", search: { redirect: "/admin" }, replace: true });
             }}
           >
             <LogOut className="size-4" /> Sign out

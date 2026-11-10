@@ -54,7 +54,7 @@ function AdminLayout() {
               variant="outline"
               onClick={async () => {
                 await signOut();
-                navigate({ to: "/auth", replace: true });
+                navigate({ to: "/auth", search: { redirect: "/admin" }, replace: true });
               }}
             >
               Sign out

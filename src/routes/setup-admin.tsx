@@ -49,7 +49,7 @@ function SetupPage() {
 
   async function claim() {
     if (!user) {
-      navigate({ to: "/auth" });
+      navigate({ to: "/auth", search: { redirect: "/setup-admin" } });
       return;
     }
     setBusy(true);
@@ -99,7 +99,9 @@ function SetupPage() {
                 Setup is already completed. This page is permanently disabled.
               </p>
               <Button asChild variant="outline" className="w-full">
-                <Link to="/auth">Sign in</Link>
+                <Link to="/auth" search={{ redirect: "/setup-admin" }}>
+                  Sign in
+                </Link>
               </Button>
             </div>
           ) : !user ? (
@@ -109,7 +111,9 @@ function SetupPage() {
                 make that account the store's Super Admin.
               </p>
               <Button asChild className="w-full">
-                <Link to="/auth">Sign in / create account</Link>
+                <Link to="/auth" search={{ redirect: "/setup-admin" }}>
+                  Sign in / create account
+                </Link>
               </Button>
             </div>
           ) : (

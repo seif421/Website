@@ -58,7 +58,7 @@ function ForgotPassword() {
             </Button>
           </form>
           <p className="mt-6 text-center text-sm">
-            <Link to="/auth" className="text-brand hover:underline">
+            <Link to="/auth" search={{ redirect: "/" }} className="text-brand hover:underline">
               ← Back to sign in
             </Link>
           </p>

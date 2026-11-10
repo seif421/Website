@@ -119,22 +119,21 @@ function InventoryPage() {
       allow_preorder: boolean;
     }
 
-    const mapped: Row[] = (data ?? [])
-      .filter((r: InventoryRow) => r.product && !r.product.deleted_at)
-      .map((r: InventoryRow) => ({
-        product_id: r.product_id,
-        product_name: r.product.name,
-        product_slug: r.product.slug,
-        sku: r.product.sku,
-        stock: r.stock,
-        reserved: r.reserved,
-        incoming: r.incoming,
-        low_stock_threshold: r.low_stock_threshold,
-        location: r.location,
-        allow_backorder: r.allow_backorder,
-        allow_preorder: r.allow_preorder,
-        price: r.product.price,
-      }));
+    const filtered = (data ?? []).filter((r: InventoryRow) => r.product && !r.product.deleted_at);
+    const mapped: Row[] = filtered.map((r) => ({
+      product_id: r.product_id,
+      product_name: r.product!.name,
+      product_slug: r.product!.slug,
+      sku: r.product!.sku,
+      stock: r.stock,
+      reserved: r.reserved,
+      incoming: r.incoming,
+      low_stock_threshold: r.low_stock_threshold,
+      location: r.location,
+      allow_backorder: r.allow_backorder,
+      allow_preorder: r.allow_preorder,
+      price: r.product!.price,
+    }));
     setRows(mapped);
     setLoading(false);
   };

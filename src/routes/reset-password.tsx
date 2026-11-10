@@ -26,7 +26,7 @@ function ResetPassword() {
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Password updated");
-    navigate({ to: "/auth" });
+    navigate({ to: "/auth", search: { redirect: "/" } });
   }
 
   return (

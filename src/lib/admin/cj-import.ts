@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 function slugify(input: string) {
   return input
@@ -13,35 +14,8 @@ function slugify(input: string) {
 // Admin-only server functions for finding CJ Dropshipping products and importing them as drafts.
 
 type Ctx = {
-  supabase: {
-    rpc: (
-      fn: string,
-      args: Record<string, unknown>,
-    ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
-    from: (t: string) => SupabaseClient;
-  };
+  supabase: SupabaseClient;
   userId: string;
-};
-
-type SupabaseClient = {
-  select: (
-    cols: string,
-    opts?: { count?: "exact"; head?: boolean },
-  ) => {
-    eq: (col: string, val: string) => Promise<{ data: unknown; error: { message: string } | null }>;
-    ilike: (
-      col: string,
-      val: string,
-    ) => Promise<{ data: unknown; error: { message: string } | null }>;
-    order: (
-      col: string,
-      opts: { ascending: boolean },
-    ) => Promise<{ data: unknown; error: { message: string } | null }>;
-    limit: (n: number) => Promise<{ data: unknown; error: { message: string } | null }>;
-  };
-  insert: (payload: unknown) => Promise<{ data: unknown; error: { message: string } | null }>;
-  update: (payload: unknown) => Promise<{ data: unknown; error: { message: string } | null }>;
-  delete: () => Promise<{ data: unknown; error: { message: string } | null }>;
 };
 
 async function requireManager(ctx: Ctx) {

@@ -212,12 +212,15 @@ export function ProductEditor({ productId }: { productId?: string }) {
         return;
       }
       const inv = (
-        p as {
+        p as unknown as {
           inventory?: {
             stock: number;
             low_stock_threshold: number;
             allow_backorder: boolean;
             reserved: number;
+            incoming?: number;
+            allow_preorder?: boolean;
+            [key: string]: unknown;
           }[];
         }
       ).inventory?.[0];

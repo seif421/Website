@@ -305,14 +305,14 @@ function ProductsPage() {
       tags: string[];
       category: { name: string } | null;
       brand: { name: string } | null;
-      inventory: { stock: number }[];
+      inventory: { stock: number } | null;
     }
 
     const flat = data.map((p: ProductExportRow) => ({
       ...p,
       category: p.category?.name ?? "",
       brand: p.brand?.name ?? "",
-      stock: p.inventory?.[0]?.stock ?? 0,
+      stock: Array.isArray(p.inventory) ? (p.inventory[0]?.stock ?? 0) : (p.inventory?.stock ?? 0),
       tags: (p.tags ?? []).join("|"),
     }));
     downloadFile(`products-${Date.now()}.csv`, productsToCsv(flat));
