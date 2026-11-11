@@ -33,6 +33,16 @@ type Order = {
   created_at: string;
   order_items: OrderLine[];
 };
+type ReturnReq = {
+  id: string;
+  return_number: string;
+  status: string;
+  type: string;
+  reason: string | null;
+  admin_notes: string | null;
+  created_at: string;
+  items: { name: string; quantity: number }[] | null;
+};
 type Login = {
   id: string;
   created_at: string;
@@ -46,6 +56,7 @@ function AccountPage() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [logins, setLogins] = useState<Login[]>([]);
+  const [returns, setReturns] = useState<ReturnReq[]>([]);
   const [busy, setBusy] = useState(true);
   const [showAll, setShowAll] = useState(false);
 
@@ -56,7 +67,7 @@ function AccountPage() {
       return;
     }
     (async () => {
-      const [{ data: o }, { data: l }] = await Promise.all([
+      const [{ data: o }, { data: l }, { data: rr }] = await Promise.all([
         supabase
           .from("orders")
           .select(
@@ -70,7 +81,14 @@ function AccountPage() {
           .select("id,created_at,ip_address,user_agent,success")
           .order("created_at", { ascending: false })
           .limit(10),
+        supabase
+          .from("returns")
+          .select("id,return_number,status,type,reason,admin_notes,created_at,items")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(20),
       ]);
+      setReturns((rr ?? []) as unknown as ReturnReq[]);
       setOrders((o ?? []) as unknown as Order[]);
       setLogins((l ?? []) as Login[]);
       setBusy(false);
@@ -216,6 +234,42 @@ function AccountPage() {
                 </Button>
               )}
             </>
+          )}
+        </Card>
+
+        <Card id="returns" className="mt-8 scroll-mt-24 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-semibold">Return requests</h2>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/returns/new">Request a return</Link>
+            </Button>
+          </div>
+          {busy ? (
+            <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+          ) : returns.length === 0 ? (
+            <p className="mt-3 text-sm text-muted-foreground">You have no return requests.</p>
+          ) : (
+            <ul className="mt-3 divide-y text-sm">
+              {returns.map((r) => (
+                <li key={r.id} className="py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-medium">{r.return_number}</span>
+                    <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium capitalize">
+                      {r.status === "requested" ? "Under review" : r.status}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground">
+                    {(r.items ?? []).map((i) => `${i.name} × ${i.quantity}`).join(", ")} · {r.reason} ·{" "}
+                    {new Date(r.created_at).toLocaleDateString()}
+                  </p>
+                  {r.admin_notes && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">Message from us:</span> {r.admin_notes}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
         </Card>
 

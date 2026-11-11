@@ -368,3 +368,118 @@ export const sendSupportReply = createServerFn({ method: "POST" })
       };
     }
   });
+
+// ---------------------------------------------------------------------------
+// Return requests: the "approved" email.
+
+type ReturnMail = {
+  return_number: string;
+  order_number: string;
+  email: string;
+  type: string;
+  refund_amount: number | null;
+  items: { name: string; quantity: number; unit_price: number; image?: string | null }[];
+  address: Record<string, string> | null;
+  note: string | null;
+};
+
+function publicImage(path?: string | null): string | null {
+  if (!path) return null;
+  if (/^https:\/\//i.test(path)) return path;
+  if (/^(http:|data:|blob:|\/)/i.test(path)) return null;
+  const base = (process.env.SUPABASE_URL ?? "").replace(/\/$/, "");
+  if (!base) return null;
+  return `${base}/storage/v1/object/public/product-images/${path.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+export function buildReturnApprovedEmail(m: ReturnMail): Mail {
+  const a = m.address ?? {};
+  const first = (a.full_name ?? "").trim().split(/\s+/)[0] || "";
+  const refund = m.type !== "replacement";
+  const items: Item[] = m.items.map((i) => ({
+    name: i.name,
+    quantity: i.quantity,
+    unit_price: i.unit_price,
+    subtotal: i.unit_price * i.quantity,
+    image: publicImage(i.image),
+  }));
+  const where = [a.line1, a.line2, a.city, a.governorate].filter(Boolean).map(esc).join(", ");
+  const note = m.note
+    ? `<div style="margin:16px 0 0;padding:14px 16px;background:#f6f6f6;border-radius:10px"><p style="margin:0 0 4px;font-size:12px;color:#888">Message from ${esc(SITE.name)}</p><p style="margin:0;font-size:14px;color:#111;line-height:1.5">${esc(m.note).replace(/\r?\n/g, "<br>")}</p></div>`
+    : "";
+  const inner = `<p style="margin:0 0 16px;font-size:14px;color:#111;line-height:1.6">Hi${first ? ` ${esc(first)}` : ""}, good news: your return request <strong>${esc(m.return_number)}</strong> for order <strong>${esc(m.order_number)}</strong> has been <strong>approved</strong>.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${itemRows(items)}</table>
+<p style="margin:16px 0 0;font-size:14px;color:#111"><strong>You asked for:</strong> ${refund ? "a refund" : "a replacement"}${refund && m.refund_amount ? ` (${egp(Number(m.refund_amount))} for the items above)` : ""}</p>
+<p style="margin:12px 0 0;font-size:14px;color:#111"><strong>Pick-up address:</strong> ${where}${a.phone ? `<br>Phone: ${esc(a.phone)}` : ""}</p>
+${note}
+<p style="margin:16px 0 0;font-size:14px;color:#444;line-height:1.6"><strong>What happens next:</strong> we will contact you${a.phone ? ` on ${esc(a.phone)}` : ""} to arrange collecting the item${items.length > 1 ? "s" : ""}. Please keep ${items.length > 1 ? "them" : "it"} unused and in the original packaging. After we receive and check ${items.length > 1 ? "them" : "it"}, we will complete your ${refund ? "refund" : "replacement"}.</p>`;
+  const footer = `Questions? Just reply to this email${contactLine() ? ` or contact us: ${contactLine()}` : ""}.`;
+  const text = [
+    `Hi${first ? ` ${first}` : ""}, your return request ${m.return_number} for order ${m.order_number} has been approved.`,
+    "",
+    ...items.map((i) => `- ${i.quantity} x ${i.name}`),
+    "",
+    `You asked for: ${refund ? "a refund" : "a replacement"}${refund && m.refund_amount ? ` (${egp(Number(m.refund_amount))})` : ""}`,
+    `Pick-up address: ${[a.line1, a.line2, a.city, a.governorate].filter(Boolean).join(", ")}${a.phone ? ` / ${a.phone}` : ""}`,
+    m.note ? `\nMessage from ${SITE.name}: ${m.note}` : "",
+    "",
+    `What happens next: we will contact you to arrange collecting the item(s). Please keep them unused and in the original packaging. After we receive and check them, we will complete your ${refund ? "refund" : "replacement"}.`,
+  ]
+    .filter((l) => l !== "")
+    .join("\n");
+  return {
+    subject: `Your return request ${m.return_number} is approved`,
+    html: shell("Your return request is approved", inner, footer),
+    text,
+  };
+}
+
+async function emailReturnApproval(
+  supabase: ReturnType<typeof db>,
+  id: string,
+  m: ReturnMail,
+): Promise<boolean> {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) return false;
+  try {
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m.email)) throw new Error("The customer's email address is not valid.");
+    await deliver(m.email, buildReturnApprovedEmail(m));
+    await supabase.rpc("mark_return_email_sent" as never, { p_id: id } as never);
+    return true;
+  } catch (e) {
+    console.error("[return email] send failed", e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
+function checkReturnInput(d: { accessToken: string; id: string; note?: string }) {
+  if (typeof d?.accessToken !== "string" || d.accessToken.length < 20 || d.accessToken.length > 4000)
+    throw new Error("Invalid session");
+  if (typeof d.id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.id)) throw new Error("Invalid request");
+  if (d.note !== undefined && (typeof d.note !== "string" || d.note.length > 1000)) throw new Error("Invalid note");
+  return { accessToken: d.accessToken, id: d.id, note: d.note ?? "" };
+}
+
+// Staff approve a return request. The database checks the caller is staff and approves it once;
+// the customer is then emailed. If the email fails the request stays approved and staff can resend it.
+export const approveReturn = createServerFn({ method: "POST" })
+  .inputValidator(checkReturnInput)
+  .handler(async ({ data }): Promise<{ approved: boolean; emailed: boolean; error?: string }> => {
+    const supabase = db(data.accessToken);
+    const { data: claim, error } = await supabase.rpc(
+      "claim_return_approval" as never,
+      { p_id: data.id, p_note: data.note } as never,
+    );
+    if (error || !claim) return { approved: false, emailed: false, error: error?.message ?? "Could not approve." };
+    const emailed = await emailReturnApproval(supabase, data.id, claim as unknown as ReturnMail);
+    return { approved: true, emailed };
+  });
+
+export const resendReturnEmail = createServerFn({ method: "POST" })
+  .inputValidator(checkReturnInput)
+  .handler(async ({ data }): Promise<{ sent: boolean; error?: string }> => {
+    const supabase = db(data.accessToken);
+    const { data: info, error } = await supabase.rpc("get_return_email" as never, { p_id: data.id } as never);
+    if (error || !info) return { sent: false, error: error?.message ?? "This request is not approved." };
+    const sent = await emailReturnApproval(supabase, data.id, info as unknown as ReturnMail);
+    return sent ? { sent: true } : { sent: false, error: "The email could not be sent." };
+  });
