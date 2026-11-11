@@ -11,9 +11,10 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   const wishlist = useWishlist();
   const saved = wishlist.has(product.id);
   const badge = product.isBestSeller ? "Best Seller" : product.isNew ? "New" : null;
+  const save = product.compareAt && product.compareAt > product.price ? Math.round(product.compareAt - product.price) : 0;
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:border-brand/40 hover:shadow-elevated">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-elevated">
       <Link
         to="/product/$slug"
         params={{ slug: product.slug }}
@@ -43,6 +44,11 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           {product.discountPct > 0 && (
             <span className="absolute right-2 top-2 rounded bg-destructive px-2 py-0.5 text-[11px] font-semibold text-destructive-foreground">
               −{product.discountPct}%
+            </span>
+          )}
+          {save > 0 && (
+            <span className="absolute bottom-0 left-0 rounded-tr-lg bg-success px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-success-foreground">
+              Save {formatMoney(save)}
             </span>
           )}
         </div>
@@ -75,7 +81,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           </div>
         )}
         <div className="mt-auto flex items-baseline gap-2 pt-1">
-          <span className="font-display text-lg font-bold text-foreground">
+          <span className="font-display text-lg font-extrabold text-foreground">
             {formatMoney(product.price)}
           </span>
           {product.compareAt && (

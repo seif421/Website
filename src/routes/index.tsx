@@ -3,6 +3,7 @@ import { SiteLayout } from "@/components/site/layout";
 import { Hero } from "@/components/site/hero";
 import { Categories } from "@/components/site/categories";
 import { ProductRow } from "@/components/site/product-row";
+import { CuratedPicks } from "@/components/site/curated-picks";
 import { WhyUs } from "@/components/site/why-us";
 import { FAQ } from "@/components/site/faq";
 import { fetchHomeRows } from "@/lib/store/queries";
@@ -33,7 +34,7 @@ function Index() {
   return (
     <SiteLayout>
       <Hero />
-      <Categories />
+      <WhyUs />
       {empty ? (
         <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
           <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
@@ -45,12 +46,14 @@ function Index() {
         </section>
       ) : (
         <>
-          {sec.deals.show && <ProductRow title={sec.deals.title} products={deals} seeAll={{ sort: "price-asc" }} />}
+          {sec.deals.show && <ProductRow title={sec.deals.title} products={deals} seeAll={{ sort: "price-asc" }} tone="flash" />}
+          <Categories />
+          <CuratedPicks />
           {sec.bestSellers.show && <ProductRow title={sec.bestSellers.title} products={bestSellers} seeAll={{ sort: "rating" }} />}
           {sec.newArrivals.show && <ProductRow title={sec.newArrivals.title} products={newest} seeAll={{ sort: "newest" }} />}
         </>
       )}
-      <WhyUs />
+      {empty && <Categories />}
       <FAQ />
     </SiteLayout>
   );

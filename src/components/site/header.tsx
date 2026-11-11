@@ -44,7 +44,7 @@ function Departments() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="true"
-        className="flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        className="flex h-9 items-center gap-2 rounded-md bg-brand px-4 text-sm font-semibold text-brand-foreground hover:bg-brand/90"
       >
         <Menu className="size-4" aria-hidden /> All categories{" "}
         <ChevronDown className="size-4" aria-hidden />
@@ -76,6 +76,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState("");
+  const [searchCat, setSearchCat] = useState("");
   const { user, isStaff } = useAuth();
   const { count } = useCart();
   const wishlist = useWishlist();
@@ -96,18 +97,18 @@ export function Header() {
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     setOpen(false);
-    navigate({ to: "/shop", search: { q: term.trim() || undefined } });
+    navigate({ to: "/shop", search: { q: term.trim() || undefined, category: searchCat || undefined } });
   }
 
   return (
     <header className="sticky top-0 z-50">
       <AnnouncementBar />
       <div
-        className={`border-b border-border/60 backdrop-blur-xl transition-all ${
-          scrolled ? "bg-background/85 shadow-soft" : "bg-background/70"
+        className={`border-b border-border bg-background transition-shadow ${
+          scrolled ? "shadow-soft" : ""
         }`}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:gap-8 lg:px-8">
           <div className="flex items-center gap-8">
             <Logo />
           </div>
@@ -116,39 +117,56 @@ export function Header() {
             <form
               role="search"
               onSubmit={submitSearch}
-              className="hidden max-w-2xl flex-1 md:block"
+              className="mr-2 hidden max-w-3xl flex-1 md:block"
             >
-              <label className="relative block">
-                <Search
-                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden
-                />
+              <div className="flex h-11 overflow-hidden rounded-lg border-2 border-brand bg-background">
+                <select
+                  aria-label="Search in category"
+                  value={searchCat}
+                  onChange={(e) => setSearchCat(e.target.value)}
+                  className="hidden max-w-[10rem] shrink-0 cursor-pointer truncate border-r border-border bg-surface px-3 text-sm text-foreground outline-none lg:block"
+                >
+                  <option value="">All categories</option>
+                  {topCategories(site).map((c) => (
+                    <option key={c.id} value={c.slug}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
                 <input
                   type="search"
                   value={term}
                   onChange={(e) => setTerm(e.target.value)}
                   placeholder={site.general.searchPlaceholder}
-                  className="h-10 w-full rounded-full border border-input bg-surface pl-9 pr-4 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-brand focus:bg-background focus:ring-2 focus:ring-brand/20"
+                  className="min-w-0 flex-1 bg-transparent px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground"
                   aria-label="Search products"
                 />
-              </label>
+                <button
+                  type="submit"
+                  aria-label="Search"
+                  className="grid w-14 shrink-0 place-items-center bg-brand text-brand-foreground transition-colors hover:bg-brand/90"
+                >
+                  <Search className="size-5" aria-hidden />
+                </button>
+              </div>
             </form>
 
             {isStaff && (
-              <IconLink to="/admin" label="Admin">
+              <IconLink to="/admin" label="Admin" text="Admin">
                 <LayoutDashboard className="size-5" />
               </IconLink>
             )}
-            <IconLink to={user ? "/account" : "/auth"} label={user ? "Account" : "Sign in"}>
+            <IconLink to={user ? "/account" : "/auth"} label={user ? "Account" : "Sign in"} text={user ? "Account" : "Sign in"}>
               <User className="size-5" />
             </IconLink>
-            <IconLink to="/wishlist" label="Wishlist" badge={wishlist.count}>
+            <IconLink to="/wishlist" label="Wishlist" text="Wishlist" badge={wishlist.count}>
               <Heart className="size-5" />
             </IconLink>
             <IconLink
               to="/cart"
               label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"}
               badge={count}
+              text="Cart"
             >
               <ShoppingBag className="size-5" />
             </IconLink>
@@ -165,15 +183,15 @@ export function Header() {
           </div>
         </div>
 
-        <div className="hidden border-t border-border/60 bg-background lg:block">
+        <div className="hidden bg-primary text-primary-foreground lg:block">
           <div className="mx-auto flex h-12 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
             <Departments />
             <nav aria-label="Primary" className="flex items-center gap-6">
               <Link
                 to="/"
                 activeOptions={{ exact: true }}
-                activeProps={{ className: "text-foreground" }}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                activeProps={{ className: "text-primary-foreground" }}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground"
               >
                 <Home className="size-4" aria-hidden /> Home
               </Link>
@@ -182,7 +200,7 @@ export function Header() {
                   key={item.label}
                   to="/shop"
                   search={item.category ? { category: item.category } : {}}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground"
                 >
                   {item.label}
                 </Link>
@@ -256,25 +274,30 @@ function IconLink({
   to,
   label,
   badge,
+  text,
   children,
 }: {
   to: string;
   label: string;
   badge?: number;
+  text?: string;
   children: React.ReactNode;
 }) {
   return (
     <Link
       to={to}
       aria-label={label}
-      className="relative grid size-10 place-items-center rounded-full text-foreground transition-colors hover:bg-surface"
+      className="relative flex flex-col items-center justify-center gap-0.5 rounded-lg px-2.5 py-1.5 text-foreground transition-colors hover:bg-surface"
     >
-      {children}
-      {typeof badge === "number" && badge > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full bg-brand text-[10px] font-semibold text-brand-foreground">
-          {badge > 9 ? "9+" : badge}
-        </span>
-      )}
+      <span className="relative">
+        {children}
+        {typeof badge === "number" && badge > 0 && (
+          <span className="absolute -right-2 -top-1.5 grid min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-semibold leading-4 text-brand-foreground">
+            {badge > 99 ? "99+" : badge}
+          </span>
+        )}
+      </span>
+      {text && <span className="hidden text-[11px] font-medium text-muted-foreground xl:block">{text}</span>}
     </Link>
   );
 }

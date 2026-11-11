@@ -136,6 +136,7 @@ function HomeTab({ cats }: { cats: Cat[] }) {
         <p className="text-sm font-semibold">Sections on the homepage</p>
         <p className="text-xs text-muted-foreground">Turn a section off to hide it. Product rows hide themselves when there are no products.</p>
         <SectionRow label="Categories" s={h.sections.categories} onChange={sec("categories")} />
+        <SectionRow label="Products with category tabs" s={h.sections.picks} onChange={sec("picks")} />
         <SectionRow label="Deals" s={h.sections.deals} onChange={sec("deals")} />
         <SectionRow label="Best sellers" s={h.sections.bestSellers} onChange={sec("bestSellers")} />
         <SectionRow label="New arrivals" s={h.sections.newArrivals} onChange={sec("newArrivals")} />
