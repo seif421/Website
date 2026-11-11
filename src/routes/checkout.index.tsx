@@ -6,6 +6,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/store/format";
 import { sendOrderConfirmation } from "@/lib/store/order-email";
+import {
+  MAX_ADDRESSES, fetchAddresses, saveAddress, sameAddress,
+  type AddressInput, type SavedAddress,
+} from "@/lib/store/addresses";
 
 export const Route = createFileRoute("/checkout/")({
   // Only signed-in customers can reach checkout. The database also refuses orders from signed-out visitors.
@@ -42,10 +46,50 @@ function CheckoutPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
+  const [saved, setSaved] = useState<SavedAddress[]>([]);
+  const [picked, setPicked] = useState<string>("new");
+  const [saveIt, setSaveIt] = useState(true);
+  const [prefill, setPrefill] = useState<AddressInput | null>(null);
 
   useEffect(() => {
     if (user?.email) setEmail((e) => e || user.email!);
   }, [user]);
+
+  // Saved addresses: fill in the default one so the customer does not retype it.
+  useEffect(() => {
+    if (!user) return;
+    let live = true;
+    fetchAddresses(user.id)
+      .then((list) => {
+        if (!live) return;
+        setSaved(list);
+        const first = list.find((a) => a.isDefault) ?? list[0];
+        if (first) {
+          setPicked(first.id);
+          setPrefill(first);
+          setGovernorate(first.governorate);
+          setSaveIt(false);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [user]);
+
+  const pickAddress = (id: string) => {
+    setPicked(id);
+    const a = saved.find((x) => x.id === id);
+    if (a) {
+      setPrefill(a);
+      setGovernorate(a.governorate);
+      setSaveIt(false);
+    } else {
+      setPrefill(null);
+      setGovernorate("");
+      setSaveIt(true);
+    }
+  };
 
   useEffect(() => {
     rpc("delivery_zones").then(({ data }) => {
@@ -101,6 +145,21 @@ function CheckoutPage() {
     }
     const order = data as { order_number: string; total: number };
     cart.clear();
+    // Remember the address for next time. A problem here must never affect the order.
+    if (user && saveIt && saved.length < MAX_ADDRESSES) {
+      const a: AddressInput = {
+        label: saved.length === 0 ? "Home" : "",
+        fullName: get("name"),
+        phone: get("phone"),
+        governorate: get("governorate"),
+        city: get("city"),
+        line1: get("line1"),
+        line2: get("line2"),
+      };
+      if (!saved.some((x) => sameAddress(x, a))) {
+        await saveAddress(user.id, a, undefined, saved.length).catch(() => {});
+      }
+    }
     // The order is already saved, so an email problem must never block the customer: wait at most 6 seconds.
     const emailed = await Promise.race([
       sendOrderConfirmation({ data: { orderNumber: order.order_number } })
@@ -148,10 +207,25 @@ function CheckoutPage() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_340px]">
           <form onSubmit={onSubmit} className="space-y-4">
             <h2 className="font-display text-lg font-bold">Delivery details</h2>
+            {saved.length > 0 && (
+              <label className="block text-sm font-medium">
+                Deliver to
+                <select value={picked} onChange={(e) => pickAddress(e.target.value)} className={input}>
+                  {saved.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {(a.label || "Address") + " — " + a.line1 + ", " + a.city}
+                    </option>
+                  ))}
+                  <option value="new">Use a new address</option>
+                </select>
+              </label>
+            )}
+            <div key={picked} className="space-y-4">
             <label className="block text-sm font-medium">
               Full name
               <input
                 name="name"
+                defaultValue={prefill?.fullName ?? ""}
                 required
                 minLength={3}
                 maxLength={100}
@@ -163,6 +237,7 @@ function CheckoutPage() {
               Mobile number
               <input
                 name="phone"
+                defaultValue={prefill?.phone ?? ""}
                 type="tel"
                 required
                 inputMode="tel"
@@ -200,6 +275,7 @@ function CheckoutPage() {
                 City or area
                 <input
                   name="city"
+                  defaultValue={prefill?.city ?? ""}
                   required
                   minLength={2}
                   maxLength={80}
@@ -212,6 +288,7 @@ function CheckoutPage() {
               Street, building and apartment
               <input
                 name="line1"
+                defaultValue={prefill?.line1 ?? ""}
                 required
                 minLength={6}
                 maxLength={150}
@@ -221,8 +298,9 @@ function CheckoutPage() {
             </label>
             <label className="block text-sm font-medium">
               Landmark <span className="font-normal text-muted-foreground">(optional)</span>
-              <input name="line2" maxLength={150} className={input} />
+              <input name="line2" defaultValue={prefill?.line2 ?? ""} maxLength={150} className={input} />
             </label>
+            </div>
             <label className="block text-sm font-medium">
               Email
               <input
@@ -242,6 +320,12 @@ function CheckoutPage() {
               Notes <span className="font-normal text-muted-foreground">(optional)</span>
               <textarea name="notes" rows={2} maxLength={300} className={input} />
             </label>
+            {saved.length < MAX_ADDRESSES && picked === "new" && (
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={saveIt} onChange={(e) => setSaveIt(e.target.checked)} className="size-4" />
+                Save this address for my next order
+              </label>
+            )}
             {/* Hidden field: real visitors never see or fill it in. */}
             <input
               name="website"

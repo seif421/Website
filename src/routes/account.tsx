@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 import { SiteLayout } from "@/components/site/layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/store/format";
-import { Loader2, Package, MapPin, Heart, ShieldCheck, LogOut } from "lucide-react";
+import { Loader2, Package, MapPin, Heart, ShieldCheck, LogOut, ChevronRight } from "lucide-react";
+import { AddressManager } from "@/components/account/address-manager";
+import { OrderThumb, type OrderLine } from "@/components/account/order-thumb";
+import { STATUS_TONE, statusLabel } from "@/lib/store/order-status";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
@@ -29,6 +31,7 @@ type Order = {
   status: string;
   total: number;
   created_at: string;
+  order_items: OrderLine[];
 };
 type Login = {
   id: string;
@@ -44,6 +47,7 @@ function AccountPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [logins, setLogins] = useState<Login[]>([]);
   const [busy, setBusy] = useState(true);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -55,17 +59,19 @@ function AccountPage() {
       const [{ data: o }, { data: l }] = await Promise.all([
         supabase
           .from("orders")
-          .select("id,order_number,status,total,created_at")
+          .select(
+            "id,order_number,status,total,created_at,order_items(id,product_name,quantity,unit_price,product:products(slug,images))",
+          )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
-          .limit(10),
+          .limit(50),
         supabase
           .from("login_history")
           .select("id,created_at,ip_address,user_agent,success")
           .order("created_at", { ascending: false })
           .limit(10),
       ]);
-      setOrders((o ?? []) as Order[]);
+      setOrders((o ?? []) as unknown as Order[]);
       setLogins((l ?? []) as Login[]);
       setBusy(false);
     })();
@@ -117,7 +123,7 @@ function AccountPage() {
             </div>
             <p className="mt-1 text-xs text-muted-foreground">Track and re-order past purchases.</p>
             <Button asChild variant="outline" className="mt-4 w-full">
-              <Link to="/account">View orders</Link>
+              <a href="#orders">View orders</a>
             </Button>
           </Card>
           <Card className="p-5">
@@ -125,9 +131,9 @@ function AccountPage() {
               <MapPin className="size-5 text-brand" />
               <h2 className="font-semibold">Addresses</h2>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Shipping and billing addresses.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Save your delivery addresses.</p>
             <Button asChild variant="outline" className="mt-4 w-full">
-              <Link to="/account">Manage</Link>
+              <a href="#addresses">Manage</a>
             </Button>
           </Card>
           <Card className="p-5">
@@ -142,31 +148,78 @@ function AccountPage() {
           </Card>
         </div>
 
-        <Card className="mt-8 p-5">
+        <Card id="orders" className="mt-8 scroll-mt-24 p-5">
           <h2 className="font-semibold">Recent orders</h2>
           {busy ? (
             <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
           ) : orders.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No orders yet.</p>
+            <div className="mt-3 text-sm text-muted-foreground">
+              No orders yet.{" "}
+              <Link to="/shop" className="font-medium text-foreground underline">
+                Start shopping
+              </Link>
+            </div>
           ) : (
-            <ul className="mt-3 divide-y">
-              {orders.map((o) => (
-                <li key={o.id} className="flex items-center justify-between py-3">
-                  <div>
-                    <div className="font-medium">{o.order_number ?? o.id.slice(0, 8)}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(o.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline">{o.status}</Badge>
-                    <span className="font-medium">{formatMoney(Number(o.total ?? 0))}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="mt-3 space-y-3">
+                {(showAll ? orders : orders.slice(0, 5)).map((o) => {
+                  const lines = o.order_items ?? [];
+                  return (
+                    <li key={o.id}>
+                      <Link
+                        to="/orders/$id"
+                        params={{ id: o.id }}
+                        className="block rounded-xl border p-4 transition-colors hover:border-brand/50"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="font-medium">{o.order_number ?? o.id.slice(0, 8)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(o.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[o.status] ?? "bg-muted"}`}>
+                              {statusLabel(o.status)}
+                            </span>
+                            <span className="font-semibold">{formatMoney(Number(o.total ?? 0))}</span>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center gap-3">
+                          <div className="flex -space-x-2">
+                            {lines.slice(0, 4).map((l) => (
+                              <OrderThumb key={l.id} line={l} size="size-12 ring-2 ring-background" />
+                            ))}
+                          </div>
+                          <div className="min-w-0 flex-1 text-sm">
+                            {lines.slice(0, 2).map((l) => (
+                              <p key={l.id} className="truncate">
+                                {l.product_name} <span className="text-muted-foreground">× {l.quantity}</span>
+                              </p>
+                            ))}
+                            {lines.length > 2 && (
+                              <p className="text-xs text-muted-foreground">+ {lines.length - 2} more</p>
+                            )}
+                          </div>
+                          <span className="hidden items-center gap-1 text-sm font-medium text-brand sm:flex">
+                            View details <ChevronRight className="size-4" />
+                          </span>
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+              {orders.length > 5 && (
+                <Button variant="ghost" className="mt-3 w-full" onClick={() => setShowAll((v) => !v)}>
+                  {showAll ? "Show fewer orders" : `Show all orders (${orders.length})`}
+                </Button>
+              )}
+            </>
           )}
         </Card>
+
+        <AddressManager userId={user.id} defaultName={(user.user_metadata?.full_name as string | undefined) ?? ""} />
 
         <Card className="mt-6 p-5">
           <h2 className="font-semibold">Security · recent sign-ins</h2>
