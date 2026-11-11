@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
 import { CmsLink } from "./cms-link";
 import { CategoryThumb } from "./categories";
 import { topCategories, useSiteData } from "@/hooks/use-site-data";
@@ -16,9 +17,9 @@ export function Hero() {
         {cats.length > 0 && (
           <nav
             aria-label="Departments"
-            className="hidden max-h-[26rem] overflow-y-auto rounded-xl border border-border bg-card p-2 lg:block"
+            className="hidden max-h-[26rem] overflow-y-auto rounded-2xl border border-border bg-card p-2 lg:block"
           >
-            <p className="px-3 pb-1 pt-2 text-sm font-semibold">Departments</p>
+            <p className="px-3 pb-2 pt-2 font-display text-sm font-bold">Departments</p>
             <ul>
               {cats.map((c) => (
                 <li key={c.id}>
@@ -27,7 +28,9 @@ export function Hero() {
                     search={{ category: c.slug }}
                     className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
                   >
-                    <CategoryThumb c={c} className="size-6 shrink-0 rounded" /> {c.name}
+                    <CategoryThumb c={c} className="size-6 shrink-0 rounded" />
+                    <span className="flex-1 truncate">{c.name}</span>
+                    <ChevronRight className="size-4 opacity-40" aria-hidden />
                   </Link>
                 </li>
               ))}
@@ -38,7 +41,7 @@ export function Hero() {
         <CmsLink
           href={hero.link}
           ariaLabel={hero.alt}
-          className="group relative block overflow-hidden rounded-xl bg-[#2a1b6b]"
+          className="group relative block overflow-hidden rounded-2xl bg-[#2a1b6b]"
         >
           <h1 className="sr-only">Rivvo, online store in Egypt</h1>
           <img
@@ -56,7 +59,7 @@ export function Hero() {
               <CmsLink
                 key={i}
                 href={p.link}
-                className={`group relative flex min-h-[140px] flex-col justify-end overflow-hidden rounded-xl border p-5 transition-colors hover:border-brand/50 ${
+                className={`group relative flex min-h-[140px] flex-col justify-end overflow-hidden rounded-2xl border p-5 transition-colors hover:border-brand/50 ${
                   img ? "border-transparent text-white" : "border-border bg-surface"
                 }`}
               >

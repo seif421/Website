@@ -42,7 +42,14 @@ export function Footer() {
   const columns = [{ title: "Shop", links: shopLinks }, ...COLUMNS];
   const email = site.contact.email;
   return (
-    <footer className="mt-24 border-t border-border bg-primary text-primary-foreground">
+    <footer className="mt-20 bg-primary text-primary-foreground">
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="w-full bg-white/10 py-3 text-center text-sm font-medium transition-colors hover:bg-white/15"
+      >
+        Back to top
+      </button>
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.5fr_2fr]">
           <div>

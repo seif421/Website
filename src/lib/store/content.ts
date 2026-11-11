@@ -25,6 +25,7 @@ export type HomeContent = {
   promos: Promo[];
   sections: {
     categories: Section;
+    picks: Section;
     deals: Section;
     bestSellers: Section;
     newArrivals: Section;
@@ -84,7 +85,8 @@ export const DEFAULT_HOME: HomeContent = {
     { title: "Lowest prices", text: "Start with the best value.", link: "/shop?sort=price-asc", image: "" },
   ],
   sections: {
-    categories: { show: true, title: "Shop by category" },
+    categories: { show: true, title: "Browse by categories" },
+    picks: { show: true, title: "Curated picks for you" },
     deals: { show: true, title: "Deals" },
     bestSellers: { show: true, title: "Best sellers" },
     newArrivals: { show: true, title: "New arrivals" },
@@ -190,6 +192,7 @@ export function mergeHome(raw: unknown): HomeContent {
       : d.promos,
     sections: {
       categories: section(s.categories, d.sections.categories),
+      picks: section(s.picks, d.sections.picks),
       deals: section(s.deals, d.sections.deals),
       bestSellers: section(s.bestSellers, d.sections.bestSellers),
       newArrivals: section(s.newArrivals, d.sections.newArrivals),
