@@ -215,6 +215,17 @@ function OrderPage() {
             )}
           </div>
         </div>
+        {["delivered", "completed"].includes(order.status) && (
+          <div className="mt-6">
+            <Link
+              to="/returns/new"
+              search={{ order: order.id }}
+              className="inline-flex h-10 items-center rounded-full border border-input px-5 text-sm font-semibold hover:bg-surface"
+            >
+              Request a return
+            </Link>
+          </div>
+        )}
         <p className="mt-8 text-sm text-muted-foreground">
           Need help with this order?{" "}
           <Link to="/contact" className="font-medium text-foreground underline">Contact us</Link>

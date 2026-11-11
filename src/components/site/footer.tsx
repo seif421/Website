@@ -12,6 +12,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
       { label: "Help Center", to: "/support" },
       { label: "Shipping Policy", to: "/shipping" },
       { label: "Refund Policy", to: "/refunds" },
+      { label: "Return Request", to: "/returns/new" },
       { label: "Contact Us", to: "/contact" },
     ],
   },
