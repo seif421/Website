@@ -21,18 +21,18 @@ jobs:
         run: bunx prettier --write src/routes/_authenticated/admin/dropzawy.tsx src/components/admin/admin-sidebar.tsx
       - name: Lint changed files
         run: bunx eslint src/routes/_authenticated/admin/dropzawy.tsx src/components/admin/admin-sidebar.tsx
+      - name: Production build (regenerates TanStack route tree)
+        run: bun run build
       - name: TypeScript check
         run: bunx tsc --noEmit
-      - name: Production build
-        run: bun run build
-      - name: Commit formatting and remove temporary workflow
+      - name: Commit generated route tree and remove temporary workflow
         if: success()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/routes/_authenticated/admin/dropzawy.tsx src/components/admin/admin-sidebar.tsx
+          git add src/routes/_authenticated/admin/dropzawy.tsx src/components/admin/admin-sidebar.tsx src/routeTree.gen.ts
           git rm .github/workflows/validate-dropzawy.yml
           if ! git diff --cached --quiet; then
-            git commit -m "style: format and validate Dropzawy importer"
+            git commit -m "chore: validate Dropzawy importer and update route tree"
             git push origin feature/dropzawy-product-importer
           fi
