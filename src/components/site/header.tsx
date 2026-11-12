@@ -10,7 +10,7 @@ import {
   Heart,
 } from "lucide-react";
 import { MegaMenu } from "./mega-menu";
-import { useSiteData } from "@/hooks/use-site-data";
+import { topCategories, useSiteData } from "@/hooks/use-site-data";
 import { useEffect, useState } from "react";
 import { AnnouncementBar } from "./announcement-bar";
 import { Logo } from "./logo";
