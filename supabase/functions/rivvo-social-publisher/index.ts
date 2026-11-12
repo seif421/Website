@@ -169,6 +169,15 @@ Deno.serve(async (req: Request) => {
   let instagramMediaId: string | null = null;
   const errors: string[] = [];
 
+  try {
+    instagramMediaId = await publishInstagram(igId, pageToken, imageUrl, caption, version);
+    const { error: mediaSaveError } = await db.from("social_posts")
+      .update({ instagram_media_id: instagramMediaId })
+      .eq("id", postId);
+    if (mediaSaveError) throw new Error(mediaSaveError.message);
+  } catch (error) {
+    errors.push(`Instagram: ${error instanceof Error ? error.message : "unknown error"}`);
+  }
 
   const succeeded = Boolean(instagramMediaId);
   const finalStatus = errors.length ? "failed" : "published";
