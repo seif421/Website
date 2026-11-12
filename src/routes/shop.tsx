@@ -249,6 +249,35 @@ function ShopPage() {
                     >
                       {c.name}
                     </Link>
+                    {(() => {
+                      const children = data.categories.filter((s) => s.parent_id === c.id);
+                      const open =
+                        search.category === c.slug || children.some((s) => s.slug === search.category);
+                      if (!open || children.length === 0) return null;
+                      return (
+                        <ul className="ml-3 mt-1 space-y-1 border-l border-border pl-2">
+                          {children.map((s) => (
+                            <li key={s.id}>
+                              <Link
+                                to="/shop"
+                                search={(prev: ShopSearch) => ({
+                                  ...prev,
+                                  category: s.slug,
+                                  page: undefined,
+                                })}
+                                className={`block rounded-lg px-3 py-1.5 text-sm transition-colors hover:bg-surface ${
+                                  search.category === s.slug
+                                    ? "bg-surface font-semibold text-foreground"
+                                    : "text-muted-foreground"
+                                }`}
+                              >
+                                {s.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      );
+                    })()}
                   </li>
                 ))}
               </ul>
