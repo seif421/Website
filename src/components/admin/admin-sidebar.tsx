@@ -54,7 +54,12 @@ const overview: Item[] = [
 ];
 const commerce: Item[] = [
   { title: "Products", url: "/admin/products", icon: Package, roles: ["admin", "manager"] },
-  { title: "Dropzawy importer", url: "/admin/dropzawy", icon: Download, roles: ["admin", "manager"] },
+  {
+    title: "Dropzawy importer",
+    url: "/admin/dropzawy",
+    icon: Download,
+    roles: ["admin", "manager"],
+  },
   { title: "Categories", url: "/admin/categories", icon: FolderTree, roles: ["admin", "manager"] },
   { title: "Brands", url: "/admin/brands", icon: Award, roles: ["admin", "manager"] },
   { title: "Suppliers", url: "/admin/suppliers", icon: Truck, roles: ["admin", "manager"] },
@@ -69,7 +74,12 @@ const commerce: Item[] = [
   { title: "Reviews", url: "/admin/reviews", icon: Star },
 ];
 const growth: Item[] = [
-  { title: "Website content", url: "/admin/homepage", icon: LayoutTemplate, roles: ["admin", "manager"] },
+  {
+    title: "Website content",
+    url: "/admin/homepage",
+    icon: LayoutTemplate,
+    roles: ["admin", "manager"],
+  },
   { title: "Marketing", url: "/admin/marketing", icon: Megaphone, roles: ["admin", "manager"] },
   { title: "Notifications", url: "/admin/notifications", icon: Bell },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
