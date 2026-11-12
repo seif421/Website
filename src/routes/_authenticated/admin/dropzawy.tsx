@@ -187,7 +187,7 @@ function DropzawyImportPage() {
             slug: "dropzawy",
             platform: "dropzawy",
             website: "https://dropzawy.com",
-            is_active: true,
+            is_active: false,
             currency: "EGP",
           },
           { onConflict: "slug" },
