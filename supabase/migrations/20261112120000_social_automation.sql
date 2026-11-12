@@ -3,7 +3,6 @@ create table if not exists public.social_automation_settings (
   id integer primary key default 1 check (id = 1),
   enabled boolean not null default false,
   publish_instagram boolean not null default true,
-  publish_facebook boolean not null default true,
   max_posts_per_day integer not null default 1 check (max_posts_per_day between 1 and 3),
   last_published_at timestamptz,
   created_at timestamptz not null default now(),
