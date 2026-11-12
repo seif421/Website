@@ -50,7 +50,7 @@ function Departments() {
         <ChevronDown className="size-4" aria-hidden />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 max-h-[70vh] w-72 overflow-y-auto rounded-lg border border-border bg-card p-2 shadow-elevated">
+        <div className="absolute left-0 top-full z-50 mt-1 max-h-[70vh] w-72 overflow-y-auto rounded-lg border border-border bg-card p-2 text-foreground shadow-elevated">
           <ul>
             {cats.map((c) => (
               <li key={c.id}>
@@ -58,7 +58,7 @@ function Departments() {
                   to="/shop"
                   search={{ category: c.slug }}
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-surface"
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-surface"
                 >
                   <CategoryThumb c={c} className="size-7 shrink-0 rounded" /> {c.name}
                 </Link>
@@ -82,7 +82,7 @@ export function Header() {
   const wishlist = useWishlist();
   const site = useSiteData();
   const NAV: { label: string; category?: string }[] = [
-    { label: "Shop All" },
+    { label: "Shop" },
     ...navCategories(site).map((c) => ({ label: c.name, category: c.slug })),
   ];
   const navigate = useNavigate();
@@ -205,10 +205,10 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
-              <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+              <Link to="/about" className="text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground">
                 About
               </Link>
-              <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+              <Link to="/contact" className="text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground">
                 Contact
               </Link>
             </nav>
