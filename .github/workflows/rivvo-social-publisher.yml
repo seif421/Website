@@ -1,0 +1,31 @@
+name: Rivvo Social Publisher
+
+on:
+  schedule:
+    # Three opportunities daily; the Supabase setting enforces the daily cap.
+    - cron: "0 8,14,20 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger Rivvo publisher
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          RIVVO_SOCIAL_CRON_SECRET: ${{ secrets.RIVVO_SOCIAL_CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_URL"
+          test -n "$SUPABASE_ANON_KEY"
+          test -n "$RIVVO_SOCIAL_CRON_SECRET"
+          curl --fail-with-body --silent --show-error \
+            --request POST "$SUPABASE_URL/functions/v1/rivvo-social-publisher" \
+            --header "apikey: $SUPABASE_ANON_KEY" \
+            --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --header "x-rivvo-cron-secret: $RIVVO_SOCIAL_CRON_SECRET"
