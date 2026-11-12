@@ -6,71 +6,17 @@ import {
   Menu,
   X,
   LayoutDashboard,
-  ChevronDown,
   Home,
   Heart,
 } from "lucide-react";
-import { CategoryThumb } from "./categories";
-import { navCategories, topCategories, useSiteData } from "@/hooks/use-site-data";
-import { useEffect, useRef, useState } from "react";
+import { MegaMenu } from "./mega-menu";
+import { useSiteData } from "@/hooks/use-site-data";
+import { useEffect, useState } from "react";
 import { AnnouncementBar } from "./announcement-bar";
 import { Logo } from "./logo";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
-
-function Departments() {
-  const cats = topCategories(useSiteData());
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent | KeyboardEvent) => {
-      if (e instanceof KeyboardEvent) {
-        if (e.key === "Escape") setOpen(false);
-      } else if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", close);
-    return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("keydown", close);
-    };
-  }, [open]);
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-haspopup="true"
-        className="flex h-9 items-center gap-2 rounded-md bg-brand px-4 text-sm font-semibold text-brand-foreground hover:bg-brand/90"
-      >
-        <Menu className="size-4" aria-hidden /> All categories{" "}
-        <ChevronDown className="size-4" aria-hidden />
-      </button>
-      {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 max-h-[70vh] w-72 overflow-y-auto rounded-lg border border-border bg-card p-2 text-foreground shadow-elevated">
-          <ul>
-            {cats.map((c) => (
-              <li key={c.id}>
-                <Link
-                  to="/shop"
-                  search={{ category: c.slug }}
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-foreground hover:bg-surface"
-                >
-                  <CategoryThumb c={c} className="size-7 shrink-0 rounded" /> {c.name}
-                </Link>
-              </li>
-            ))}
-            {cats.length === 0 && <li className="px-3 py-2 text-sm text-muted-foreground">No categories yet.</li>}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -81,10 +27,6 @@ export function Header() {
   const { count } = useCart();
   const wishlist = useWishlist();
   const site = useSiteData();
-  const NAV: { label: string; category?: string }[] = [
-    { label: "Shop" },
-    ...navCategories(site).map((c) => ({ label: c.name, category: c.slug })),
-  ];
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -185,7 +127,7 @@ export function Header() {
 
         <div className="hidden bg-primary text-primary-foreground lg:block">
           <div className="mx-auto flex h-12 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-            <Departments />
+            <MegaMenu />
             <nav aria-label="Primary" className="flex items-center gap-6">
               <Link
                 to="/"
@@ -195,16 +137,13 @@ export function Header() {
               >
                 <Home className="size-4" aria-hidden /> Home
               </Link>
-              {NAV.map((item) => (
-                <Link
-                  key={item.label}
-                  to="/shop"
-                  search={item.category ? { category: item.category } : {}}
-                  className="text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground"
-                >
-                  {item.label}
-                </Link>
-              ))}
+              <Link
+                to="/shop"
+                search={{}}
+                className="text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground"
+              >
+                Shop
+              </Link>
               <Link to="/about" className="text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground">
                 About
               </Link>
@@ -238,18 +177,16 @@ export function Header() {
                     <Home className="size-4" aria-hidden /> Home
                   </Link>
                 </li>
-                {NAV.map((item) => (
-                  <li key={item.label}>
-                    <Link
-                      to="/shop"
-                      search={item.category ? { category: item.category } : {}}
-                      onClick={() => setOpen(false)}
-                      className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface"
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
+                <li>
+                  <Link
+                    to="/shop"
+                    search={{}}
+                    onClick={() => setOpen(false)}
+                    className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface"
+                  >
+                    Shop
+                  </Link>
+                </li>
                 {(["about", "contact"] as const).map((p) => (
                   <li key={p}>
                     <Link
