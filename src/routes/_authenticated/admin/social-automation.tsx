@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Facebook, Instagram, Loader2, RefreshCw, Send, Settings2 } from "lucide-react";
+import { Instagram, Loader2, RefreshCw, Send, Settings2 } from "lucide-react";
 import { PageShell } from "@/components/admin/page-shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/admin/social-automation")({ component: SocialAutomationPage });
 type Product = { id: string; name: string; slug: string; price: number; short_description: string | null; images: string[]; created_at: string };
 type SocialPost = { id: string; product_name: string; product_url: string; image_url: string; caption: string; status: string; scheduled_at: string; published_at: string | null; error_message: string | null };
-type Settings = { enabled: boolean; publish_instagram: boolean; publish_facebook: boolean; max_posts_per_day: number; last_published_at: string | null };
+type Settings = { enabled: boolean; publish_instagram: boolean; max_posts_per_day: number; last_published_at: string | null };
 const db = supabase as any;
 const money = (v: number) => new Intl.NumberFormat("en-EG", { style: "currency", currency: "EGP", maximumFractionDigits: 0 }).format(v);
 const captionFor = (p: Product) => ["✨ منتج جديد من Rivvo!", "", `🔥 ${p.name}`, p.short_description?.trim() ? `\n${p.short_description.trim().slice(0, 180)}` : "", "", `بسعر ${money(Number(p.price))} فقط`, "", "اطلبه دلوقتي من موقعنا 👇", `https://rivvo-shop.vercel.app/product/${p.slug}`, "", "#Rivvo #تسوق_اونلاين #مصر"].filter(Boolean).join("\n");
 
 function SocialAutomationPage() {
- const [settings,setSettings]=useState<Settings>({enabled:false,publish_instagram:true,publish_facebook:true,max_posts_per_day:1,last_published_at:null});
+ const [settings,setSettings]=useState<Settings>({enabled:false,publish_instagram:true,max_posts_per_day:1,last_published_at:null});
  const [products,setProducts]=useState<Product[]>([]); const [posts,setPosts]=useState<SocialPost[]>([]);
  const [loading,setLoading]=useState(true); const [saving,setSaving]=useState(false); const [selected,setSelected]=useState(""); const [caption,setCaption]=useState(""); const [tab,setTab]=useState<"queue"|"history">("queue");
  const load=useCallback(async()=>{setLoading(true);const [s,p,q]=await Promise.all([db.from("social_automation_settings").select("*").eq("id",1).maybeSingle(),db.from("products").select("id,name,slug,price,short_description,images,created_at").eq("status","published").eq("is_active",true).is("deleted_at",null).order("created_at",{ascending:false}).limit(100),db.from("social_posts").select("*").order("created_at",{ascending:false}).limit(50)]);if(s.error)toast.error(s.error.message);if(p.error)toast.error(p.error.message);if(q.error)toast.error(q.error.message);if(s.data)setSettings(s.data as Settings);setProducts((p.data??[]) as Product[]);setPosts((q.data??[]) as SocialPost[]);setLoading(false)},[]);
@@ -33,11 +33,11 @@ function SocialAutomationPage() {
  async function enqueue(){if(!product)return toast.error("Choose a product first");const image=product.images.find(i=>/^https:\/\//i.test(i));if(!image)return toast.error("No public HTTPS product image");const {error}=await db.from("social_posts").insert({product_id:product.id,product_name:product.name,product_url:`https://rivvo-shop.vercel.app/product/${product.slug}`,image_url:image,caption:caption.trim(),status:"queued",scheduled_at:new Date().toISOString()});if(error)return toast.error(error.message);toast.success("Product added to queue");setSelected("");setCaption("");await load()}
  const queued=posts.filter(p=>p.status==="queued"),history=posts.filter(p=>p.status!=="queued");
  const date=(v:string|null)=>v?new Date(v).toLocaleString("en-EG",{dateStyle:"medium",timeStyle:"short"}):"Not published";
- return <PageShell title="Social Media Automation" description="Create Arabic product posts and prepare automatic publishing to Instagram and Facebook." breadcrumbs={[{label:"Admin",to:"/admin"},{label:"Social automation"}]}>
+ return <PageShell title="Social Media Automation" description="Create Arabic product posts and automate publishing to your Instagram account." breadcrumbs={[{label:"Admin",to:"/admin"},{label:"Social automation"}]}>
  <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
  <Card className="space-y-4 p-5"><div className="flex items-center justify-between"><div><h2 className="font-semibold">Publishing automation</h2><p className="text-sm text-muted-foreground">Publishing stays paused until Meta credentials and scheduled execution are configured.</p></div><Badge variant={settings.enabled?"default":"secondary"}>{settings.enabled?"Enabled":"Paused"}</Badge></div>
  <div className="flex items-center justify-between rounded-lg border p-3"><div className="flex items-center gap-3"><Instagram className="size-5"/><div><p className="text-sm font-medium">Instagram</p><p className="text-xs text-muted-foreground">Professional account</p></div></div><Switch checked={settings.publish_instagram} disabled={saving} onCheckedChange={v=>void save({publish_instagram:v})}/></div>
- <div className="flex items-center justify-between rounded-lg border p-3"><div className="flex items-center gap-3"><Facebook className="size-5"/><div><p className="text-sm font-medium">Facebook Page</p><p className="text-xs text-muted-foreground">Meta Page publishing</p></div></div><Switch checked={settings.publish_facebook} disabled={saving} onCheckedChange={v=>void save({publish_facebook:v})}/></div>
+ 
  <div className="space-y-2"><Label>Posts per day</Label><Select value={String(settings.max_posts_per_day)} onValueChange={v=>void save({max_posts_per_day:Number(v)})}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="1">1 post per day</SelectItem><SelectItem value="2">2 posts per day</SelectItem><SelectItem value="3">3 posts per day</SelectItem></SelectContent></Select></div>
  <div className="flex items-center justify-between border-t pt-4"><div><p className="text-sm font-medium">Allow automatic publishing</p><p className="text-xs text-muted-foreground">Enable only after credentials and cron are verified.</p></div><Switch checked={settings.enabled} disabled={saving} onCheckedChange={v=>void save({enabled:v})}/></div>
  {settings.last_published_at&&<p className="text-xs text-muted-foreground">Last successful post: {date(settings.last_published_at)}</p>}<Button variant="outline" onClick={()=>void load()} disabled={loading}><RefreshCw className="mr-2 size-4"/>Refresh</Button></Card>
