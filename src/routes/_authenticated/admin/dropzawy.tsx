@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   AlertCircle,
@@ -7,7 +7,6 @@ import {
   Clipboard,
   ExternalLink,
   FileJson,
-  Link2,
   Loader2,
   PackagePlus,
   Plus,
@@ -103,14 +102,13 @@ function DropzawyImportPage() {
   const [importing, setImporting] = useState(false);
   const [bookmarkletCopied, setBookmarkletCopied] = useState(false);
 
-  useMemo(() => {
+  useEffect(() => {
     supabase.from("categories").select("id,name").is("deleted_at", null).order("name")
       .then(({ data, error }) => {
         if (error) toast.error("Could not load categories", { description: error.message });
         setCategories(data ?? []);
         setLoadingCategories(false);
       });
-    return null;
   }, []);
 
   const bookmarklet = useMemo(() => {
@@ -163,12 +161,17 @@ function DropzawyImportPage() {
 
     setImporting(true);
     let imported = 0;
+    const importedUrls = new Set<string>();
     const errors: string[] = [];
     try {
       const { data: existing } = await supabase.from("products")
         .select("id,supplier_url,supplier_product_id")
         .not("supplier_url", "is", null);
       const knownUrls = new Set((existing ?? []).map((p) => p.supplier_url).filter(Boolean));
+      const { data: supplier, error: supplierError } = await supabase.from("suppliers")
+        .upsert({ name: "Dropzawy", slug: "dropzawy", platform: "dropzawy", website: "https://dropzawy.com", is_active: true, currency: "EGP" }, { onConflict: "slug" })
+        .select("id").single();
+      if (supplierError || !supplier) throw new Error(supplierError?.message || "Could not prepare Dropzawy supplier record.");
       const knownIds = new Set((existing ?? []).map((p) => p.supplier_product_id).filter(Boolean));
 
       for (const p of chosen) {
@@ -186,6 +189,7 @@ function DropzawyImportPage() {
           status: "draft",
           is_active: true,
           category_id: categoryId || null,
+          supplier_id: supplier.id,
           price: Number(p.sellingPrice),
           cost,
           supplier_cost: cost,
@@ -212,6 +216,7 @@ function DropzawyImportPage() {
           continue;
         }
         imported++;
+        importedUrls.add(p.sourceUrl);
         knownUrls.add(p.sourceUrl);
         if (productKey) knownIds.add(productKey);
         await logActivity("imported_from_dropzawy", data.id, {
@@ -223,8 +228,7 @@ function DropzawyImportPage() {
 
       if (imported) toast.success(`${imported} product(s) imported as drafts`);
       if (errors.length) toast.error(`${errors.length} product(s) skipped`, { description: errors.slice(0, 4).join("\n") });
-      const importedNames = new Set(chosen.filter((p) => knownUrls.has(p.sourceUrl)).map((p) => p.name));
-      setProducts((current) => current.filter((p) => !importedNames.has(p.name)));
+      setProducts((current) => current.filter((p) => !importedUrls.has(p.sourceUrl)));
     } catch (error) {
       toast.error("Import failed", { description: error instanceof Error ? error.message : "Unexpected error." });
     } finally {
