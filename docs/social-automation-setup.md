@@ -15,7 +15,7 @@ For production use beyond app roles/testers, Meta may require App Review and Adv
 
 ## Supabase Edge Function secrets
 
-Deploy `supabase/functions/rivvo-social-publisher/index.ts` as the Edge Function named `rivvo-social-publisher` with JWT verification enabled. Configure these secrets in Supabase Edge Function secrets:
+Deploy `supabase/functions/rivvo-social-publisher/index.ts` as the Edge Function named `rivvo-social-publisher` with gateway JWT verification disabled; the function validates the private `x-rivvo-cron-secret` header itself. Configure these secrets in Supabase Edge Function secrets:
 
 - `META_PAGE_ACCESS_TOKEN`
 - `META_IG_USER_ID`
@@ -26,11 +26,9 @@ The Supabase Edge Function runtime provides `SUPABASE_URL` and `SUPABASE_SERVICE
 
 ## GitHub Actions secrets
 
-Configure these repository Actions secrets:
+Configure this repository Actions secret:
 
-- `SUPABASE_URL` — project URL, not project ref
-- `SUPABASE_ANON_KEY` — publishable/anon key used only to pass the Edge Function gateway JWT check
-- `RIVVO_SOCIAL_CRON_SECRET` — same random value configured in Supabase
+- `RIVVO_SOCIAL_CRON_SECRET` — exactly the same random value configured in Supabase
 
 The workflow calls the function three times per day (08:00, 14:00, and 20:00 UTC). The database setting enforces the actual daily cap (default: one post per Egypt-local day). GitHub scheduled workflows can be delayed by GitHub; they are not an exact-time SLA.
 
