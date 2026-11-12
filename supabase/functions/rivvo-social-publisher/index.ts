@@ -120,13 +120,11 @@ Deno.serve(async (req: Request) => {
   if (queuedError) return json({ error: queuedError.message }, 500);
 
   let postId: string;
-  let productName: string;
   let imageUrl: string;
   let caption: string;
 
   if (queuedPost) {
     postId = queuedPost.id;
-    productName = queuedPost.product_name;
     imageUrl = queuedPost.image_url;
     caption = queuedPost.caption;
     const { error } = await db.from("social_posts").update({ status: "publishing", error_message: null }).eq("id", postId);
@@ -150,12 +148,11 @@ Deno.serve(async (req: Request) => {
     const images = Array.isArray(candidate.images) ? candidate.images : [];
     imageUrl = images.find((image: unknown) => typeof image === "string" && /^https:\/\//i.test(image)) as string;
     caption = makeArabicCaption(candidate);
-    productName = candidate.name;
     const productUrl = `https://rivvo-shop.vercel.app/product/${candidate.slug}`;
 
     const { data: post, error: insertError } = await db.from("social_posts").insert({
       product_id: candidate.id,
-      product_name: productName,
+      product_name: candidate.name,
       product_url: productUrl,
       image_url: imageUrl,
       caption,
@@ -182,7 +179,7 @@ Deno.serve(async (req: Request) => {
   if (settings.publish_instagram) {
     try {
       instagramMediaId = await publishInstagram(igId, pageToken, imageUrl, caption, version);
-      await db.from("social_posts").update({ instagram_media_id: instagramMediaId }).eq("id", post.id);
+      await db.from("social_posts").update({ instagram_media_id: instagramMediaId }).eq("id", postId);
     } catch (error) {
       errors.push(`Instagram: ${error instanceof Error ? error.message : "unknown error"}`);
     }
@@ -203,5 +200,5 @@ Deno.serve(async (req: Request) => {
     }).eq("id", 1);
   }
   if (updateError) return json({ error: updateError.message, post_id: postId }, 500);
-  return json({ ok: succeeded, post_id: post.id, status: finalStatus, errors });
+  return json({ ok: succeeded, post_id: postId, status: finalStatus, errors });
 });
