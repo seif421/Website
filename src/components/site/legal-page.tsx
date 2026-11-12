@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SiteLayout } from "@/components/site/layout";
+import { useI18n } from "@/lib/i18n";
 import { SITE } from "@/lib/site-config";
 
 export type Section = { heading: string; body: ReactNode };
@@ -15,12 +16,13 @@ export function LegalPage({
   sections: Section[];
   showUpdated?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <SiteLayout>
       <article className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
         <h1 className="font-display text-4xl font-bold tracking-tight">{title}</h1>
         {showUpdated && (
-          <p className="mt-2 text-sm text-muted-foreground">Last updated {SITE.lastUpdated}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{t("Last updated {date}", { date: SITE.lastUpdated })}</p>
         )}
         {intro && <p className="mt-6 leading-relaxed text-muted-foreground">{intro}</p>}
         <div className="mt-8 space-y-8">

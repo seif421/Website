@@ -17,8 +17,10 @@ import { Logo } from "./logo";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { useI18n } from "@/lib/i18n";
 
 export function Header() {
+  const { t } = useI18n();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState("");
@@ -59,16 +61,16 @@ export function Header() {
             <form
               role="search"
               onSubmit={submitSearch}
-              className="mr-2 hidden max-w-3xl flex-1 md:block"
+              className="me-2 hidden max-w-3xl flex-1 md:block"
             >
               <div className="flex h-11 overflow-hidden rounded-lg border-2 border-brand bg-background">
                 <select
-                  aria-label="Search in category"
+                  aria-label={t("Search in category")}
                   value={searchCat}
                   onChange={(e) => setSearchCat(e.target.value)}
-                  className="hidden max-w-[10rem] shrink-0 cursor-pointer truncate border-r border-border bg-surface px-3 text-sm text-foreground outline-none lg:block"
+                  className="hidden max-w-[10rem] shrink-0 cursor-pointer truncate border-e border-border bg-surface px-3 text-sm text-foreground outline-none lg:block"
                 >
-                  <option value="">All categories</option>
+                  <option value="">{t("All categories")}</option>
                   {topCategories(site).map((c) => (
                     <option key={c.id} value={c.slug}>
                       {c.name}
@@ -81,11 +83,11 @@ export function Header() {
                   onChange={(e) => setTerm(e.target.value)}
                   placeholder={site.general.searchPlaceholder}
                   className="min-w-0 flex-1 bg-transparent px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                  aria-label="Search products"
+                  aria-label={t("Search products")}
                 />
                 <button
                   type="submit"
-                  aria-label="Search"
+                  aria-label={t("Search")}
                   className="grid w-14 shrink-0 place-items-center bg-brand text-brand-foreground transition-colors hover:bg-brand/90"
                 >
                   <Search className="size-5" aria-hidden />
@@ -94,21 +96,21 @@ export function Header() {
             </form>
 
             {isStaff && (
-              <IconLink to="/admin" label="Admin" text="Admin">
+              <IconLink to="/admin" label={t("Admin")} text={t("Admin")}>
                 <LayoutDashboard className="size-5" />
               </IconLink>
             )}
-            <IconLink to={user ? "/account" : "/auth"} label={user ? "Account" : "Sign in"} text={user ? "Account" : "Sign in"}>
+            <IconLink to={user ? "/account" : "/auth"} label={user ? t("Account") : t("Sign in")} text={user ? t("Account") : t("Sign in")}>
               <User className="size-5" />
             </IconLink>
-            <IconLink to="/wishlist" label="Wishlist" text="Wishlist" badge={wishlist.count}>
+            <IconLink to="/wishlist" label={t("Wishlist")} text={t("Wishlist")} badge={wishlist.count}>
               <Heart className="size-5" />
             </IconLink>
             <IconLink
               to="/cart"
-              label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"}
+              label={count > 0 ? (count === 1 ? t("Cart, 1 item") : t("Cart, {n} items", { n: count })) : t("Cart")}
               badge={count}
-              text="Cart"
+              text={t("Cart")}
             >
               <ShoppingBag className="size-5" />
             </IconLink>
@@ -116,9 +118,9 @@ export function Header() {
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              aria-label={open ? "Close menu" : "Open menu"}
+              aria-label={open ? t("Close menu") : t("Open menu")}
               aria-expanded={open}
-              className="ml-1 grid size-10 place-items-center rounded-full text-foreground transition-colors hover:bg-surface lg:hidden"
+              className="ms-1 grid size-10 place-items-center rounded-full text-foreground transition-colors hover:bg-surface lg:hidden"
             >
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
@@ -128,27 +130,27 @@ export function Header() {
         <div className="hidden bg-primary text-primary-foreground lg:block">
           <div className="mx-auto flex h-12 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
             <MegaMenu />
-            <nav aria-label="Primary" className="flex items-center gap-6">
+            <nav aria-label={t("Primary")} className="flex items-center gap-6">
               <Link
                 to="/"
                 activeOptions={{ exact: true }}
                 activeProps={{ className: "text-primary-foreground" }}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground"
               >
-                <Home className="size-4" aria-hidden /> Home
+                <Home className="size-4" aria-hidden /> {t("Home")}
               </Link>
               <Link
                 to="/shop"
                 search={{}}
                 className="text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground"
               >
-                Shop
+                {t("Shop")}
               </Link>
               <Link to="/about" className="text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground">
-                About
+                {t("About")}
               </Link>
               <Link to="/contact" className="text-sm font-medium text-primary-foreground/75 transition-colors hover:text-primary-foreground">
-                Contact
+                {t("Contact")}
               </Link>
             </nav>
           </div>
@@ -156,7 +158,7 @@ export function Header() {
 
         {open && (
           <div className="border-t border-border/60 bg-background lg:hidden">
-            <nav aria-label="Mobile" className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
+            <nav aria-label={t("Mobile")} className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
               <form role="search" onSubmit={submitSearch} className="mb-3 md:hidden">
                 <input
                   type="search"
@@ -164,7 +166,7 @@ export function Header() {
                   onChange={(e) => setTerm(e.target.value)}
                   placeholder={site.general.searchPlaceholder}
                   className="h-10 w-full rounded-full border border-input bg-surface px-4 text-sm text-foreground outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-                  aria-label="Search products"
+                  aria-label={t("Search products")}
                 />
               </form>
               <ul className="flex flex-col gap-1">
@@ -174,7 +176,7 @@ export function Header() {
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                   >
-                    <Home className="size-4" aria-hidden /> Home
+                    <Home className="size-4" aria-hidden /> {t("Home")}
                   </Link>
                 </li>
                 <li>
@@ -184,7 +186,7 @@ export function Header() {
                     onClick={() => setOpen(false)}
                     className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                   >
-                    Shop
+                    {t("Shop")}
                   </Link>
                 </li>
                 {(["about", "contact"] as const).map((p) => (
@@ -192,9 +194,9 @@ export function Header() {
                     <Link
                       to={`/${p}`}
                       onClick={() => setOpen(false)}
-                      className="block rounded-lg px-3 py-2.5 text-sm font-medium capitalize text-foreground transition-colors hover:bg-surface"
+                      className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface"
                     >
-                      {p}
+                      {p === "about" ? t("About") : t("Contact")}
                     </Link>
                   </li>
                 ))}
@@ -229,7 +231,7 @@ function IconLink({
       <span className="relative">
         {children}
         {typeof badge === "number" && badge > 0 && (
-          <span className="absolute -right-2 -top-1.5 grid min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-semibold leading-4 text-brand-foreground">
+          <span className="absolute -end-2 -top-1.5 grid min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-semibold leading-4 text-brand-foreground">
             {badge > 99 ? "99+" : badge}
           </span>
         )}

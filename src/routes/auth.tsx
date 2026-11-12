@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Logo } from "@/components/site/logo";
 import { useAuth, homeForRoles, type AppRole } from "@/hooks/use-auth";
 import { ShieldCheck, Loader2 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -30,15 +31,19 @@ export const Route = createFileRoute("/auth")({
 // Google sign-in only appears when VITE_ENABLE_GOOGLE_LOGIN=true (see docs/SETUP.md).
 const GOOGLE_ENABLED = import.meta.env.VITE_ENABLE_GOOGLE_LOGIN === "true";
 
-const signInSchema = z.object({
-  email: z.string().trim().email("Enter a valid email").max(255),
-  password: z.string().min(8, "At least 8 characters").max(72),
-});
-const signUpSchema = signInSchema.extend({
-  fullName: z.string().trim().min(2, "Enter your name").max(100),
-});
+function makeSchemas(t: (en: string) => string) {
+  const signInSchema = z.object({
+    email: z.string().trim().email(t("Enter a valid email")).max(255),
+    password: z.string().min(8, t("At least 8 characters")).max(72),
+  });
+  const signUpSchema = signInSchema.extend({
+    fullName: z.string().trim().min(2, t("Enter your name")).max(100),
+  });
+  return { signInSchema, signUpSchema };
+}
 
 function AuthPage() {
+  const { t } = useI18n();
   const { user, loading, roles, homePath } = useAuth();
   const navigate = useNavigate();
   const { redirect: after } = Route.useSearch();
@@ -54,14 +59,14 @@ function AuthPage() {
         <div className="flex flex-col items-center mb-8">
           <Logo />
           <p className="mt-3 text-sm text-muted-foreground">
-            {after ? "Sign in or create an account to place your order." : "Shop online in Egypt."}
+            {after ? t("Sign in or create an account to place your order.") : t("Shop online in Egypt.")}
           </p>
         </div>
         <Card className="p-6 shadow-soft">
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Create account</TabsTrigger>
+              <TabsTrigger value="signin">{t("Sign in")}</TabsTrigger>
+              <TabsTrigger value="signup">{t("Create account")}</TabsTrigger>
             </TabsList>
             <TabsContent value="signin">
               <SignInForm />
@@ -73,7 +78,7 @@ function AuthPage() {
           {GOOGLE_ENABLED && (
             <>
               <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                <div className="h-px flex-1 bg-border" /> OR{" "}
+                <div className="h-px flex-1 bg-border" /> {t("OR")}{" "}
                 <div className="h-px flex-1 bg-border" />
               </div>
               <GoogleButton />
@@ -82,7 +87,7 @@ function AuthPage() {
         </Card>
         <p className="mt-6 text-center text-xs text-muted-foreground">
           <Link to="/" className="hover:text-foreground">
-            ← Back to store
+            <span className="inline-block rtl:rotate-180">←</span> {t("Back to store")}
           </Link>
         </p>
       </div>
@@ -91,6 +96,8 @@ function AuthPage() {
 }
 
 function SignInForm() {
+  const { t } = useI18n();
+  const { signInSchema } = makeSchemas(t);
   const { redirect: after } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -111,7 +118,7 @@ function SignInForm() {
       toast.error(error.message);
       return;
     }
-    toast.success("Welcome back");
+    toast.success(t("Welcome back"));
     // Fetch roles and last-login update, then redirect by role
     const uid = data.user?.id;
     let target = "/account";
@@ -132,10 +139,11 @@ function SignInForm() {
   return (
     <form onSubmit={onSubmit} className="mt-5 space-y-4">
       <div className="space-y-1.5">
-        <Label htmlFor="si-email">Email</Label>
+        <Label htmlFor="si-email">{t("Email")}</Label>
         <Input
           id="si-email"
           type="email"
+          dir="ltr"
           autoComplete="email"
           required
           value={email}
@@ -144,14 +152,15 @@ function SignInForm() {
       </div>
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <Label htmlFor="si-pass">Password</Label>
+          <Label htmlFor="si-pass">{t("Password")}</Label>
           <Link to="/forgot-password" className="text-xs text-brand hover:underline">
-            Forgot?
+            {t("Forgot?")}
           </Link>
         </div>
         <Input
           id="si-pass"
           type="password"
+          dir="ltr"
           autoComplete="current-password"
           required
           value={password}
@@ -159,13 +168,15 @@ function SignInForm() {
         />
       </div>
       <Button type="submit" className="w-full" disabled={busy}>
-        {busy && <Loader2 className="size-4 animate-spin" />} Sign in
+        {busy && <Loader2 className="size-4 animate-spin" />} {t("Sign in")}
       </Button>
     </form>
   );
 }
 
 function SignUpForm() {
+  const { t } = useI18n();
+  const { signUpSchema } = makeSchemas(t);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -192,13 +203,13 @@ function SignUpForm() {
       toast.error(error.message);
       return;
     }
-    toast.success("Check your email to confirm your account.");
+    toast.success(t("Check your email to confirm your account."));
   }
 
   return (
     <form onSubmit={onSubmit} className="mt-5 space-y-4">
       <div className="space-y-1.5">
-        <Label htmlFor="su-name">Full name</Label>
+        <Label htmlFor="su-name">{t("Full name")}</Label>
         <Input
           id="su-name"
           required
@@ -207,34 +218,37 @@ function SignUpForm() {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="su-email">Email</Label>
+        <Label htmlFor="su-email">{t("Email")}</Label>
         <Input
           id="su-email"
           type="email"
+          dir="ltr"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="su-pass">Password</Label>
+        <Label htmlFor="su-pass">{t("Password")}</Label>
         <Input
           id="su-pass"
           type="password"
+          dir="ltr"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <p className="text-xs text-muted-foreground">Minimum 8 characters.</p>
+        <p className="text-xs text-muted-foreground">{t("Minimum 8 characters.")}</p>
       </div>
       <Button type="submit" className="w-full" disabled={busy}>
-        {busy && <Loader2 className="size-4 animate-spin" />} Create account
+        {busy && <Loader2 className="size-4 animate-spin" />} {t("Create account")}
       </Button>
     </form>
   );
 }
 
 function GoogleButton() {
+  const { t } = useI18n();
   const { redirect: after } = Route.useSearch();
   const [busy, setBusy] = useState(false);
   async function handle() {
@@ -245,7 +259,7 @@ function GoogleButton() {
     });
     if (error) {
       setBusy(false);
-      toast.error("Google sign-in failed");
+      toast.error(t("Google sign-in failed"));
     }
   }
   return (
@@ -268,7 +282,7 @@ function GoogleButton() {
           fill="#EA4335"
         />
       </svg>
-      Continue with Google
+      {t("Continue with Google")}
     </Button>
   );
 }

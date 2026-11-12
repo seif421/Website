@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { SiteLayout } from "@/components/site/layout";
 import { ProductCard } from "@/components/site/product-card";
 import { useCart } from "@/hooks/use-cart";
+import { useI18n } from "@/lib/i18n";
 import { formatMoney } from "@/lib/store/format";
 import { fetchProductPage } from "@/lib/store/queries";
 
@@ -74,8 +75,9 @@ export const Route = createFileRoute("/product/$slug")({
 });
 
 function Stars({ value }: { value: number }) {
+  const { t } = useI18n();
   return (
-    <span className="inline-flex gap-0.5" role="img" aria-label={`${value} out of 5 stars`}>
+    <span className="inline-flex gap-0.5" role="img" aria-label={t("{n} out of 5 stars", { n: value })}>
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
@@ -88,6 +90,7 @@ function Stars({ value }: { value: number }) {
 }
 
 function Gallery({ images, name }: { images: string[]; name: string }) {
+  const { t } = useI18n();
   const [active, setActive] = useState(0);
   const [zoom, setZoom] = useState(false);
   const [pos, setPos] = useState({ x: 50, y: 50 });
@@ -128,13 +131,13 @@ function Gallery({ images, name }: { images: string[]; name: string }) {
         />
       </div>
       {images.length > 1 && (
-        <ul className="mt-3 flex flex-wrap gap-2" aria-label="Product photos">
+        <ul className="mt-3 flex flex-wrap gap-2" aria-label={t("Product photos")}>
           {images.map((src, i) => (
             <li key={src + i}>
               <button
                 type="button"
                 onClick={() => setActive(i)}
-                aria-label={`Show photo ${i + 1}`}
+                aria-label={t("Show photo {n}", { n: i + 1 })}
                 aria-current={i === active}
                 className={`size-16 overflow-hidden rounded-xl border-2 bg-surface ${
                   i === active ? "border-brand" : "border-transparent hover:border-border"
@@ -154,6 +157,7 @@ function ProductPage() {
   const { product: p, related, reviews } = Route.useLoaderData();
   const cart = useCart();
   const navigate = useNavigate();
+  const { t, lang } = useI18n();
   const [qty, setQty] = useState(1);
 
   const lowStock =
@@ -176,7 +180,7 @@ function ProductPage() {
         await navigator.share({ title: p.name, url });
       } else {
         await navigator.clipboard.writeText(url);
-        toast.success("Link copied");
+        toast.success(t("Link copied"));
       }
     } catch {
       /* cancelled */
@@ -186,13 +190,13 @@ function ProductPage() {
   return (
     <SiteLayout>
       <article className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
+        <nav aria-label={t("Breadcrumb")} className="text-sm text-muted-foreground">
           <Link to="/" className="hover:text-foreground">
-            Home
+            {t("Home")}
           </Link>
           <span className="mx-2">/</span>
           <Link to="/shop" className="hover:text-foreground">
-            Shop
+            {t("Shop")}
           </Link>
           {p.categoryName && p.categorySlug && (
             <>
@@ -222,7 +226,9 @@ function ProductPage() {
                 <Stars value={p.rating} />
                 <span className="font-medium text-foreground">{p.rating.toFixed(1)}</span>
                 <a href="#reviews" className="hover:underline">
-                  ({p.reviewCount.toLocaleString()} review{p.reviewCount === 1 ? "" : "s"})
+                  {p.reviewCount === 1
+                    ? t("(1 review)")
+                    : t("({n} reviews)", { n: p.reviewCount.toLocaleString() })}
                 </a>
               </div>
             )}
@@ -236,7 +242,7 @@ function ProductPage() {
               )}
               {p.discountPct > 0 && (
                 <span className="rounded-full bg-destructive px-2.5 py-1 text-xs font-semibold text-destructive-foreground">
-                  Save {p.discountPct}%
+                  {t("Save {n}%", { n: p.discountPct })}
                 </span>
               )}
             </div>
@@ -246,10 +252,10 @@ function ProductPage() {
             >
               {p.inStock && <Check className="size-4" aria-hidden />}
               {!p.inStock
-                ? "Out of stock"
+                ? t("Out of stock")
                 : lowStock
-                  ? `Only ${p.availableUnits} left`
-                  : "In stock"}
+                  ? t("Only {n} left", { n: p.availableUnits ?? 0 })
+                  : t("In stock")}
             </p>
 
             {p.shortDescription && (
@@ -260,12 +266,12 @@ function ProductPage() {
               <div
                 className="inline-flex h-12 items-center rounded-full border border-input"
                 role="group"
-                aria-label="Quantity"
+                aria-label={t("Quantity")}
               >
                 <button
                   type="button"
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  aria-label="Decrease quantity"
+                  aria-label={t("Decrease quantity")}
                   className="grid size-12 place-items-center rounded-full hover:bg-surface"
                 >
                   <Minus className="size-4" aria-hidden />
@@ -276,7 +282,7 @@ function ProductPage() {
                 <button
                   type="button"
                   onClick={() => setQty((q) => Math.min(10, q + 1))}
-                  aria-label="Increase quantity"
+                  aria-label={t("Increase quantity")}
                   className="grid size-12 place-items-center rounded-full hover:bg-surface"
                 >
                   <Plus className="size-4" aria-hidden />
@@ -287,11 +293,11 @@ function ProductPage() {
                 disabled={!p.inStock}
                 onClick={() => {
                   addToCart();
-                  toast.success("Added to cart");
+                  toast.success(t("Added to cart"));
                 }}
                 className="h-12 flex-1 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Add to cart
+                {t("Add to cart")}
               </button>
               <button
                 type="button"
@@ -302,12 +308,12 @@ function ProductPage() {
                 }}
                 className="h-12 rounded-full border border-input px-6 text-sm font-semibold transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Buy now
+                {t("Buy now")}
               </button>
               <button
                 type="button"
                 onClick={share}
-                aria-label="Share this product"
+                aria-label={t("Share this product")}
                 className="grid size-12 place-items-center rounded-full border border-input hover:bg-surface"
               >
                 <Share2 className="size-4" aria-hidden />
@@ -317,20 +323,20 @@ function ProductPage() {
             <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               {p.sku && (
                 <>
-                  <dt className="text-muted-foreground">SKU</dt>
+                  <dt className="text-muted-foreground">{t("SKU")}</dt>
                   <dd className="font-medium">{p.sku}</dd>
                 </>
               )}
             </dl>
 
             <div className="mt-6 rounded-2xl border border-border bg-surface p-4 text-sm text-muted-foreground">
-              Delivery times and shipping costs are shown at checkout. Read our{" "}
+              {t("Delivery times and shipping costs are shown at checkout. Read our")}{" "}
               <Link to="/shipping" className="font-medium text-foreground underline">
-                Shipping Policy
+                {t("Shipping Policy")}
               </Link>{" "}
-              and{" "}
+              {t("and")}{" "}
               <Link to="/refunds" className="font-medium text-foreground underline">
-                Refund Policy
+                {t("Refund Policy")}
               </Link>
               .
             </div>
@@ -341,7 +347,7 @@ function ProductPage() {
           {(p.description || p.features.length > 0) && (
             <section aria-labelledby="about-heading">
               <h2 id="about-heading" className="font-display text-xl font-bold">
-                About this product
+                {t("About this product")}
               </h2>
               {p.description && (
                 <p className="mt-3 whitespace-pre-line leading-relaxed text-muted-foreground">
@@ -363,7 +369,7 @@ function ProductPage() {
           {p.specs.length > 0 && (
             <section aria-labelledby="specs-heading">
               <h2 id="specs-heading" className="font-display text-xl font-bold">
-                Specifications
+                {t("Specifications")}
               </h2>
               <dl className="mt-3 divide-y divide-border rounded-2xl border border-border">
                 {p.specs.map((s) => (
@@ -379,10 +385,10 @@ function ProductPage() {
 
         <section id="reviews" aria-labelledby="reviews-heading" className="mt-14">
           <h2 id="reviews-heading" className="font-display text-xl font-bold">
-            Customer reviews
+            {t("Customer reviews")}
           </h2>
           {reviews.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No reviews yet.</p>
+            <p className="mt-3 text-sm text-muted-foreground">{t("No reviews yet.")}</p>
           ) : (
             <ul className="mt-4 grid gap-4 md:grid-cols-2">
               {reviews.map((r) => (
@@ -393,7 +399,7 @@ function ProductPage() {
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{r.body}</p>
                   )}
                   <p className="mt-3 text-xs text-muted-foreground">
-                    {new Date(r.createdAt).toLocaleDateString("en-US")}
+                    {new Date(r.createdAt).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US")}
                   </p>
                 </li>
               ))}
@@ -404,7 +410,7 @@ function ProductPage() {
         {related.length > 0 && (
           <section aria-labelledby="related-heading" className="mt-14">
             <h2 id="related-heading" className="font-display text-xl font-bold">
-              You may also like
+              {t("You may also like")}
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {related.map((r) => (

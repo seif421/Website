@@ -10,6 +10,7 @@ import { Loader2, Package, MapPin, Heart, ShieldCheck, LogOut, ChevronRight } fr
 import { AddressManager } from "@/components/account/address-manager";
 import { OrderThumb, type OrderLine } from "@/components/account/order-thumb";
 import { STATUS_TONE, statusLabel } from "@/lib/store/order-status";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
@@ -52,6 +53,8 @@ type Login = {
 };
 
 function AccountPage() {
+  const { t, lang } = useI18n();
+  const locale = lang === "ar" ? "ar-EG-u-nu-latn" : undefined;
   const { user, loading, isStaff, signOut } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -110,14 +113,14 @@ function AccountPage() {
       <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">My account</h1>
+            <h1 className="font-display text-3xl font-bold tracking-tight">{t("My account")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
           </div>
           <div className="flex gap-2">
             {isStaff && (
               <Button asChild variant="outline">
                 <Link to="/admin">
-                  <ShieldCheck className="size-4" /> Admin dashboard
+                  <ShieldCheck className="size-4" /> {t("Admin dashboard")}
                 </Link>
               </Button>
             )}
@@ -128,7 +131,7 @@ function AccountPage() {
                 navigate({ to: "/", replace: true });
               }}
             >
-              <LogOut className="size-4" /> Sign out
+              <LogOut className="size-4" /> {t("Sign out")}
             </Button>
           </div>
         </div>
@@ -137,44 +140,44 @@ function AccountPage() {
           <Card className="p-5">
             <div className="flex items-center gap-3">
               <Package className="size-5 text-brand" />
-              <h2 className="font-semibold">Orders</h2>
+              <h2 className="font-semibold">{t("Orders")}</h2>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Track and re-order past purchases.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("Track and re-order past purchases.")}</p>
             <Button asChild variant="outline" className="mt-4 w-full">
-              <a href="#orders">View orders</a>
+              <a href="#orders">{t("View orders")}</a>
             </Button>
           </Card>
           <Card className="p-5">
             <div className="flex items-center gap-3">
               <MapPin className="size-5 text-brand" />
-              <h2 className="font-semibold">Addresses</h2>
+              <h2 className="font-semibold">{t("Addresses")}</h2>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Save your delivery addresses.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("Save your delivery addresses.")}</p>
             <Button asChild variant="outline" className="mt-4 w-full">
-              <a href="#addresses">Manage</a>
+              <a href="#addresses">{t("Manage")}</a>
             </Button>
           </Card>
           <Card className="p-5">
             <div className="flex items-center gap-3">
               <Heart className="size-5 text-brand" />
-              <h2 className="font-semibold">Wishlist</h2>
+              <h2 className="font-semibold">{t("Wishlist")}</h2>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Your saved products.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("Your saved products.")}</p>
             <Button asChild variant="outline" className="mt-4 w-full">
-              <Link to="/wishlist">Open wishlist</Link>
+              <Link to="/wishlist">{t("Open wishlist")}</Link>
             </Button>
           </Card>
         </div>
 
         <Card id="orders" className="mt-8 scroll-mt-24 p-5">
-          <h2 className="font-semibold">Recent orders</h2>
+          <h2 className="font-semibold">{t("Recent orders")}</h2>
           {busy ? (
-            <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+            <p className="mt-3 text-sm text-muted-foreground">{t("Loading…")}</p>
           ) : orders.length === 0 ? (
             <div className="mt-3 text-sm text-muted-foreground">
-              No orders yet.{" "}
+              {t("No orders yet.")}{" "}
               <Link to="/shop" className="font-medium text-foreground underline">
-                Start shopping
+                {t("Start shopping")}
               </Link>
             </div>
           ) : (
@@ -193,12 +196,12 @@ function AccountPage() {
                           <div>
                             <p className="font-medium">{o.order_number ?? o.id.slice(0, 8)}</p>
                             <p className="text-xs text-muted-foreground">
-                              {new Date(o.created_at).toLocaleDateString()}
+                              {new Date(o.created_at).toLocaleDateString(locale)}
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
                             <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_TONE[o.status] ?? "bg-muted"}`}>
-                              {statusLabel(o.status)}
+                              {t(statusLabel(o.status))}
                             </span>
                             <span className="font-semibold">{formatMoney(Number(o.total ?? 0))}</span>
                           </div>
@@ -216,11 +219,11 @@ function AccountPage() {
                               </p>
                             ))}
                             {lines.length > 2 && (
-                              <p className="text-xs text-muted-foreground">+ {lines.length - 2} more</p>
+                              <p className="text-xs text-muted-foreground">{t("+ {n} more", { n: lines.length - 2 })}</p>
                             )}
                           </div>
                           <span className="hidden items-center gap-1 text-sm font-medium text-brand sm:flex">
-                            View details <ChevronRight className="size-4" />
+                            {t("View details")} <ChevronRight className="size-4 rtl:rotate-180" />
                           </span>
                         </div>
                       </Link>
@@ -230,7 +233,7 @@ function AccountPage() {
               </ul>
               {orders.length > 5 && (
                 <Button variant="ghost" className="mt-3 w-full" onClick={() => setShowAll((v) => !v)}>
-                  {showAll ? "Show fewer orders" : `Show all orders (${orders.length})`}
+                  {showAll ? t("Show fewer orders") : t("Show all orders ({n})", { n: orders.length })}
                 </Button>
               )}
             </>
@@ -239,15 +242,15 @@ function AccountPage() {
 
         <Card id="returns" className="mt-8 scroll-mt-24 p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-semibold">Return requests</h2>
+            <h2 className="font-semibold">{t("Return requests")}</h2>
             <Button asChild variant="outline" size="sm">
-              <Link to="/returns/new">Request a return</Link>
+              <Link to="/returns/new">{t("Request a return")}</Link>
             </Button>
           </div>
           {busy ? (
-            <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+            <p className="mt-3 text-sm text-muted-foreground">{t("Loading…")}</p>
           ) : returns.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">You have no return requests.</p>
+            <p className="mt-3 text-sm text-muted-foreground">{t("You have no return requests.")}</p>
           ) : (
             <ul className="mt-3 divide-y text-sm">
               {returns.map((r) => (
@@ -255,16 +258,16 @@ function AccountPage() {
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-medium">{r.return_number}</span>
                     <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium capitalize">
-                      {r.status === "requested" ? "Under review" : r.status}
+                      {r.status === "requested" ? t("Under review") : t(r.status)}
                     </span>
                   </div>
                   <p className="text-muted-foreground">
                     {(r.items ?? []).map((i) => `${i.name} × ${i.quantity}`).join(", ")} · {r.reason} ·{" "}
-                    {new Date(r.created_at).toLocaleDateString()}
+                    {new Date(r.created_at).toLocaleDateString(locale)}
                   </p>
                   {r.admin_notes && (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">Message from us:</span> {r.admin_notes}
+                      <span className="font-medium text-foreground">{t("Message from us:")}</span> {r.admin_notes}
                     </p>
                   )}
                 </li>
@@ -276,16 +279,16 @@ function AccountPage() {
         <AddressManager userId={user.id} defaultName={(user.user_metadata?.full_name as string | undefined) ?? ""} />
 
         <Card className="mt-6 p-5">
-          <h2 className="font-semibold">Security · recent sign-ins</h2>
+          <h2 className="font-semibold">{t("Security · recent sign-ins")}</h2>
           {busy ? (
-            <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+            <p className="mt-3 text-sm text-muted-foreground">{t("Loading…")}</p>
           ) : logins.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No history yet.</p>
+            <p className="mt-3 text-sm text-muted-foreground">{t("No history yet.")}</p>
           ) : (
             <ul className="mt-3 divide-y text-sm">
               {logins.map((l) => (
                 <li key={l.id} className="flex items-center justify-between py-2">
-                  <span>{new Date(l.created_at).toLocaleString()}</span>
+                  <span>{new Date(l.created_at).toLocaleString(locale)}</span>
                   <span className="text-xs text-muted-foreground truncate max-w-[60%]">
                     {l.user_agent ?? "—"}
                   </span>

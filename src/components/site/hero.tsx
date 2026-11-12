@@ -3,10 +3,12 @@ import { ChevronRight } from "lucide-react";
 import { CmsLink } from "./cms-link";
 import { CategoryThumb } from "./categories";
 import { topCategories, useSiteData } from "@/hooks/use-site-data";
+import { useI18n } from "@/lib/i18n";
 import { imageUrl } from "@/lib/store/format";
 import defaultHero from "@/assets/hero-rivvo.webp";
 
 export function Hero() {
+  const { t } = useI18n();
   const data = useSiteData();
   const { hero, promos } = data.home;
   const cats = topCategories(data);
@@ -16,10 +18,10 @@ export function Hero() {
       <div className={`grid gap-4 ${cats.length > 0 ? "lg:grid-cols-[220px_1fr_250px]" : "lg:grid-cols-[1fr_250px]"}`}>
         {cats.length > 0 && (
           <nav
-            aria-label="Departments"
+            aria-label={t("Departments")}
             className="hidden max-h-[26rem] overflow-y-auto rounded-2xl border border-border bg-card p-2 lg:block"
           >
-            <p className="px-3 pb-2 pt-2 font-display text-sm font-bold">Departments</p>
+            <p className="px-3 pb-2 pt-2 font-display text-sm font-bold">{t("Departments")}</p>
             <ul>
               {cats.map((c) => (
                 <li key={c.id}>
@@ -30,7 +32,7 @@ export function Hero() {
                   >
                     <CategoryThumb c={c} className="size-6 shrink-0 rounded" />
                     <span className="flex-1 truncate">{c.name}</span>
-                    <ChevronRight className="size-4 opacity-40" aria-hidden />
+                    <ChevronRight className="size-4 opacity-40 rtl:rotate-180" aria-hidden />
                   </Link>
                 </li>
               ))}
@@ -43,7 +45,7 @@ export function Hero() {
           ariaLabel={hero.alt}
           className="group relative block overflow-hidden rounded-2xl bg-[#2a1b6b]"
         >
-          <h1 className="sr-only">Rivvo, online store in Egypt</h1>
+          <h1 className="sr-only">{t("Rivvo, online store in Egypt")}</h1>
           <img
             src={image}
             alt={hero.alt}

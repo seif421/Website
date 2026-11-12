@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useI18n } from "@/lib/i18n";
 
 // A signed-in customer's saved products. Guests are sent to sign in when they tap the heart.
 
@@ -17,6 +18,7 @@ const WishlistContext = createContext<Ctx | null>(null);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [ids, setIds] = useState<Set<string>>(new Set());
 
@@ -41,7 +43,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const toggle = useCallback(
     async (productId: string) => {
       if (!user) {
-        toast("Sign in to save products to your wishlist.");
+        toast(t("Sign in to save products to your wishlist."));
         navigate({ to: "/auth", search: { redirect: "/wishlist" } as never });
         return;
       }
@@ -62,12 +64,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
           else next.delete(productId);
           return next;
         });
-        toast.error("Could not update your wishlist. Please try again.");
+        toast.error(t("Could not update your wishlist. Please try again."));
       } else {
-        toast.success(had ? "Removed from wishlist" : "Saved to wishlist");
+        toast.success(had ? t("Removed from wishlist") : t("Saved to wishlist"));
       }
     },
-    [user, ids, navigate],
+    [user, ids, navigate, t],
   );
 
   const value = useMemo<Ctx>(
