@@ -25,6 +25,7 @@ import {
   Bell,
   Gift,
   LayoutTemplate,
+  Share2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -81,6 +82,7 @@ const growth: Item[] = [
     roles: ["admin", "manager"],
   },
   { title: "Marketing", url: "/admin/marketing", icon: Megaphone, roles: ["admin", "manager"] },
+  { title: "Social automation", url: "/admin/social-automation", icon: Share2, roles: ["admin"] },
   { title: "Notifications", url: "/admin/notifications", icon: Bell },
   { title: "Support", url: "/admin/support", icon: LifeBuoy },
 ];
