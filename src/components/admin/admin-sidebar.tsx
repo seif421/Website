@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Package,
+  Download,
   FolderTree,
   ShoppingCart,
   Users,
@@ -53,6 +54,7 @@ const overview: Item[] = [
 ];
 const commerce: Item[] = [
   { title: "Products", url: "/admin/products", icon: Package, roles: ["admin", "manager"] },
+  { title: "Dropzawy importer", url: "/admin/dropzawy", icon: Download, roles: ["admin", "manager"] },
   { title: "Categories", url: "/admin/categories", icon: FolderTree, roles: ["admin", "manager"] },
   { title: "Brands", url: "/admin/brands", icon: Award, roles: ["admin", "manager"] },
   { title: "Suppliers", url: "/admin/suppliers", icon: Truck, roles: ["admin", "manager"] },
