@@ -102,43 +102,69 @@ Deno.serve(async (req: Request) => {
     .select("id, product_id, facebook_post_id, instagram_media_id, published_at, status")
     .in("status", ["published", "partial", "publishing"])
     .order("created_at", { ascending: false })
-    .limit(30);
+    .limit(100);
 
-  const alreadyToday = (recent ?? []).some((post) => post.published_at && egyptDay(new Date(post.published_at)) === today);
-  if (alreadyToday) return json({ ok: true, message: "Daily posting limit reached" });
+  const postsToday = (recent ?? []).filter((post) => post.published_at && egyptDay(new Date(post.published_at)) === today).length;
+  if (postsToday >= Number(settings.max_posts_per_day ?? 1)) return json({ ok: true, message: "Daily posting limit reached" });
+  if (!settings.publish_facebook && !settings.publish_instagram) return json({ error: "Enable at least one publishing channel" }, 400);
 
   const usedIds = (recent ?? []).map((post) => post.product_id).filter(Boolean);
-  let query = db.from("products")
-    .select("id,name,slug,price,short_description,images,created_at")
-    .eq("status", "published")
-    .eq("is_active", true)
-    .is("deleted_at", null)
-    .order("created_at", { ascending: false })
-    .limit(100);
-  const { data: products, error: productsError } = await query;
-  if (productsError) return json({ error: productsError.message }, 500);
+  const { data: queuedPost, error: queuedError } = await db
+    .from("social_posts")
+    .select("id, product_id, product_name, product_url, image_url, caption")
+    .eq("status", "queued")
+    .lte("scheduled_at", now.toISOString())
+    .order("scheduled_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (queuedError) return json({ error: queuedError.message }, 500);
 
-  const candidate = (products ?? []).find((product) => {
-    const images = Array.isArray(product.images) ? product.images : [];
-    return !usedIds.includes(product.id) && images.some((image: unknown) => typeof image === "string" && /^https:\/\//i.test(image));
-  });
-  if (!candidate) return json({ ok: true, message: "No eligible unused products with public HTTPS images" });
+  let postId: string;
+  let productName: string;
+  let imageUrl: string;
+  let caption: string;
 
-  const images = Array.isArray(candidate.images) ? candidate.images : [];
-  const imageUrl = images.find((image: unknown) => typeof image === "string" && /^https:\/\//i.test(image)) as string;
-  const caption = makeArabicCaption(candidate);
-  const productUrl = `https://rivvo-shop.vercel.app/product/${candidate.slug}`;
+  if (queuedPost) {
+    postId = queuedPost.id;
+    productName = queuedPost.product_name;
+    imageUrl = queuedPost.image_url;
+    caption = queuedPost.caption;
+    const { error } = await db.from("social_posts").update({ status: "publishing", error_message: null }).eq("id", postId);
+    if (error) return json({ error: error.message }, 500);
+  } else {
+    const { data: products, error: productsError } = await db.from("products")
+      .select("id,name,slug,price,short_description,images,created_at")
+      .eq("status", "published")
+      .eq("is_active", true)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (productsError) return json({ error: productsError.message }, 500);
 
-  const { data: post, error: insertError } = await db.from("social_posts").insert({
-    product_id: candidate.id,
-    product_name: candidate.name,
-    product_url: productUrl,
-    image_url: imageUrl,
-    caption,
-    status: "publishing",
-    scheduled_at: now.toISOString(),
-  }).select("id").single();
-  if (insertError || !post) return json({ error: insertError?.message ?? "Could not create post record" }, 500);
+    const candidate = (products ?? []).find((product) => {
+      const images = Array.isArray(product.images) ? product.images : [];
+      return !usedIds.includes(product.id) && images.some((image: unknown) => typeof image === "string" && /^https:\/\//i.test(image));
+    });
+    if (!candidate) return json({ ok: true, message: "No eligible unused products with public HTTPS images" });
+
+    const images = Array.isArray(candidate.images) ? candidate.images : [];
+    imageUrl = images.find((image: unknown) => typeof image === "string" && /^https:\/\//i.test(image)) as string;
+    caption = makeArabicCaption(candidate);
+    productName = candidate.name;
+    const productUrl = `https://rivvo-shop.vercel.app/product/${candidate.slug}`;
+
+    const { data: post, error: insertError } = await db.from("social_posts").insert({
+      product_id: candidate.id,
+      product_name: productName,
+      product_url: productUrl,
+      image_url: imageUrl,
+      caption,
+      status: "publishing",
+      scheduled_at: now.toISOString(),
+    }).select("id").single();
+    if (insertError || !post) return json({ error: insertError?.message ?? "Could not create post record" }, 500);
+    postId = post.id;
+  }
 
   let facebookPostId: string | null = null;
   let instagramMediaId: string | null = null;
@@ -147,7 +173,7 @@ Deno.serve(async (req: Request) => {
   if (settings.publish_facebook) {
     try {
       facebookPostId = await publishFacebook(pageId, pageToken, imageUrl, caption, version);
-      await db.from("social_posts").update({ facebook_post_id: facebookPostId }).eq("id", post.id);
+      await db.from("social_posts").update({ facebook_post_id: facebookPostId }).eq("id", postId);
     } catch (error) {
       errors.push(`Facebook: ${error instanceof Error ? error.message : "unknown error"}`);
     }
@@ -176,6 +202,6 @@ Deno.serve(async (req: Request) => {
       updated_at: new Date().toISOString(),
     }).eq("id", 1);
   }
-  if (updateError) return json({ error: updateError.message, post_id: post.id }, 500);
+  if (updateError) return json({ error: updateError.message, post_id: postId }, 500);
   return json({ ok: succeeded, post_id: post.id, status: finalStatus, errors });
 });
