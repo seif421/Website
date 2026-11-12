@@ -191,7 +191,7 @@ Deno.serve(async (req: Request) => {
     status: finalStatus,
     published_at: succeeded ? new Date().toISOString() : null,
     error_message: errors.length ? errors.join("; ").slice(0, 1000) : null,
-  }).eq("id", post.id);
+  }).eq("id", postId);
 
   if (succeeded) {
     await db.from("social_automation_settings").update({
