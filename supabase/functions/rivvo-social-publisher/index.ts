@@ -40,14 +40,6 @@ function makeArabicCaption(product: { name: string; price: number; short_descrip
   ].filter(Boolean).join("\n");
 }
 
-async function publishFacebook(pageId: string, token: string, imageUrl: string, caption: string, version: string) {
-  const form = new URLSearchParams({ url: imageUrl, message: caption, published: "true", access_token: token });
-  const response = await fetch(`https://graph.facebook.com/${version}/${pageId}/photos`, { method: "POST", body: form });
-  const result = await response.json();
-  if (!response.ok || result.error) throw new Error(result.error?.message ?? "Facebook publishing failed");
-  return String(result.post_id ?? result.id);
-}
-
 async function publishInstagram(igId: string, token: string, imageUrl: string, caption: string, version: string) {
   const create = await fetch(`https://graph.facebook.com/${version}/${igId}/media`, {
     method: "POST",
@@ -92,11 +84,10 @@ Deno.serve(async (req: Request) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !serviceKey) return json({ error: "Supabase function secrets are incomplete" }, 500);
 
-  const pageId = Deno.env.get("META_PAGE_ID");
   const pageToken = Deno.env.get("META_PAGE_ACCESS_TOKEN");
   const igId = Deno.env.get("META_IG_USER_ID");
-  const version = Deno.env.get("META_GRAPH_API_VERSION") ?? "v26.0";
-  if (!pageId || !pageToken || !igId) return json({ error: "Meta publishing secrets are not configured" }, 503);
+  const version = Deno.env.get("META_GRAPH_API_VERSION") ?? "v27.0";
+  if (!pageToken || !igId) return json({ error: "Meta publishing secrets are not configured" }, 503);
 
   const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
   const { data: settings, error: settingsError } = await db
@@ -118,7 +109,7 @@ Deno.serve(async (req: Request) => {
 
   const postsToday = (recent ?? []).filter((post) => post.published_at && egyptDay(new Date(post.published_at)) === today).length;
   if (postsToday >= Number(settings.max_posts_per_day ?? 1)) return json({ ok: true, message: "Daily posting limit reached" });
-  if (!settings.publish_facebook && !settings.publish_instagram) return json({ error: "Enable at least one publishing channel" }, 400);
+  if (!settings.publish_instagram) return json({ ok: true, message: "Instagram publishing is paused" });
 
   const usedIds = (recent ?? []).map((post) => post.product_id).filter(Boolean);
   const { data: queuedPost, error: queuedError } = await db
@@ -175,30 +166,12 @@ Deno.serve(async (req: Request) => {
     postId = post.id;
   }
 
-  let facebookPostId: string | null = null;
   let instagramMediaId: string | null = null;
   const errors: string[] = [];
 
-  if (settings.publish_facebook) {
-    try {
-      facebookPostId = await publishFacebook(pageId, pageToken, imageUrl, caption, version);
-      await db.from("social_posts").update({ facebook_post_id: facebookPostId }).eq("id", postId);
-    } catch (error) {
-      errors.push(`Facebook: ${error instanceof Error ? error.message : "unknown error"}`);
-    }
-  }
 
-  if (settings.publish_instagram) {
-    try {
-      instagramMediaId = await publishInstagram(igId, pageToken, imageUrl, caption, version);
-      await db.from("social_posts").update({ instagram_media_id: instagramMediaId }).eq("id", postId);
-    } catch (error) {
-      errors.push(`Instagram: ${error instanceof Error ? error.message : "unknown error"}`);
-    }
-  }
-
-  const succeeded = Boolean(facebookPostId || instagramMediaId);
-  const finalStatus = errors.length ? (succeeded ? "partial" : "failed") : "published";
+  const succeeded = Boolean(instagramMediaId);
+  const finalStatus = errors.length ? "failed" : "published";
   const { error: updateError } = await db.from("social_posts").update({
     status: finalStatus,
     published_at: succeeded ? new Date().toISOString() : null,
