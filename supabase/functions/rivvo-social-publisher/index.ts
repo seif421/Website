@@ -57,6 +57,18 @@ async function publishInstagram(igId: string, token: string, imageUrl: string, c
   const container = await create.json();
   if (!create.ok || container.error || !container.id) throw new Error(container.error?.message ?? "Instagram media creation failed");
 
+  // Meta fetches the public image asynchronously. Wait for the media container to finish processing.
+  let ready = false;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const statusResponse = await fetch(`https://graph.facebook.com/${version}/${container.id}?fields=status_code&access_token=${encodeURIComponent(token)}`);
+    const status = await statusResponse.json();
+    if (status.error) throw new Error(status.error.message ?? "Instagram media processing failed");
+    if (status.status_code === "FINISHED") { ready = true; break; }
+    if (status.status_code === "ERROR" || status.status_code === "EXPIRED") throw new Error(`Instagram media container ${status.status_code.toLowerCase()}`);
+  }
+  if (!ready) throw new Error("Instagram media is still processing; retry the post later");
+
   const publish = await fetch(`https://graph.facebook.com/${version}/${igId}/media_publish`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
