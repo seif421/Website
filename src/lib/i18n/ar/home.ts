@@ -57,4 +57,5 @@ export const home: Record<string, string> = {
   "Could not update your wishlist. Please try again.": "تعذّر تحديث قائمة أمنياتك. يرجى المحاولة مرة أخرى.",
   "Removed from wishlist": "تمت الإزالة من قائمة الأمنيات",
   "Saved to wishlist": "تم الحفظ في قائمة الأمنيات",
+  "Free delivery over {n} EGP": "توصيل مجاني للطلبات فوق {n} ج.م",
 };
