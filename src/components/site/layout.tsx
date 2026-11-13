@@ -1,5 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useLanguage, translateStoreText } from "@/lib/i18n";
+import { Header } from "./header";
+import { Footer } from "./footer";
 
 export function SiteLayout({ children }: { children: ReactNode }) {
   const { language } = useLanguage();
@@ -51,7 +53,9 @@ export function SiteLayout({ children }: { children: ReactNode }) {
 
   return (
     <div ref={rootRef} lang={language} dir={language === "ar" ? "rtl" : "ltr"} className="flex min-h-screen flex-col bg-background text-foreground">
-      {children}
+      <Header />
+      <main className="flex-1">{children}</main>
+      <Footer />
     </div>
   );
 }
