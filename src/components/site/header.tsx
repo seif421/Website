@@ -17,6 +17,7 @@ import { Logo } from "./logo";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
+import { useLanguage } from "@/lib/i18n";
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -28,6 +29,7 @@ export function Header() {
   const wishlist = useWishlist();
   const site = useSiteData();
   const navigate = useNavigate();
+  const { language, toggleLanguage } = useLanguage();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -92,6 +94,17 @@ export function Header() {
                 </button>
               </div>
             </form>
+
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              aria-label={language === "en" ? "Switch language to Arabic" : "Switch language to English"}
+              title={language === "en" ? "العربية" : "English"}
+              className="ml-1 inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-border px-3 text-xs font-bold text-foreground transition-colors hover:border-brand hover:bg-surface"
+            >
+              <span aria-hidden>文</span>
+              <span>{language === "en" ? "عربي" : "EN"}</span>
+            </button>
 
             {isStaff && (
               <IconLink to="/admin" label="Admin" text="Admin">

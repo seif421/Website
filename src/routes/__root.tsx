@@ -18,6 +18,7 @@ import { WishlistProvider } from "@/hooks/use-wishlist";
 import { defaultSiteData, fetchSiteData, type SiteData } from "@/lib/store/content";
 import { imageUrl } from "@/lib/store/format";
 import { Toaster } from "@/components/ui/sonner";
+import { LanguageProvider } from "@/lib/i18n";
 
 function NotFoundComponent() {
   return (
@@ -149,10 +150,12 @@ function RootComponent() {
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-          <PageTracker />
-          <Toaster richColors position="top-right" />
+            <LanguageProvider>
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+              <PageTracker />
+              <Toaster richColors position="top-right" />
+            </LanguageProvider>
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
