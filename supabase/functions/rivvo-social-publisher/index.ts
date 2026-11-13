@@ -100,14 +100,14 @@ async function generateAICaption(input: {
         .join("\n");
 
     const body = outputText
-      .replace(/```[\\s\\S]*?```/g, "")
-      .replace(/https?:\\/\\/\\S+/gi, "")
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/https?:\/\/\S+/gi, "")
       .trim()
       .slice(0, 1700)
       .trim();
     if (!body) return null;
 
-    return `${body}\\n\\nاطلبه دلوقتي من Rivvo 🛒\\n${input.productUrl}`;
+    return `${body}\n\nاطلبه دلوقتي من Rivvo 🛒\n${input.productUrl}`;
   } catch (error) {
     console.warn("AI caption generation failed; using the existing caption fallback.", error instanceof Error ? error.message : "unknown error");
     return null;
