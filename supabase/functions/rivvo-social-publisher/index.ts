@@ -92,8 +92,7 @@ async function generateAICaption(input: {
     }
 
     const result = await response.json();
-    let outputText =
-      typeof result.output_text === "string" ? result.output_text : "";
+    let outputText = typeof result.output_text === "string" ? result.output_text : "";
     if (!outputText && Array.isArray(result.output)) {
       for (const item of result.output) {
         for (const block of item.content ?? []) {
