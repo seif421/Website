@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Home,
   Heart,
+  Languages,
 } from "lucide-react";
 import { MegaMenu } from "./mega-menu";
 import { topCategories, useSiteData } from "@/hooks/use-site-data";
@@ -20,7 +21,7 @@ import { useWishlist } from "@/hooks/use-wishlist";
 import { useI18n } from "@/lib/i18n";
 
 export function Header() {
-  const { t } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState("");
@@ -94,6 +95,17 @@ export function Header() {
                 </button>
               </div>
             </form>
+
+            <button
+              type="button"
+              onClick={() => setLang(lang === "en" ? "ar" : "en")}
+              aria-label={lang === "en" ? "Switch language to Arabic" : "Switch language to English"}
+              title={lang === "en" ? "العربية" : "English"}
+              className="ms-1 inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-border px-3 text-xs font-bold text-foreground transition-colors hover:border-brand hover:bg-surface"
+            >
+              <Languages className="size-3.5" aria-hidden />
+              <span>{lang === "en" ? "عربي" : "EN"}</span>
+            </button>
 
             {isStaff && (
               <IconLink to="/admin" label={t("Admin")} text={t("Admin")}>
