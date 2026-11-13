@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { SiteLayout } from "@/components/site/layout";
 import { ProductCard } from "@/components/site/product-card";
+import { useI18n } from "@/lib/i18n";
 import { fetchShop, SORTS, type SortKey } from "@/lib/store/queries";
 
 type ShopSearch = {
@@ -66,6 +67,7 @@ function ShopPage() {
   const data = Route.useLoaderData();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/shop" });
+  const { t } = useI18n();
 
   const [term, setTerm] = useState(search.q ?? "");
   const [min, setMin] = useState(search.min != null ? String(search.min) : "");
@@ -103,25 +105,27 @@ function ShopPage() {
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const title = data.activeCategory?.name ?? (search.q ? `Results for “${search.q}”` : "Shop all");
+  const title = data.activeCategory?.name ?? (search.q ? t("Results for “{q}”", { q: search.q }) : t("Shop all"));
 
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
+        <nav aria-label={t("Breadcrumb")} className="text-sm text-muted-foreground">
           <Link to="/" className="hover:text-foreground">
-            Home
+            {t("Home")}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-foreground">Shop</span>
+          <span className="text-foreground">{t("Shop")}</span>
         </nav>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
             <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">
               {data.total === 0
-                ? "No products found"
-                : `${data.total} product${data.total === 1 ? "" : "s"}`}
+                ? t("No products found")
+                : data.total === 1
+                  ? t("1 product")
+                  : t("{n} products", { n: data.total })}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -131,10 +135,10 @@ function ShopPage() {
               className="inline-flex h-10 items-center gap-2 rounded-full border border-input px-4 text-sm font-medium lg:hidden"
               aria-expanded={showFilters}
             >
-              <SlidersHorizontal className="size-4" aria-hidden /> Filters
+              <SlidersHorizontal className="size-4" aria-hidden /> {t("Filters")}
             </button>
             <label className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Sort</span>
+              <span className="text-muted-foreground">{t("Sort")}</span>
               <select
                 value={sort}
                 onChange={(e) =>
@@ -150,7 +154,7 @@ function ShopPage() {
               >
                 {SORTS.map((s) => (
                   <option key={s} value={s}>
-                    {SORT_LABELS[s]}
+                    {t(SORT_LABELS[s])}
                   </option>
                 ))}
               </select>
@@ -161,25 +165,25 @@ function ShopPage() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[240px_1fr]">
           <aside
             className={`${showFilters ? "block" : "hidden"} space-y-8 lg:block`}
-            aria-label="Filters"
+            aria-label={t("Filters")}
           >
             <form onSubmit={applyForm} role="search" className="space-y-3">
               <label className="relative block">
                 <Search
-                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                  className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden
                 />
                 <input
                   type="search"
                   value={term}
                   onChange={(e) => setTerm(e.target.value)}
-                  placeholder="Search products…"
-                  aria-label="Search products"
-                  className="h-10 w-full rounded-full border border-input bg-surface pl-9 pr-4 text-sm outline-none focus:border-brand focus:bg-background focus:ring-2 focus:ring-brand/20"
+                  placeholder={t("Search products…")}
+                  aria-label={t("Search products")}
+                  className="h-10 w-full rounded-full border border-input bg-surface ps-9 pe-4 text-sm outline-none focus:border-brand focus:bg-background focus:ring-2 focus:ring-brand/20"
                 />
               </label>
               <fieldset>
-                <legend className="mb-2 text-sm font-semibold">Price (EGP)</legend>
+                <legend className="mb-2 text-sm font-semibold">{t("Price (EGP)")}</legend>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -187,8 +191,8 @@ function ShopPage() {
                     inputMode="decimal"
                     value={min}
                     onChange={(e) => setMin(e.target.value)}
-                    placeholder="Min"
-                    aria-label="Minimum price"
+                    placeholder={t("Min")}
+                    aria-label={t("Minimum price")}
                     className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
                   <span className="text-muted-foreground">–</span>
@@ -198,8 +202,8 @@ function ShopPage() {
                     inputMode="decimal"
                     value={max}
                     onChange={(e) => setMax(e.target.value)}
-                    placeholder="Max"
-                    aria-label="Maximum price"
+                    placeholder={t("Max")}
+                    aria-label={t("Maximum price")}
                     className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                   />
                 </div>
@@ -208,12 +212,12 @@ function ShopPage() {
                 type="submit"
                 className="h-10 w-full rounded-full bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
               >
-                Apply
+                {t("Apply")}
               </button>
             </form>
 
             <div>
-              <h2 className="mb-2 text-sm font-semibold">Categories</h2>
+              <h2 className="mb-2 text-sm font-semibold">{t("Categories")}</h2>
               <ul className="space-y-1">
                 <li>
                   <Link
@@ -229,7 +233,7 @@ function ShopPage() {
                         : "text-muted-foreground"
                     }`}
                   >
-                    All products
+                    {t("All products")}
                   </Link>
                 </li>
                 {topCategories.map((c) => (
@@ -255,7 +259,7 @@ function ShopPage() {
                         search.category === c.slug || children.some((s) => s.slug === search.category);
                       if (!open || children.length === 0) return null;
                       return (
-                        <ul className="ml-3 mt-1 space-y-1 border-l border-border pl-2">
+                        <ul className="ms-3 mt-1 space-y-1 border-s border-border ps-2">
                           {children.map((s) => (
                             <li key={s.id}>
                               <Link
@@ -289,7 +293,7 @@ function ShopPage() {
                 search={{}}
                 className="inline-block text-sm font-medium text-brand hover:underline"
               >
-                Clear all filters
+                {t("Clear all filters")}
               </Link>
             )}
           </aside>
@@ -298,12 +302,12 @@ function ShopPage() {
             {data.products.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
                 <p className="font-display text-lg font-semibold">
-                  {hasFilters ? "No products match your filters." : "New products are on the way."}
+                  {hasFilters ? t("No products match your filters.") : t("New products are on the way.")}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {hasFilters
-                    ? "Try removing a filter or searching for something else."
-                    : "We are stocking the shop. Please check back soon."}
+                    ? t("Try removing a filter or searching for something else.")
+                    : t("We are stocking the shop. Please check back soon.")}
                 </p>
                 {hasFilters && (
                   <Link
@@ -311,7 +315,7 @@ function ShopPage() {
                     search={{}}
                     className="mt-5 inline-flex h-10 items-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
                   >
-                    Clear filters
+                    {t("Clear filters")}
                   </Link>
                 )}
               </div>
@@ -324,7 +328,7 @@ function ShopPage() {
                 </div>
                 {data.pageCount > 1 && (
                   <nav
-                    aria-label="Pagination"
+                    aria-label={t("Pagination")}
                     className="mt-10 flex items-center justify-center gap-3"
                   >
                     <button
@@ -333,10 +337,10 @@ function ShopPage() {
                       onClick={() => goToPage(data.page - 1)}
                       className="h-10 rounded-full border border-input px-5 text-sm font-medium disabled:opacity-40"
                     >
-                      Previous
+                      {t("Previous")}
                     </button>
                     <span className="text-sm text-muted-foreground">
-                      Page {data.page} of {data.pageCount}
+                      {t("Page {page} of {total}", { page: data.page, total: data.pageCount })}
                     </span>
                     <button
                       type="button"
@@ -344,7 +348,7 @@ function ShopPage() {
                       onClick={() => goToPage(data.page + 1)}
                       className="h-10 rounded-full border border-input px-5 text-sm font-medium disabled:opacity-40"
                     >
-                      Next
+                      {t("Next")}
                     </button>
                   </nav>
                 )}

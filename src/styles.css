@@ -208,3 +208,16 @@
 @utility shadow-glow {
   box-shadow: var(--shadow-glow);
 }
+
+/* Arabic: right-to-left, an Arabic-friendly font, and no negative letter spacing (it breaks joined letters). */
+html[lang="ar"] body,
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3,
+html[lang="ar"] h4,
+html[lang="ar"] .font-display {
+  font-family: "Cairo", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+html[lang="ar"] * {
+  letter-spacing: 0 !important;
+}

@@ -7,6 +7,7 @@ import { CuratedPicks } from "@/components/site/curated-picks";
 import { WhyUs } from "@/components/site/why-us";
 import { FAQ } from "@/components/site/faq";
 import { fetchHomeRows } from "@/lib/store/queries";
+import { useI18n } from "@/lib/i18n";
 import { useSiteData } from "@/hooks/use-site-data";
 
 const DESC =
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { t } = useI18n();
   const { bestSellers, newest, deals } = Route.useLoaderData();
   const { home } = useSiteData();
   const sec = home.sections;
@@ -38,9 +40,9 @@ function Index() {
       {empty ? (
         <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
           <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
-            <p className="font-display text-lg font-semibold">New products are on the way.</p>
+            <p className="font-display text-lg font-semibold">{t("New products are on the way.")}</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              We are stocking the shop. Please check back soon.
+              {t("We are stocking the shop. Please check back soon.")}
             </p>
           </div>
         </section>

@@ -2,9 +2,15 @@
 
 const egp = new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
-/** Prices are in Egyptian pounds, for example "1,250 EGP". */
+let moneyUnit = "EGP";
+/** Set by the language provider: "EGP" in English, "ج.م" in Arabic. */
+export function setMoneyUnit(unit: string) {
+  moneyUnit = unit;
+}
+
+/** Prices are in Egyptian pounds, for example "1,250 EGP" (or "1,250 ج.م" in Arabic). */
 export function formatMoney(value: number): string {
-  return `${egp.format(Number.isFinite(value) ? value : 0)} EGP`;
+  return `${egp.format(Number.isFinite(value) ? value : 0)} ${moneyUnit}`;
 }
 
 const SUPABASE_URL = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? "").replace(

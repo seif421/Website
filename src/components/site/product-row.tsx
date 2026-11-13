@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { ProductCard } from "./product-card";
+import { useI18n } from "@/lib/i18n";
 import type { StoreProduct } from "@/lib/store/queries";
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
 
 /** A horizontally scrolling shelf of products. Renders nothing when there are none. */
 export function ProductRow({ title, products, seeAll, tone = "plain" }: Props) {
+  const { t } = useI18n();
   if (products.length === 0) return null;
   const flash = tone === "flash";
   return (
@@ -36,7 +38,7 @@ export function ProductRow({ title, products, seeAll, tone = "plain" }: Props) {
                 : "text-brand hover:bg-brand/10"
             }`}
           >
-            See all <ChevronRight className="size-4" aria-hidden />
+            {t("See all")} <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
           </Link>
         </div>
         <ul className="flex snap-x gap-3 overflow-x-auto p-4 sm:p-5">

@@ -4,13 +4,15 @@ import { toast } from "sonner";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { formatMoney } from "@/lib/store/format";
+import { useI18n } from "@/lib/i18n";
 import type { StoreProduct } from "@/lib/store/queries";
 
 export function ProductCard({ product }: { product: StoreProduct }) {
+  const { t } = useI18n();
   const cart = useCart();
   const wishlist = useWishlist();
   const saved = wishlist.has(product.id);
-  const badge = product.isBestSeller ? "Best Seller" : product.isNew ? "New" : null;
+  const badge = product.isBestSeller ? t("Best Seller") : product.isNew ? t("New") : null;
   const save = product.compareAt && product.compareAt > product.price ? Math.round(product.compareAt - product.price) : 0;
 
   return (
@@ -37,18 +39,18 @@ export function ProductCard({ product }: { product: StoreProduct }) {
             </div>
           )}
           {badge && (
-            <span className="absolute left-2 top-2 rounded bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
+            <span className="absolute start-2 top-2 rounded bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
               {badge}
             </span>
           )}
           {product.discountPct > 0 && (
-            <span className="absolute right-2 top-2 rounded bg-destructive px-2 py-0.5 text-[11px] font-semibold text-destructive-foreground">
+            <span className="absolute end-2 top-2 rounded bg-destructive px-2 py-0.5 text-[11px] font-semibold text-destructive-foreground">
               −{product.discountPct}%
             </span>
           )}
           {save > 0 && (
-            <span className="absolute bottom-0 left-0 rounded-tr-lg bg-success px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-success-foreground">
-              Save {formatMoney(save)}
+            <span className="absolute bottom-0 start-0 rounded-se-lg bg-success px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide rtl:tracking-normal text-success-foreground">
+              {t("Save {amount}", { amount: formatMoney(save) })}
             </span>
           )}
         </div>
@@ -56,9 +58,9 @@ export function ProductCard({ product }: { product: StoreProduct }) {
       <button
         type="button"
         onClick={() => wishlist.toggle(product.id)}
-        aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
+        aria-label={saved ? t("Remove from wishlist") : t("Save to wishlist")}
         aria-pressed={saved}
-        className="absolute right-2 top-9 grid size-8 place-items-center rounded-full bg-background/90 shadow-soft transition-colors hover:bg-background"
+        className="absolute end-2 top-9 grid size-8 place-items-center rounded-full bg-background/90 shadow-soft transition-colors hover:bg-background"
       >
         <Heart className={`size-4 ${saved ? "fill-destructive text-destructive" : "text-foreground"}`} />
       </button>
@@ -76,7 +78,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
             <Star className="size-3.5 fill-warning text-warning" aria-hidden />
             <span className="font-medium text-foreground">{product.rating.toFixed(1)}</span>
             <span>
-              · {product.reviewCount.toLocaleString()} review{product.reviewCount === 1 ? "" : "s"}
+              · {product.reviewCount === 1 ? t("1 review") : t("{n} reviews", { n: product.reviewCount.toLocaleString() })}
             </span>
           </div>
         )}
@@ -101,11 +103,11 @@ export function ProductCard({ product }: { product: StoreProduct }) {
               price: product.price,
               image: product.image,
             });
-            toast.success("Added to cart");
+            toast.success(t("Added to cart"));
           }}
           className="mt-2 h-9 w-full rounded-md bg-brand text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {product.inStock ? "Add to cart" : "Out of stock"}
+          {product.inStock ? t("Add to cart") : t("Out of stock")}
         </button>
       </div>
     </article>
