@@ -99,7 +99,9 @@ export function Header() {
             <button
               type="button"
               onClick={toggleLanguage}
-              aria-label={language === "en" ? "Switch language to Arabic" : "Switch language to English"}
+              aria-label={
+                language === "en" ? "Switch language to Arabic" : "Switch language to English"
+              }
               title={language === "en" ? "العربية" : "English"}
               className="ml-1 inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-border px-3 text-xs font-bold text-foreground transition-colors hover:border-brand hover:bg-surface"
             >
