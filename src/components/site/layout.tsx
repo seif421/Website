@@ -7,7 +7,9 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   const { language } = useLanguage();
   const rootRef = useRef<HTMLDivElement>(null);
   const textState = useRef(new WeakMap<Text, { source: string; rendered: string }>());
-  const attrState = useRef(new WeakMap<Element, Map<string, { source: string; rendered: string }>>());
+  const attrState = useRef(
+    new WeakMap<Element, Map<string, { source: string; rendered: string }>>(),
+  );
 
   useEffect(() => {
     const root = rootRef.current;
@@ -47,12 +49,23 @@ export function SiteLayout({ children }: { children: ReactNode }) {
 
     translate();
     const observer = new MutationObserver(() => translate());
-    observer.observe(root, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["placeholder", "aria-label", "title"] });
+    observer.observe(root, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["placeholder", "aria-label", "title"],
+    });
     return () => observer.disconnect();
   }, [language]);
 
   return (
-    <div ref={rootRef} lang={language} dir={language === "ar" ? "rtl" : "ltr"} className="flex min-h-screen flex-col bg-background text-foreground">
+    <div
+      ref={rootRef}
+      lang={language}
+      dir={language === "ar" ? "rtl" : "ltr"}
+      className="flex min-h-screen flex-col bg-background text-foreground"
+    >
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />

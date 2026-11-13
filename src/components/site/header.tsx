@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Home,
   Heart,
+  Languages,
 } from "lucide-react";
 import { MegaMenu } from "./mega-menu";
 import { topCategories, useSiteData } from "@/hooks/use-site-data";
@@ -102,7 +103,7 @@ export function Header() {
               title={language === "en" ? "العربية" : "English"}
               className="ml-1 inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-border px-3 text-xs font-bold text-foreground transition-colors hover:border-brand hover:bg-surface"
             >
-              <span aria-hidden>文</span>
+              <Languages className="size-3.5" aria-hidden />
               <span>{language === "en" ? "عربي" : "EN"}</span>
             </button>
 
