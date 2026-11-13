@@ -92,16 +92,17 @@ async function generateAICaption(input: {
     }
 
     const result = await response.json();
-    const outputText = typeof result.output_text === "string"
-      ? result.output_text
-      : (Array.isArray(result.output) ? result.output : [])
-        .flatMap(
-          (item: { content?: Array<{ type?: string; text?: string }> }) =>
-            item.content ?? [],
-        )
-        .filter((item: { type?: string }) => item.type === "output_text")
-        .map((item: { text?: string }) => item.text ?? "")
-        .join("\n");
+    const outputText =
+      typeof result.output_text === "string"
+        ? result.output_text
+        : (Array.isArray(result.output) ? result.output : [])
+            .flatMap(
+              (item: { content?: Array<{ type?: string; text?: string }> }) =>
+                item.content ?? [],
+            )
+            .filter((item: { type?: string }) => item.type === "output_text")
+            .map((item: { text?: string }) => item.text ?? "")
+            .join("\n");
 
     const body = outputText
       .replace(/```[\s\S]*?```/g, "")
@@ -209,11 +210,12 @@ Deno.serve(async (req: Request) => {
   if (queuedPost) {
     postId = queuedPost.id;
     imageUrl = queuedPost.image_url;
-    caption = await generateAICaption({
-      name: queuedPost.product_name,
-      productUrl: queuedPost.product_url,
-      existingCaption: queuedPost.caption,
-    }) ?? queuedPost.caption;
+    caption =
+      (await generateAICaption({
+        name: queuedPost.product_name,
+        productUrl: queuedPost.product_url,
+        existingCaption: queuedPost.caption,
+      })) ?? queuedPost.caption;
     const { error } = await db
       .from("social_posts")
       .update({
@@ -242,12 +244,13 @@ Deno.serve(async (req: Request) => {
     const images = Array.isArray(candidate.images) ? candidate.images : [];
     imageUrl = images.find((image: unknown) => typeof image === "string" && /^https:\/\//i.test(image)) as string;
     const productUrl = `https://rivvo-shop.vercel.app/product/${candidate.slug}`;
-    caption = await generateAICaption({
-      name: candidate.name,
-      price: Number(candidate.price),
-      description: candidate.short_description,
-      productUrl,
-    }) ?? makeArabicCaption(candidate);
+    caption =
+      (await generateAICaption({
+        name: candidate.name,
+        price: Number(candidate.price),
+        description: candidate.short_description,
+        productUrl,
+      })) ?? makeArabicCaption(candidate);
 
     const { data: post, error: insertError } = await db.from("social_posts").insert({
       product_id: candidate.id,
