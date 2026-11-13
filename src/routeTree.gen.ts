@@ -33,7 +33,9 @@ import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
+import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as ReturnsNewRouteImport } from './routes/returns.new'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin/activity'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin/analytics'
@@ -42,8 +44,10 @@ import { Route as AuthenticatedAdminBrandsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin/categories'
 import { Route as AuthenticatedAdminCjRouteImport } from './routes/_authenticated/admin/cj'
 import { Route as AuthenticatedAdminCouponsRouteImport } from './routes/_authenticated/admin/coupons'
+import { Route as AuthenticatedAdminDropzawyRouteImport } from './routes/_authenticated/admin/dropzawy'
 import { Route as AuthenticatedAdminEmailTemplatesRouteImport } from './routes/_authenticated/admin/email-templates'
 import { Route as AuthenticatedAdminGiftCardsRouteImport } from './routes/_authenticated/admin/gift-cards'
+import { Route as AuthenticatedAdminHomepageRouteImport } from './routes/_authenticated/admin/homepage'
 import { Route as AuthenticatedAdminInventoryRouteImport } from './routes/_authenticated/admin/inventory'
 import { Route as AuthenticatedAdminMarketingRouteImport } from './routes/_authenticated/admin/marketing'
 import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin/notifications'
@@ -183,9 +187,19 @@ const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
   path: '/checkout/success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrdersIdRoute = OrdersIdRouteImport.update({
+  id: '/orders/$id',
+  path: '/orders/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReturnsNewRoute = ReturnsNewRouteImport.update({
+  id: '/returns/new',
+  path: '/returns/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -234,6 +248,12 @@ const AuthenticatedAdminCouponsRoute =
     path: '/coupons',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminDropzawyRoute =
+  AuthenticatedAdminDropzawyRouteImport.update({
+    id: '/dropzawy',
+    path: '/dropzawy',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminEmailTemplatesRoute =
   AuthenticatedAdminEmailTemplatesRouteImport.update({
     id: '/email-templates',
@@ -244,6 +264,12 @@ const AuthenticatedAdminGiftCardsRoute =
   AuthenticatedAdminGiftCardsRouteImport.update({
     id: '/gift-cards',
     path: '/gift-cards',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminHomepageRoute =
+  AuthenticatedAdminHomepageRouteImport.update({
+    id: '/homepage',
+    path: '/homepage',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminInventoryRoute =
@@ -383,7 +409,9 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/orders/$id': typeof OrdersIdRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/returns/new': typeof ReturnsNewRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -392,8 +420,10 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/cj': typeof AuthenticatedAdminCjRoute
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
+  '/admin/dropzawy': typeof AuthenticatedAdminDropzawyRoute
   '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
   '/admin/gift-cards': typeof AuthenticatedAdminGiftCardsRoute
+  '/admin/homepage': typeof AuthenticatedAdminHomepageRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRoute
   '/admin/marketing': typeof AuthenticatedAdminMarketingRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
@@ -437,7 +467,9 @@ export interface FileRoutesByTo {
   '/warranty': typeof WarrantyRoute
   '/wishlist': typeof WishlistRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/orders/$id': typeof OrdersIdRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/returns/new': typeof ReturnsNewRoute
   '/checkout': typeof CheckoutIndexRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -446,8 +478,10 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/cj': typeof AuthenticatedAdminCjRoute
   '/admin/coupons': typeof AuthenticatedAdminCouponsRoute
+  '/admin/dropzawy': typeof AuthenticatedAdminDropzawyRoute
   '/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
   '/admin/gift-cards': typeof AuthenticatedAdminGiftCardsRoute
+  '/admin/homepage': typeof AuthenticatedAdminHomepageRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRoute
   '/admin/marketing': typeof AuthenticatedAdminMarketingRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
@@ -494,7 +528,9 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/orders/$id': typeof OrdersIdRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/returns/new': typeof ReturnsNewRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
@@ -503,8 +539,10 @@ export interface FileRoutesById {
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/cj': typeof AuthenticatedAdminCjRoute
   '/_authenticated/admin/coupons': typeof AuthenticatedAdminCouponsRoute
+  '/_authenticated/admin/dropzawy': typeof AuthenticatedAdminDropzawyRoute
   '/_authenticated/admin/email-templates': typeof AuthenticatedAdminEmailTemplatesRoute
   '/_authenticated/admin/gift-cards': typeof AuthenticatedAdminGiftCardsRoute
+  '/_authenticated/admin/homepage': typeof AuthenticatedAdminHomepageRoute
   '/_authenticated/admin/inventory': typeof AuthenticatedAdminInventoryRoute
   '/_authenticated/admin/marketing': typeof AuthenticatedAdminMarketingRoute
   '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
@@ -551,7 +589,9 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin'
     | '/checkout/success'
+    | '/orders/$id'
     | '/product/$slug'
+    | '/returns/new'
     | '/checkout/'
     | '/admin/activity'
     | '/admin/analytics'
@@ -560,8 +600,10 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/cj'
     | '/admin/coupons'
+    | '/admin/dropzawy'
     | '/admin/email-templates'
     | '/admin/gift-cards'
+    | '/admin/homepage'
     | '/admin/inventory'
     | '/admin/marketing'
     | '/admin/notifications'
@@ -605,7 +647,9 @@ export interface FileRouteTypes {
     | '/warranty'
     | '/wishlist'
     | '/checkout/success'
+    | '/orders/$id'
     | '/product/$slug'
+    | '/returns/new'
     | '/checkout'
     | '/admin/activity'
     | '/admin/analytics'
@@ -614,8 +658,10 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/cj'
     | '/admin/coupons'
+    | '/admin/dropzawy'
     | '/admin/email-templates'
     | '/admin/gift-cards'
+    | '/admin/homepage'
     | '/admin/inventory'
     | '/admin/marketing'
     | '/admin/notifications'
@@ -661,7 +707,9 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/_authenticated/admin'
     | '/checkout/success'
+    | '/orders/$id'
     | '/product/$slug'
+    | '/returns/new'
     | '/checkout/'
     | '/_authenticated/admin/activity'
     | '/_authenticated/admin/analytics'
@@ -670,8 +718,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/cj'
     | '/_authenticated/admin/coupons'
+    | '/_authenticated/admin/dropzawy'
     | '/_authenticated/admin/email-templates'
     | '/_authenticated/admin/gift-cards'
+    | '/_authenticated/admin/homepage'
     | '/_authenticated/admin/inventory'
     | '/_authenticated/admin/marketing'
     | '/_authenticated/admin/notifications'
@@ -717,7 +767,9 @@ export interface RootRouteChildren {
   WarrantyRoute: typeof WarrantyRoute
   WishlistRoute: typeof WishlistRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+  OrdersIdRoute: typeof OrdersIdRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  ReturnsNewRoute: typeof ReturnsNewRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
 }
 
@@ -891,11 +943,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/orders/$id': {
+      id: '/orders/$id'
+      path: '/orders/$id'
+      fullPath: '/orders/$id'
+      preLoaderRoute: typeof OrdersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$slug': {
       id: '/product/$slug'
       path: '/product/$slug'
       fullPath: '/product/$slug'
       preLoaderRoute: typeof ProductSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/returns/new': {
+      id: '/returns/new'
+      path: '/returns/new'
+      fullPath: '/returns/new'
+      preLoaderRoute: typeof ReturnsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
@@ -954,6 +1020,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCouponsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/dropzawy': {
+      id: '/_authenticated/admin/dropzawy'
+      path: '/dropzawy'
+      fullPath: '/admin/dropzawy'
+      preLoaderRoute: typeof AuthenticatedAdminDropzawyRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/email-templates': {
       id: '/_authenticated/admin/email-templates'
       path: '/email-templates'
@@ -966,6 +1039,13 @@ declare module '@tanstack/react-router' {
       path: '/gift-cards'
       fullPath: '/admin/gift-cards'
       preLoaderRoute: typeof AuthenticatedAdminGiftCardsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/homepage': {
+      id: '/_authenticated/admin/homepage'
+      path: '/homepage'
+      fullPath: '/admin/homepage'
+      preLoaderRoute: typeof AuthenticatedAdminHomepageRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/inventory': {
@@ -1112,8 +1192,10 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
   AuthenticatedAdminCjRoute: typeof AuthenticatedAdminCjRoute
   AuthenticatedAdminCouponsRoute: typeof AuthenticatedAdminCouponsRoute
+  AuthenticatedAdminDropzawyRoute: typeof AuthenticatedAdminDropzawyRoute
   AuthenticatedAdminEmailTemplatesRoute: typeof AuthenticatedAdminEmailTemplatesRoute
   AuthenticatedAdminGiftCardsRoute: typeof AuthenticatedAdminGiftCardsRoute
+  AuthenticatedAdminHomepageRoute: typeof AuthenticatedAdminHomepageRoute
   AuthenticatedAdminInventoryRoute: typeof AuthenticatedAdminInventoryRoute
   AuthenticatedAdminMarketingRoute: typeof AuthenticatedAdminMarketingRoute
   AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
@@ -1145,9 +1227,11 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminCategoriesRoute: AuthenticatedAdminCategoriesRoute,
     AuthenticatedAdminCjRoute: AuthenticatedAdminCjRoute,
     AuthenticatedAdminCouponsRoute: AuthenticatedAdminCouponsRoute,
+    AuthenticatedAdminDropzawyRoute: AuthenticatedAdminDropzawyRoute,
     AuthenticatedAdminEmailTemplatesRoute:
       AuthenticatedAdminEmailTemplatesRoute,
     AuthenticatedAdminGiftCardsRoute: AuthenticatedAdminGiftCardsRoute,
+    AuthenticatedAdminHomepageRoute: AuthenticatedAdminHomepageRoute,
     AuthenticatedAdminInventoryRoute: AuthenticatedAdminInventoryRoute,
     AuthenticatedAdminMarketingRoute: AuthenticatedAdminMarketingRoute,
     AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
@@ -1210,7 +1294,9 @@ const rootRouteChildren: RootRouteChildren = {
   WarrantyRoute: WarrantyRoute,
   WishlistRoute: WishlistRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
+  OrdersIdRoute: OrdersIdRoute,
   ProductSlugRoute: ProductSlugRoute,
+  ReturnsNewRoute: ReturnsNewRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
 }
 export const routeTree = rootRouteImport
