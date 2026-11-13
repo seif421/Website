@@ -92,17 +92,17 @@ async function generateAICaption(input: {
     }
 
     const result = await response.json();
-    const outputText =
-      typeof result.output_text === "string"
-        ? result.output_text
-        : (Array.isArray(result.output) ? result.output : [])
-            .flatMap(
-              (item: { content?: Array<{ type?: string; text?: string }> }) =>
-                item.content ?? [],
-            )
-            .filter((item: { type?: string }) => item.type === "output_text")
-            .map((item: { text?: string }) => item.text ?? "")
-            .join("\n");
+    let outputText =
+      typeof result.output_text === "string" ? result.output_text : "";
+    if (!outputText && Array.isArray(result.output)) {
+      for (const item of result.output) {
+        for (const block of item.content ?? []) {
+          if (block.type === "output_text" && typeof block.text === "string") {
+            outputText += `${block.text}\n`;
+          }
+        }
+      }
+    }
 
     const body = outputText
       .replace(/```[\s\S]*?```/g, "")
