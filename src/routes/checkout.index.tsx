@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/store/format";
 import { sendOrderConfirmation } from "@/lib/store/order-email";
+import { useI18n } from "@/lib/i18n";
 import {
   MAX_ADDRESSES, fetchAddresses, saveAddress, sameAddress,
   type AddressInput, type SavedAddress,
@@ -36,6 +37,7 @@ const rpc = (supabase as any).rpc.bind(supabase) as (
 ) => Promise<{ data: unknown; error: { message: string } | null }>;
 
 function CheckoutPage() {
+  const { t } = useI18n();
   const cart = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -148,7 +150,7 @@ function CheckoutPage() {
     // Remember the address for next time. A problem here must never affect the order.
     if (user && saveIt && saved.length < MAX_ADDRESSES) {
       const a: AddressInput = {
-        label: saved.length === 0 ? "Home" : "",
+        label: saved.length === 0 ? t("Home") : "",
         fullName: get("name"),
         phone: get("phone"),
         governorate: get("governorate"),
@@ -176,7 +178,7 @@ function CheckoutPage() {
   if (!cart.ready) {
     return (
       <SiteLayout>
-        <p className="mx-auto max-w-5xl px-4 py-16 text-sm text-muted-foreground">Loading…</p>
+        <p className="mx-auto max-w-5xl px-4 py-16 text-sm text-muted-foreground">{t("Loading…")}</p>
       </SiteLayout>
     );
   }
@@ -185,12 +187,12 @@ function CheckoutPage() {
     return (
       <SiteLayout>
         <section className="mx-auto max-w-xl px-4 py-24 text-center">
-          <h1 className="font-display text-3xl font-bold">Your cart is empty</h1>
+          <h1 className="font-display text-3xl font-bold">{t("Your cart is empty")}</h1>
           <Link
             to="/shop"
             className="mt-6 inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground"
           >
-            Continue shopping
+            {t("Continue shopping")}
           </Link>
         </section>
       </SiteLayout>
@@ -200,29 +202,29 @@ function CheckoutPage() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Checkout</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("Checkout")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Pay cash on delivery. We call you to confirm before we ship.
+          {t("Pay cash on delivery. We call you to confirm before we ship.")}
         </p>
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_340px]">
           <form onSubmit={onSubmit} className="space-y-4">
-            <h2 className="font-display text-lg font-bold">Delivery details</h2>
+            <h2 className="font-display text-lg font-bold">{t("Delivery details")}</h2>
             {saved.length > 0 && (
               <label className="block text-sm font-medium">
-                Deliver to
+                {t("Deliver to")}
                 <select value={picked} onChange={(e) => pickAddress(e.target.value)} className={input}>
                   {saved.map((a) => (
                     <option key={a.id} value={a.id}>
-                      {(a.label || "Address") + " — " + a.line1 + ", " + a.city}
+                      {(a.label || t("Address")) + " — " + a.line1 + ", " + a.city}
                     </option>
                   ))}
-                  <option value="new">Use a new address</option>
+                  <option value="new">{t("Use a new address")}</option>
                 </select>
               </label>
             )}
             <div key={picked} className="space-y-4">
             <label className="block text-sm font-medium">
-              Full name
+              {t("Full name")}
               <input
                 name="name"
                 defaultValue={prefill?.fullName ?? ""}
@@ -234,26 +236,27 @@ function CheckoutPage() {
               />
             </label>
             <label className="block text-sm font-medium">
-              Mobile number
+              {t("Mobile number")}
               <input
                 name="phone"
                 defaultValue={prefill?.phone ?? ""}
                 type="tel"
                 required
                 inputMode="tel"
+                dir="ltr"
                 placeholder="01012345678"
                 autoComplete="tel"
                 pattern="(\+?20|0)?1[0125][0-9]{8}"
-                title="An Egyptian mobile number, for example 01012345678"
+                title={t("An Egyptian mobile number, for example 01012345678")}
                 className={input}
               />
               <span className="mt-1 block text-xs font-normal text-muted-foreground">
-                We will call or message you on WhatsApp to confirm.
+                {t("We will call or message you on WhatsApp to confirm.")}
               </span>
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block text-sm font-medium">
-                Governorate
+                {t("Governorate")}
                 <select
                   name="governorate"
                   required
@@ -262,7 +265,7 @@ function CheckoutPage() {
                   className={input}
                 >
                   <option value="" disabled>
-                    Choose…
+                    {t("Choose…")}
                   </option>
                   {zones.map((z) => (
                     <option key={z.governorate} value={z.governorate}>
@@ -272,7 +275,7 @@ function CheckoutPage() {
                 </select>
               </label>
               <label className="block text-sm font-medium">
-                City or area
+                {t("City or area")}
                 <input
                   name="city"
                   defaultValue={prefill?.city ?? ""}
@@ -285,7 +288,7 @@ function CheckoutPage() {
               </label>
             </div>
             <label className="block text-sm font-medium">
-              Street, building and apartment
+              {t("Street, building and apartment")}
               <input
                 name="line1"
                 defaultValue={prefill?.line1 ?? ""}
@@ -297,15 +300,16 @@ function CheckoutPage() {
               />
             </label>
             <label className="block text-sm font-medium">
-              Landmark <span className="font-normal text-muted-foreground">(optional)</span>
+              {t("Landmark")} <span className="font-normal text-muted-foreground">{t("(optional)")}</span>
               <input name="line2" defaultValue={prefill?.line2 ?? ""} maxLength={150} className={input} />
             </label>
             </div>
             <label className="block text-sm font-medium">
-              Email
+              {t("Email")}
               <input
                 name="email"
                 type="email"
+                dir="ltr"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -313,17 +317,17 @@ function CheckoutPage() {
                 className={input}
               />
               <span className="mt-1 block text-xs font-normal text-muted-foreground">
-                We email your order confirmation here.
+                {t("We email your order confirmation here.")}
               </span>
             </label>
             <label className="block text-sm font-medium">
-              Notes <span className="font-normal text-muted-foreground">(optional)</span>
+              {t("Notes")} <span className="font-normal text-muted-foreground">{t("(optional)")}</span>
               <textarea name="notes" rows={2} maxLength={300} className={input} />
             </label>
             {saved.length < MAX_ADDRESSES && picked === "new" && (
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={saveIt} onChange={(e) => setSaveIt(e.target.checked)} className="size-4" />
-                Save this address for my next order
+                {t("Save this address for my next order")}
               </label>
             )}
             {/* Hidden field: real visitors never see or fill it in. */}
@@ -345,23 +349,23 @@ function CheckoutPage() {
               className="h-12 w-full rounded-full bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy
-                ? "Placing your order…"
+                ? t("Placing your order…")
                 : quote && governorate
-                  ? `Place order · ${formatMoney(quote.total)} cash on delivery`
-                  : "Place order"}
+                  ? t("Place order · {total} cash on delivery", { total: formatMoney(quote.total) })
+                  : t("Place order")}
             </button>
             <p className="text-xs text-muted-foreground">
-              By placing the order you agree to our{" "}
+              {t("By placing the order you agree to our")}{" "}
               <Link to="/terms" className="underline">
-                Terms
+                {t("Terms")}
               </Link>
               ,{" "}
               <Link to="/refunds" className="underline">
-                Refund Policy
+                {t("Refund Policy")}
               </Link>{" "}
-              and{" "}
+              {t("and")}{" "}
               <Link to="/privacy" className="underline">
-                Privacy Policy
+                {t("Privacy Policy")}
               </Link>
               .
             </p>
@@ -369,9 +373,9 @@ function CheckoutPage() {
 
           <aside
             className="h-fit rounded-2xl border border-border bg-card p-5"
-            aria-label="Order summary"
+            aria-label={t("Order summary")}
           >
-            <h2 className="font-display text-lg font-bold">Order summary</h2>
+            <h2 className="font-display text-lg font-bold">{t("Order summary")}</h2>
             <ul className="mt-4 space-y-2 text-sm">
               {cart.items.map((i) => (
                 <li key={i.productId} className="flex justify-between gap-3">
@@ -385,32 +389,32 @@ function CheckoutPage() {
               <p className="mt-4 text-sm text-destructive" role="alert">
                 {quoteError}{" "}
                 <Link to="/cart" className="underline">
-                  Back to cart
+                  {t("Back to cart")}
                 </Link>
               </p>
             ) : quote ? (
               <dl className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Subtotal</dt>
+                  <dt className="text-muted-foreground">{t("Subtotal")}</dt>
                   <dd>{formatMoney(quote.subtotal)}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Delivery</dt>
+                  <dt className="text-muted-foreground">{t("Delivery")}</dt>
                   <dd>
                     {!quote.shipping_known
-                      ? "Choose governorate"
+                      ? t("Choose governorate")
                       : quote.shipping === 0
-                        ? "Free"
+                        ? t("Free")
                         : formatMoney(quote.shipping)}
                   </dd>
                 </div>
                 <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
-                  <dt>Pay on delivery</dt>
+                  <dt>{t("Pay on delivery")}</dt>
                   <dd>{formatMoney(quote.total)}</dd>
                 </div>
               </dl>
             ) : (
-              <p className="mt-4 text-sm text-muted-foreground">Calculating…</p>
+              <p className="mt-4 text-sm text-muted-foreground">{t("Calculating…")}</p>
             )}
           </aside>
         </div>

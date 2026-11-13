@@ -1,9 +1,11 @@
 import { ShoppingBag } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useSiteData } from "@/hooks/use-site-data";
+import { useI18n } from "@/lib/i18n";
 import { imageUrl } from "@/lib/store/format";
 
 export function Logo({ className = "" }: { className?: string }) {
+  const { t } = useI18n();
   const { brand } = useSiteData();
   const logo = imageUrl(brand.logo);
   const half = Math.ceil(brand.name.length / 2);
@@ -11,7 +13,7 @@ export function Logo({ className = "" }: { className?: string }) {
     <Link
       to="/"
       className={`group inline-flex items-center gap-2 ${className}`}
-      aria-label={`${brand.name} home`}
+      aria-label={t("{name} home", { name: brand.name })}
     >
       {logo ? (
         <img src={logo} alt={brand.name} className="h-9 w-auto max-w-40 object-contain" />

@@ -3,10 +3,12 @@ import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { ProductCard } from "./product-card";
 import { topCategories, useSiteData } from "@/hooks/use-site-data";
+import { useI18n } from "@/lib/i18n";
 import { fetchShop, type StoreProduct } from "@/lib/store/queries";
 
 /** Products with a row of category tabs, like a marketplace "picks for you" block. */
 export function CuratedPicks() {
+  const { t } = useI18n();
   const data = useSiteData();
   const { show, title } = data.home.sections.picks;
   const tabs = topCategories(data).slice(0, 7);
@@ -42,32 +44,32 @@ export function CuratedPicks() {
             search={active ? { category: active } : {}}
             className="inline-flex items-center gap-0.5 rounded-full px-3 py-1 text-sm font-semibold text-brand hover:bg-brand/10"
           >
-            See all <ChevronRight className="size-4" aria-hidden />
+            {t("See all")} <ChevronRight className="size-4 rtl:rotate-180" aria-hidden />
           </Link>
         </div>
         <div role="tablist" aria-label={title} className="flex gap-2 overflow-x-auto px-4 pt-4 sm:px-5">
-          {[{ id: "", name: "All", slug: "" }, ...tabs].map((t) => (
+          {[{ id: "", name: t("All"), slug: "" }, ...tabs].map((tab) => (
             <button
-              key={t.id || "all"}
+              key={tab.id || "all"}
               role="tab"
               type="button"
-              aria-selected={active === t.slug}
-              onClick={() => setActive(t.slug)}
+              aria-selected={active === tab.slug}
+              onClick={() => setActive(tab.slug)}
               className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
-                active === t.slug
+                active === tab.slug
                   ? "border-brand bg-brand text-brand-foreground"
                   : "border-border text-muted-foreground hover:border-brand/50 hover:text-foreground"
               }`}
             >
-              {t.name}
+              {tab.name}
             </button>
           ))}
         </div>
         <div className="p-4 sm:p-5">
           {!products ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">Loading…</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">{t("Loading…")}</p>
           ) : products.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">No products in this category yet.</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">{t("No products in this category yet.")}</p>
           ) : (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {products.map((p) => (

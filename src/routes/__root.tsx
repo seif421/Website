@@ -18,23 +18,25 @@ import { WishlistProvider } from "@/hooks/use-wishlist";
 import { defaultSiteData, fetchSiteData, type SiteData } from "@/lib/store/content";
 import { imageUrl } from "@/lib/store/format";
 import { Toaster } from "@/components/ui/sonner";
-import { LanguageProvider } from "@/lib/i18n";
+import { I18nProvider, useI18n } from "@/lib/i18n";
+import { getLang } from "@/lib/i18n/lang";
 
 function NotFoundComponent() {
+  const { t } = useI18n();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">{t("Page not found")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          {t("The page you're looking for doesn't exist or has been moved.")}
         </p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            {t("Go home")}
           </Link>
         </div>
       </div>
@@ -77,6 +79,7 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  beforeLoad: async () => ({ lang: await getLang() }),
   loader: () => fetchSiteData(),
   staleTime: 30_000,
   head: ({ loaderData }) => {
@@ -106,7 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" as const },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
         },
       ],
     };
@@ -118,8 +121,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const { lang: chosen } = Route.useRouteContext();
+  const inAdmin = useRouterState({ select: (s) => s.location.pathname.startsWith("/admin") });
+  const lang = inAdmin ? "en" : chosen;
   return (
-    <html lang="en">
+    <html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"}>
       <head>
         <HeadContent />
       </head>
@@ -143,22 +149,22 @@ function PageTracker() {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  const { queryClient, lang } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
+      <I18nProvider initial={lang}>
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <LanguageProvider>
-              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-              <Outlet />
-              <PageTracker />
-              <Toaster richColors position="top-right" />
-            </LanguageProvider>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <PageTracker />
+          <Toaster richColors position="top-right" />
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
+      </I18nProvider>
     </QueryClientProvider>
   );
 }

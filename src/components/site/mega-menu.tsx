@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { CategoryThumb } from "./categories";
 import { topCategories, useSiteData } from "@/hooks/use-site-data";
 import { formatMoney } from "@/lib/store/format";
+import { useI18n } from "@/lib/i18n";
 import { fetchShop, type StoreProduct } from "@/lib/store/queries";
 
 const cache = new Map<string, StoreProduct[]>();
 
 /** "All categories" menu: hover a category to see its subcategories and products. */
 export function MegaMenu() {
+  const { t } = useI18n();
   const data = useSiteData();
   const cats = topCategories(data);
   const [open, setOpen] = useState(false);
@@ -77,12 +79,12 @@ export function MegaMenu() {
         aria-haspopup="true"
         className="flex h-9 items-center gap-2 rounded-md bg-brand px-4 text-sm font-semibold text-brand-foreground hover:bg-brand/90"
       >
-        <Menu className="size-4" aria-hidden /> All categories{" "}
+        <Menu className="size-4" aria-hidden /> {t("All categories")}{" "}
         <ChevronDown className={`size-4 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-50 flex w-[min(60rem,90vw)] overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-elevated">
-          <ul className="max-h-[70vh] w-64 shrink-0 overflow-y-auto border-r border-border p-2">
+        <div className="absolute start-0 top-full z-50 flex w-[min(60rem,90vw)] overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-elevated">
+          <ul className="max-h-[70vh] w-64 shrink-0 overflow-y-auto border-e border-border p-2">
             {cats.map((c) => (
               <li key={c.id}>
                 <Link
@@ -97,12 +99,12 @@ export function MegaMenu() {
                 >
                   <CategoryThumb c={c} className="size-7 shrink-0 rounded" />
                   <span className="flex-1 truncate">{c.name}</span>
-                  <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+                  <ChevronRight className="size-4 text-muted-foreground rtl:rotate-180" aria-hidden />
                 </Link>
               </li>
             ))}
             {cats.length === 0 && (
-              <li className="px-3 py-2 text-sm text-muted-foreground">No categories yet.</li>
+              <li className="px-3 py-2 text-sm text-muted-foreground">{t("No categories yet.")}</li>
             )}
           </ul>
           {active && (
@@ -115,7 +117,7 @@ export function MegaMenu() {
                   onClick={() => setOpen(false)}
                   className="text-sm font-semibold text-brand hover:underline"
                 >
-                  View all
+                  {t("View all")}
                 </Link>
               </div>
               {subs.length > 0 && (
@@ -154,9 +156,9 @@ export function MegaMenu() {
                   </Link>
                 ))}
               </div>
-              {loading && <p className="mt-4 text-sm text-muted-foreground">Loading…</p>}
+              {loading && <p className="mt-4 text-sm text-muted-foreground">{t("Loading…")}</p>}
               {!loading && products.length === 0 && (
-                <p className="mt-4 text-sm text-muted-foreground">No products in this category yet.</p>
+                <p className="mt-4 text-sm text-muted-foreground">{t("No products in this category yet.")}</p>
               )}
             </div>
           )}

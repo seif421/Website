@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/lib/i18n";
 import {
   MAX_ADDRESSES, deleteAddress, fetchAddresses, makeDefaultAddress, saveAddress,
   type AddressInput, type SavedAddress,
@@ -15,6 +16,7 @@ const input =
 const blank: AddressInput = { label: "", fullName: "", phone: "", governorate: "", city: "", line1: "", line2: "" };
 
 export function AddressManager({ userId, defaultName }: { userId: string; defaultName?: string }) {
+  const { t } = useI18n();
   const [list, setList] = useState<SavedAddress[] | null>(null);
   const [zones, setZones] = useState<string[]>([]);
   const [editing, setEditing] = useState<{ id?: string; form: AddressInput } | null>(null);
@@ -43,11 +45,11 @@ export function AddressManager({ userId, defaultName }: { userId: string; defaul
     setBusy(true);
     try {
       await saveAddress(userId, editing.form, editing.id, list?.length ?? 0);
-      toast.success(editing.id ? "Address updated" : "Address saved");
+      toast.success(editing.id ? t("Address updated") : t("Address saved"));
       setEditing(null);
       await load();
     } catch (err) {
-      toast.error("Could not save the address", { description: err instanceof Error ? err.message : undefined });
+      toast.error(t("Could not save the address"), { description: err instanceof Error ? err.message : undefined });
     } finally {
       setBusy(false);
     }
@@ -59,7 +61,7 @@ export function AddressManager({ userId, defaultName }: { userId: string; defaul
       toast.success(ok);
       await load();
     } catch (err) {
-      toast.error("Something went wrong", { description: err instanceof Error ? err.message : undefined });
+      toast.error(t("Something went wrong"), { description: err instanceof Error ? err.message : undefined });
     }
   };
 
@@ -70,9 +72,9 @@ export function AddressManager({ userId, defaultName }: { userId: string; defaul
     <Card id="addresses" className="mt-8 scroll-mt-24 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Saved addresses</h2>
+          <h2 className="font-semibold">{t("Saved addresses")}</h2>
           <p className="text-xs text-muted-foreground">
-            Save where you want your orders delivered. We fill it in for you at checkout.
+            {t("Save where you want your orders delivered. We fill it in for you at checkout.")}
           </p>
         </div>
         {!editing && (
@@ -82,18 +84,18 @@ export function AddressManager({ userId, defaultName }: { userId: string; defaul
             disabled={full}
             onClick={() => setEditing({ form: { ...blank, fullName: defaultName ?? "" } })}
           >
-            <Plus className="size-4" /> {full ? `Maximum ${MAX_ADDRESSES} addresses` : "Add address"}
+            <Plus className="size-4" /> {full ? t("Maximum {n} addresses", { n: MAX_ADDRESSES }) : t("Add address")}
           </Button>
         )}
       </div>
 
       {list === null ? (
-        <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
+        <p className="mt-4 text-sm text-muted-foreground">{t("Loading…")}</p>
       ) : (
         <>
           {list.length === 0 && !editing && (
             <p className="mt-4 rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-              No saved addresses yet. Add one now, or tick "Save this address" at your next checkout.
+              {t('No saved addresses yet. Add one now, or tick "Save this address" at your next checkout.')}
             </p>
           )}
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -101,10 +103,10 @@ export function AddressManager({ userId, defaultName }: { userId: string; defaul
               <li key={a.id} className="rounded-lg border p-4 text-sm">
                 <div className="flex items-start justify-between gap-2">
                   <p className="flex items-center gap-1.5 font-semibold">
-                    <Home className="size-4 text-brand" aria-hidden /> {a.label || "Address"}
+                    <Home className="size-4 text-brand" aria-hidden /> {a.label || t("Address")}
                   </p>
                   {a.isDefault && (
-                    <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">Default</span>
+                    <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">{t("Default")}</span>
                   )}
                 </div>
                 <p className="mt-2">{a.fullName}</p>
@@ -126,11 +128,11 @@ export function AddressManager({ userId, defaultName }: { userId: string; defaul
                       })
                     }
                   >
-                    <Pencil className="size-3.5" /> Edit
+                    <Pencil className="size-3.5" /> {t("Edit")}
                   </Button>
                   {!a.isDefault && (
-                    <Button size="sm" variant="ghost" onClick={() => act(() => makeDefaultAddress(userId, a.id), "Default address changed")}>
-                      <Star className="size-3.5" /> Make default
+                    <Button size="sm" variant="ghost" onClick={() => act(() => makeDefaultAddress(userId, a.id), t("Default address changed"))}>
+                      <Star className="size-3.5" /> {t("Make default")}
                     </Button>
                   )}
                   <Button
@@ -138,10 +140,10 @@ export function AddressManager({ userId, defaultName }: { userId: string; defaul
                     variant="ghost"
                     className="text-destructive"
                     onClick={() => {
-                      if (window.confirm("Delete this address?")) void act(() => deleteAddress(userId, a.id), "Address deleted");
+                      if (window.confirm(t("Delete this address?"))) void act(() => deleteAddress(userId, a.id), t("Address deleted"));
                     }}
                   >
-                    <Trash2 className="size-3.5" /> Delete
+                    <Trash2 className="size-3.5" /> {t("Delete")}
                   </Button>
                 </div>
               </li>
@@ -153,57 +155,58 @@ export function AddressManager({ userId, defaultName }: { userId: string; defaul
       {editing && (
         <form onSubmit={submit} className="mt-5 space-y-4 rounded-lg border bg-surface p-4">
           <p className="flex items-center gap-2 text-sm font-semibold">
-            <MapPin className="size-4 text-brand" aria-hidden /> {editing.id ? "Edit address" : "New address"}
+            <MapPin className="size-4 text-brand" aria-hidden /> {editing.id ? t("Edit address") : t("New address")}
           </p>
           <label className="block text-sm font-medium">
-            Name this address <span className="font-normal text-muted-foreground">(for example Home or Work)</span>
+            {t("Name this address")} <span className="font-normal text-muted-foreground">{t("(for example Home or Work)")}</span>
             <input className={input} maxLength={30} value={editing.form.label} onChange={(e) => set({ label: e.target.value })} />
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm font-medium">
-              Full name
+              {t("Full name")}
               <input className={input} required minLength={3} maxLength={100} value={editing.form.fullName} onChange={(e) => set({ fullName: e.target.value })} />
             </label>
             <label className="block text-sm font-medium">
-              Mobile number
+              {t("Mobile number")}
               <input
                 className={input}
+                dir="ltr"
                 required
                 type="tel"
                 inputMode="tel"
                 placeholder="01012345678"
                 pattern="(\+?20|0)?1[0125][0-9]{8}"
-                title="An Egyptian mobile number, for example 01012345678"
+                title={t("An Egyptian mobile number, for example 01012345678")}
                 value={editing.form.phone}
                 onChange={(e) => set({ phone: e.target.value })}
               />
             </label>
             <label className="block text-sm font-medium">
-              Governorate
+              {t("Governorate")}
               <select className={input} required value={editing.form.governorate} onChange={(e) => set({ governorate: e.target.value })}>
-                <option value="" disabled>Choose…</option>
+                <option value="" disabled>{t("Choose…")}</option>
                 {zones.map((z) => <option key={z} value={z}>{z}</option>)}
               </select>
             </label>
             <label className="block text-sm font-medium">
-              City or area
+              {t("City or area")}
               <input className={input} required minLength={2} maxLength={80} value={editing.form.city} onChange={(e) => set({ city: e.target.value })} />
             </label>
           </div>
           <label className="block text-sm font-medium">
-            Street, building and apartment
+            {t("Street, building and apartment")}
             <input className={input} required minLength={6} maxLength={150} value={editing.form.line1} onChange={(e) => set({ line1: e.target.value })} />
           </label>
           <label className="block text-sm font-medium">
-            Landmark <span className="font-normal text-muted-foreground">(optional)</span>
+            {t("Landmark")} <span className="font-normal text-muted-foreground">{t("(optional)")}</span>
             <input className={input} maxLength={150} value={editing.form.line2} onChange={(e) => set({ line2: e.target.value })} />
           </label>
           <div className="flex gap-2">
             <Button type="submit" disabled={busy}>
-              {busy && <Loader2 className="size-4 animate-spin" />} Save address
+              {busy && <Loader2 className="size-4 animate-spin" />} {t("Save address")}
             </Button>
             <Button type="button" variant="ghost" onClick={() => setEditing(null)}>
-              Cancel
+              {t("Cancel")}
             </Button>
           </div>
         </form>

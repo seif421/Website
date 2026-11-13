@@ -1,32 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 import { Logo } from "./logo";
+import { useI18n } from "@/lib/i18n";
 import { navCategories, useSiteData } from "@/hooks/use-site-data";
 
 type FooterLink = { label: string; to: string; category?: string };
 
-const COLUMNS: { title: string; links: FooterLink[] }[] = [
-  {
-    title: "Support",
-    links: [
-      { label: "Help Center", to: "/support" },
-      { label: "Shipping Policy", to: "/shipping" },
-      { label: "Refund Policy", to: "/refunds" },
-      { label: "Return Request", to: "/returns/new" },
-      { label: "Contact Us", to: "/contact" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", to: "/about" },
-      { label: "Privacy Policy", to: "/privacy" },
-      { label: "Terms of Service", to: "/terms" },
-    ],
-  },
-];
-
 export function Footer() {
+  const { t } = useI18n();
   const site = useSiteData();
   const { brand } = site;
   const socials = [
@@ -36,10 +17,30 @@ export function Footer() {
     { Icon: Youtube, href: brand.youtube, label: "YouTube" },
   ].filter((s) => s.href);
   const shopLinks: FooterLink[] = [
-    { label: "All products", to: "/shop" },
+    { label: t("All products"), to: "/shop" },
     ...navCategories(site).map((c) => ({ label: c.name, to: "/shop", category: c.slug })),
   ];
-  const columns = [{ title: "Shop", links: shopLinks }, ...COLUMNS];
+  const columns: { title: string; links: FooterLink[] }[] = [
+    { title: t("Shop"), links: shopLinks },
+    {
+      title: t("Support"),
+      links: [
+        { label: t("Help Center"), to: "/support" },
+        { label: t("Shipping Policy"), to: "/shipping" },
+        { label: t("Refund Policy"), to: "/refunds" },
+        { label: t("Return Request"), to: "/returns/new" },
+        { label: t("Contact Us"), to: "/contact" },
+      ],
+    },
+    {
+      title: t("Company"),
+      links: [
+        { label: t("About"), to: "/about" },
+        { label: t("Privacy Policy"), to: "/privacy" },
+        { label: t("Terms of Service"), to: "/terms" },
+      ],
+    },
+  ];
   const email = site.contact.email;
   return (
     <footer className="mt-20 bg-primary text-primary-foreground">
@@ -48,7 +49,7 @@ export function Footer() {
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className="w-full bg-white/10 py-3 text-center text-sm font-medium transition-colors hover:bg-white/15"
       >
-        Back to top
+        {t("Back to top")}
       </button>
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.5fr_2fr]">
@@ -78,7 +79,7 @@ export function Footer() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
             {columns.map((col) => (
               <div key={col.title}>
-                <h3 className="font-display text-sm font-semibold tracking-wide uppercase text-primary-foreground">
+                <h3 className="font-display text-sm font-semibold tracking-wide uppercase rtl:tracking-normal text-primary-foreground">
                   {col.title}
                 </h3>
                 <ul className="mt-4 space-y-3">
@@ -101,7 +102,7 @@ export function Footer() {
 
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-primary-foreground/10 pt-6 text-xs text-primary-foreground/60 sm:flex-row sm:items-center">
           <p>
-            © {new Date().getFullYear()} {brand.name}. All rights reserved.
+            © {new Date().getFullYear()} {brand.name}. {t("All rights reserved.")}
             {email && (
               <>
                 {" "}
