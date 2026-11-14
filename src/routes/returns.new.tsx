@@ -1,3 +1,4 @@
+import { governorateLabel } from "@/lib/store/governorates";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
@@ -362,7 +363,7 @@ function ReturnPage() {
                       <select className={input} required value={form.governorate} onChange={(e) => set({ governorate: e.target.value })}>
                         <option value="" disabled>Choose…</option>
                         {(zones.includes(form.governorate) || !form.governorate ? zones : [form.governorate, ...zones]).map((z) => (
-                          <option key={z} value={z}>{z}</option>
+                          <option key={z} value={z}>{governorateLabel(z)}</option>
                         ))}
                       </select>
                     </label>

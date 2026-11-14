@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/store/format";
 import { sendOrderConfirmation } from "@/lib/store/order-email";
 import { useI18n } from "@/lib/i18n";
+import { governorateLabel } from "@/lib/store/governorates";
 import {
   MAX_ADDRESSES, fetchAddresses, saveAddress, sameAddress,
   type AddressInput, type SavedAddress,
@@ -269,7 +270,7 @@ function CheckoutPage() {
                   </option>
                   {zones.map((z) => (
                     <option key={z.governorate} value={z.governorate}>
-                      {z.governorate}
+                      {governorateLabel(z.governorate)}
                     </option>
                   ))}
                 </select>

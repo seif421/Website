@@ -45,13 +45,8 @@ type A = {
   governorates: { n: string; orders: number; v: number }[];
 };
 
-const PALETTE = [
-  "hsl(var(--brand))",
-  "hsl(var(--accent))",
-  "hsl(var(--primary))",
-  "#10b981",
-  "#f59e0b",
-];
+// Bright, clearly different colours so every slice and line can be told apart.
+const PALETTE = ["#2563eb", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#84cc16"];
 const SOURCE_LABEL: Record<string, string> = {
   Direct: "Direct",
   Organic: "Search engines",
@@ -131,8 +126,8 @@ function AnalyticsPage() {
                   type="monotone"
                   dataKey="sales"
                   name="Sales"
-                  stroke="hsl(var(--brand))"
-                  fill="hsl(var(--brand) / 0.2)"
+                  stroke="#2563eb"
+                  fill="rgba(37, 99, 235, 0.2)"
                 />
               </AreaChart>
             </ChartCard>
@@ -142,7 +137,7 @@ function AnalyticsPage() {
                 <XAxis dataKey="w" fontSize={11} />
                 <YAxis fontSize={11} />
                 <Tooltip formatter={(v) => money(Number(v))} />
-                <Bar dataKey="sales" name="Sales" fill="hsl(var(--brand))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="sales" name="Sales" fill="#2563eb" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ChartCard>
             <ChartCard title="Monthly sales (12 months)">
@@ -155,7 +150,7 @@ function AnalyticsPage() {
                   type="monotone"
                   dataKey="revenue"
                   name="Sales"
-                  stroke="hsl(var(--brand))"
+                  stroke="#2563eb"
                   strokeWidth={2}
                   dot={false}
                 />
@@ -194,7 +189,7 @@ function AnalyticsPage() {
                 <XAxis type="number" fontSize={11} />
                 <YAxis dataKey="n" type="category" fontSize={11} width={100} />
                 <Tooltip formatter={(v) => money(Number(v))} />
-                <Bar dataKey="v" name="Sales" fill="hsl(var(--brand))" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="v" name="Sales" fill="#2563eb" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ChartCard>
             <ChartCard
@@ -210,7 +205,7 @@ function AnalyticsPage() {
                 <Bar
                   dataKey="v"
                   name="Units sold"
-                  fill="hsl(var(--accent))"
+                  fill="#f59e0b"
                   radius={[0, 4, 4, 0]}
                 />
               </BarChart>
@@ -226,14 +221,14 @@ function AnalyticsPage() {
                   type="monotone"
                   dataKey="new"
                   name="New accounts"
-                  stroke="hsl(var(--brand))"
+                  stroke="#2563eb"
                   strokeWidth={2}
                 />
                 <Line
                   type="monotone"
                   dataKey="returning"
                   name="Customers ordering again"
-                  stroke="hsl(var(--accent))"
+                  stroke="#f59e0b"
                   strokeWidth={2}
                 />
               </LineChart>

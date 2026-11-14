@@ -86,7 +86,7 @@ type Dash = {
 };
 
 const pct = (cur: number, prev: number) => (prev > 0 ? ((cur - prev) / prev) * 100 : null);
-const tip = { borderRadius: 8, border: "1px solid hsl(var(--border))" };
+const tip = { borderRadius: 8, border: "1px solid var(--border)" };
 
 function Dashboard() {
   const [d, setD] = useState<Dash | null>(null);
@@ -217,13 +217,13 @@ function Dashboard() {
             <AreaChart data={d.sales_7d}>
               <defs>
                 <linearGradient id="grad-sales" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--brand))" stopOpacity={0.5} />
-                  <stop offset="100%" stopColor="hsl(var(--brand))" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#2563eb" stopOpacity={0.5} />
+                  <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis dataKey="d" fontSize={12} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={12} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+              <XAxis dataKey="d" fontSize={12} stroke="var(--muted-foreground)" />
+              <YAxis fontSize={12} stroke="var(--muted-foreground)" allowDecimals={false} />
               <Tooltip
                 contentStyle={tip}
                 formatter={(v, n) => (n === "sales" ? money(Number(v)) : v)}
@@ -232,7 +232,7 @@ function Dashboard() {
                 type="monotone"
                 dataKey="sales"
                 name="sales"
-                stroke="hsl(var(--brand))"
+                stroke="#2563eb"
                 fill="url(#grad-sales)"
                 strokeWidth={2}
               />
@@ -251,14 +251,14 @@ function Dashboard() {
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={d.traffic_7d}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="d" fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                <YAxis fontSize={12} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                <XAxis dataKey="d" fontSize={11} stroke="var(--muted-foreground)" />
+                <YAxis fontSize={12} stroke="var(--muted-foreground)" allowDecimals={false} />
                 <Tooltip contentStyle={tip} />
                 <Legend />
-                <Bar dataKey="direct" name="Direct" stackId="a" fill="hsl(var(--accent))" />
-                <Bar dataKey="organic" name="Search" stackId="a" fill="hsl(var(--brand))" />
+                <Bar dataKey="direct" name="Direct" stackId="a" fill="#8b5cf6" />
+                <Bar dataKey="organic" name="Search" stackId="a" fill="#2563eb" />
                 <Bar dataKey="social" name="Social" stackId="a" fill="#10b981" />
-                <Bar dataKey="paid" name="Paid ads" stackId="a" fill="hsl(var(--primary))" />
+                <Bar dataKey="paid" name="Paid ads" stackId="a" fill="#ef4444" />
                 <Bar dataKey="referral" name="Other sites" stackId="a" fill="#f59e0b" />
               </BarChart>
             </ResponsiveContainer>
@@ -271,14 +271,14 @@ function Dashboard() {
         <ResponsiveContainer width="100%" height={240}>
           <LineChart data={d.revenue_12m}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="m" fontSize={12} stroke="hsl(var(--muted-foreground))" />
-            <YAxis fontSize={12} stroke="hsl(var(--muted-foreground))" />
+            <XAxis dataKey="m" fontSize={12} stroke="var(--muted-foreground)" />
+            <YAxis fontSize={12} stroke="var(--muted-foreground)" />
             <Tooltip contentStyle={tip} formatter={(v) => money(Number(v))} />
             <Line
               type="monotone"
               dataKey="revenue"
               name="Sales"
-              stroke="hsl(var(--brand))"
+              stroke="#2563eb"
               strokeWidth={2.5}
               dot={false}
             />

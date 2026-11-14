@@ -6,6 +6,7 @@ export const shop: Record<string, string> = {
   "Highest rated": "الأعلى تقييمًا",
   "Results for “{q}”": "نتائج البحث عن “{q}”",
   "Shop all": "تسوّق كل المنتجات",
+  "Deals": "العروض",
   "Breadcrumb": "مسار التنقل",
   "Home": "الرئيسية",
   "Shop": "المتجر",
