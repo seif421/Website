@@ -72,16 +72,6 @@ function Page() {
           ),
         },
         {
-          heading: t("Security products"),
-          body: (
-            <>
-              <p>
-                {t("Security devices help you monitor your property but cannot prevent every incident. You are responsible for installing devices correctly and for following local laws about recording video and audio, including notifying people where required. Never point cameras at places where people expect privacy.")}
-              </p>
-            </>
-          ),
-        },
-        {
           heading: t("Your account"),
           body: (
             <>
