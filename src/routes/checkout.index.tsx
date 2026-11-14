@@ -25,7 +25,14 @@ export const Route = createFileRoute("/checkout/")({
 });
 
 type Zone = { governorate: string; fee: number };
-type Quote = { subtotal: number; shipping: number; total: number; shipping_known: boolean };
+type Quote = {
+  subtotal: number;
+  shipping: number;
+  total: number;
+  shipping_known: boolean;
+  discount?: number;
+  coupon_code?: string | null;
+};
 
 const input =
   "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
@@ -46,6 +53,9 @@ function CheckoutPage() {
   const [governorate, setGovernorate] = useState("");
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [voucherInput, setVoucherInput] = useState("");
+  const [voucher, setVoucher] = useState<string | null>(null);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -109,17 +119,40 @@ function CheckoutPage() {
     if (!cart.ready || items.length === 0) return;
     let cancelled = false;
     setQuoteError(null);
-    rpc("quote_order_eg", { p_items: items, p_governorate: governorate || null }).then(
-      ({ data, error: err }) => {
-        if (cancelled) return;
-        if (err) setQuoteError(err.message);
-        else setQuote(data as Quote);
-      },
-    );
+    rpc("quote_order_coupon_eg", {
+      p_items: items,
+      p_governorate: governorate || null,
+      p_coupon: voucher,
+    }).then(({ data, error: err }) => {
+      if (cancelled) return;
+      if (err && voucher) {
+        // A bad voucher must never block the order: show why, drop it, and price the cart without it.
+        setVoucherError(err.message);
+        setVoucher(null);
+      } else if (err) setQuoteError(err.message);
+      else setQuote(data as Quote);
+    });
     return () => {
       cancelled = true;
     };
-  }, [cart.ready, items, governorate]);
+  }, [cart.ready, items, governorate, voucher]);
+
+  function applyVoucher() {
+    const code = voucherInput.trim();
+    if (!code) {
+      setVoucherError(null);
+      setVoucher(null);
+      return;
+    }
+    setVoucherError(null);
+    setVoucher(code);
+  }
+
+  function removeVoucher() {
+    setVoucher(null);
+    setVoucherInput("");
+    setVoucherError(null);
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -139,6 +172,7 @@ function CheckoutPage() {
         line1: get("line1"),
         line2: get("line2"),
         notes: get("notes"),
+        coupon: voucher ?? "",
       },
     });
     if (err) {
@@ -386,6 +420,52 @@ function CheckoutPage() {
                 </li>
               ))}
             </ul>
+            <div className="mt-4 border-t border-border pt-4">
+              <label className="block text-sm font-medium" htmlFor="voucher">
+                {t("Voucher code")} <span className="font-normal text-muted-foreground">({t("optional")})</span>
+              </label>
+              {voucher && quote?.coupon_code ? (
+                <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-sm">
+                  <span className="font-semibold" dir="ltr">
+                    {quote.coupon_code}
+                  </span>
+                  <button type="button" onClick={removeVoucher} className="text-xs font-semibold underline">
+                    {t("Remove")}
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-2 flex gap-2">
+                  <input
+                    id="voucher"
+                    dir="ltr"
+                    value={voucherInput}
+                    onChange={(e) => setVoucherInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        applyVoucher();
+                      }
+                    }}
+                    autoComplete="off"
+                    maxLength={40}
+                    placeholder={t("Enter your code")}
+                    className="min-w-0 flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm uppercase outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={applyVoucher}
+                    className="rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                  >
+                    {t("Apply")}
+                  </button>
+                </div>
+              )}
+              {voucherError && (
+                <p className="mt-2 text-xs text-destructive" role="alert">
+                  {t(voucherError)}
+                </p>
+              )}
+            </div>
             {quoteError ? (
               <p className="mt-4 text-sm text-destructive" role="alert">
                 {quoteError}{" "}
@@ -399,6 +479,12 @@ function CheckoutPage() {
                   <dt className="text-muted-foreground">{t("Subtotal")}</dt>
                   <dd>{formatMoney(quote.subtotal)}</dd>
                 </div>
+                {(quote.discount ?? 0) > 0 && (
+                  <div className="flex justify-between text-success">
+                    <dt>{t("Voucher discount")}</dt>
+                    <dd>-{formatMoney(quote.discount ?? 0)}</dd>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">{t("Delivery")}</dt>
                   <dd>

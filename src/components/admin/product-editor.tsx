@@ -211,7 +211,7 @@ export function ProductEditor({ productId }: { productId?: string }) {
         navigate({ to: "/admin/products" });
         return;
       }
-      const inv = (
+      const invRaw = (
         p as unknown as {
           inventory?: {
             stock: number;
@@ -221,9 +221,13 @@ export function ProductEditor({ productId }: { productId?: string }) {
             incoming?: number;
             allow_preorder?: boolean;
             [key: string]: unknown;
-          }[];
+          }[] | Record<string, unknown>;
         }
-      ).inventory?.[0];
+      ).inventory;
+      // One stock row comes back as an object, several as a list.
+      const inv = (Array.isArray(invRaw) ? invRaw[0] : invRaw) as
+        | { stock: number; low_stock_threshold: number; allow_backorder: boolean; reserved: number; incoming?: number; allow_preorder?: boolean }
+        | undefined;
       const dims = (p.dimensions ?? {}) as { length?: number; width?: number; height?: number };
       const attrEntries = Object.entries((p.attributes ?? {}) as Record<string, unknown>).map(
         ([key, value]) => ({ key, value: String(value) }),

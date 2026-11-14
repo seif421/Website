@@ -101,10 +101,16 @@ type ProductRow = {
   tags: string[] | null;
   created_at: string;
   archived_at: string | null;
-  inventory?: { stock: number }[] | null;
+  // PostgREST returns one object (not a list) when each product has a single stock row.
+  inventory?: { stock: number }[] | { stock: number } | null;
   category?: { name: string } | null;
   brand?: { name: string } | null;
 };
+
+function stockOf(inv: { stock: number }[] | { stock: number } | null | undefined): number {
+  const row = Array.isArray(inv) ? inv[0] : inv;
+  return Number(row?.stock ?? 0);
+}
 
 const PAGE_SIZE = 25;
 
@@ -181,7 +187,7 @@ function ProductsPage() {
     let result = (data ?? []) as unknown as ProductRow[];
     if (stockFilter !== "all") {
       result = result.filter((p) => {
-        const stock = p.inventory?.[0]?.stock ?? 0;
+        const stock = stockOf(p.inventory);
         if (stockFilter === "in") return stock > 5;
         if (stockFilter === "low") return stock > 0 && stock <= 5;
         if (stockFilter === "out") return stock === 0;
@@ -668,7 +674,7 @@ function ProductsPage() {
                 </TableRow>
               ) : (
                 rows.map((p) => {
-                  const stock = p.inventory?.[0]?.stock ?? 0;
+                  const stock = stockOf(p.inventory);
                   const img = Array.isArray(p.images) ? (p.images as string[])[0] : null;
                   return (
                     <TableRow key={p.id} data-state={selected.has(p.id) ? "selected" : undefined}>
