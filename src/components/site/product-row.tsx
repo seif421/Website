@@ -7,7 +7,7 @@ import type { StoreProduct } from "@/lib/store/queries";
 type Props = {
   title: string;
   products: StoreProduct[];
-  seeAll: { sort?: "newest" | "price-asc" | "rating" };
+  seeAll: { sort?: "newest" | "price-asc" | "rating"; deals?: boolean };
   /** "flash" gives the section a coloured header band, used for deals. */
   tone?: "plain" | "flash";
 };

@@ -13,6 +13,7 @@ type ShopSearch = {
   min?: number;
   max?: number;
   page?: number;
+  deals?: boolean;
 };
 
 const SORT_LABELS: Record<SortKey, string> = {
@@ -41,6 +42,7 @@ export const Route = createFileRoute("/shop")({
       min: positiveNumber(s.min),
       max: positiveNumber(s.max),
       page: page && page >= 1 ? Math.floor(page) : undefined,
+      deals: s.deals === true || s.deals === "true" || s.deals === "1" ? true : undefined,
     };
   },
   loaderDeps: ({ search }) => search,
@@ -84,7 +86,7 @@ function ShopPage() {
   const topCategories = data.categories.filter((c) => !c.parent_id);
   const sort: SortKey = search.sort ?? "featured";
   const hasFilters = Boolean(
-    search.q || search.category || search.min != null || search.max != null,
+    search.q || search.category || search.deals || search.min != null || search.max != null,
   );
 
   function applyForm(e: React.FormEvent) {
@@ -105,7 +107,7 @@ function ShopPage() {
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const title = data.activeCategory?.name ?? (search.q ? t("Results for “{q}”", { q: search.q }) : t("Shop all"));
+  const title = data.activeCategory?.name ?? (search.deals ? t("Deals") : search.q ? t("Results for “{q}”", { q: search.q }) : t("Shop all"));
 
   return (
     <SiteLayout>

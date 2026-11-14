@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { governorateLabel } from "@/lib/store/governorates";
 import {
   MAX_ADDRESSES, deleteAddress, fetchAddresses, makeDefaultAddress, saveAddress,
   type AddressInput, type SavedAddress,
@@ -185,7 +186,7 @@ export function AddressManager({ userId, defaultName }: { userId: string; defaul
               {t("Governorate")}
               <select className={input} required value={editing.form.governorate} onChange={(e) => set({ governorate: e.target.value })}>
                 <option value="" disabled>{t("Choose…")}</option>
-                {zones.map((z) => <option key={z} value={z}>{z}</option>)}
+                {zones.map((z) => <option key={z} value={z}>{governorateLabel(z)}</option>)}
               </select>
             </label>
             <label className="block text-sm font-medium">

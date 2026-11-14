@@ -144,6 +144,8 @@ export type ShopParams = {
   min?: number;
   max?: number;
   page?: number;
+  /** Only products that are on sale. */
+  deals?: boolean;
 };
 
 export type ShopResult = {
@@ -205,6 +207,25 @@ export async function fetchShop(params: ShopParams): Promise<ShopResult> {
       query = query
         .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false });
+  }
+
+  if (params.deals) {
+    // Sale prices are worked out in code (see pricing()), so fetch the products that could be on sale and filter here.
+    query = query.or("sale_price.not.is.null,compare_at_price.not.is.null");
+    const { data: all, error: dealsError } = await query.range(0, 499);
+    if (dealsError) throw new Error(dealsError.message);
+    let list = await hydrate((all ?? []) as unknown as ListRow[], categories);
+    list = list.filter((p) => p.discountPct > 0);
+    if (!params.sort || params.sort === "featured") list.sort((a, b) => b.discountPct - a.discountPct);
+    const dealStart = (page - 1) * PAGE_SIZE;
+    return {
+      products: list.slice(dealStart, dealStart + PAGE_SIZE),
+      categories,
+      activeCategory,
+      total: list.length,
+      page,
+      pageCount: Math.max(1, Math.ceil(list.length / PAGE_SIZE)),
+    };
   }
 
   const from = (page - 1) * PAGE_SIZE;

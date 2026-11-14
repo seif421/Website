@@ -48,7 +48,7 @@ function Index() {
         </section>
       ) : (
         <>
-          {sec.deals.show && <ProductRow title={sec.deals.title} products={deals} seeAll={{ sort: "price-asc" }} tone="flash" />}
+          {sec.deals.show && <ProductRow title={sec.deals.title} products={deals} seeAll={{ deals: true }} tone="flash" />}
           <Categories />
           <CuratedPicks />
           {sec.bestSellers.show && <ProductRow title={sec.bestSellers.title} products={bestSellers} seeAll={{ sort: "rating" }} />}
