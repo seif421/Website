@@ -23,6 +23,11 @@ type Confirmation = {
   items: ConfirmationItem[];
 };
 
+// The voucher discount is whatever makes subtotal + delivery differ from the total.
+function discountOf(c: Confirmation): number {
+  return Math.max(0, Math.round((c.subtotal + c.shipping - c.total) * 100) / 100);
+}
+
 function db() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
@@ -76,6 +81,7 @@ export function buildConfirmationEmail(c: Confirmation) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;font-size:14px;color:#111">
 <tr><td style="padding:4px 0;color:#666">Subtotal</td><td style="padding:4px 0;text-align:right">${egp(c.subtotal)}</td></tr>
+${discountOf(c) > 0 ? `<tr><td style="padding:4px 0;color:#666">Voucher discount</td><td style="padding:4px 0;text-align:right;color:#15803d">-${egp(discountOf(c))}</td></tr>` : ""}
 <tr><td style="padding:4px 0;color:#666">Delivery</td><td style="padding:4px 0;text-align:right">${c.shipping > 0 ? egp(c.shipping) : "Free"}</td></tr>
 <tr><td style="padding:10px 0 0;font-size:16px;font-weight:bold;border-top:1px solid #eee">Total</td><td style="padding:10px 0 0;font-size:16px;font-weight:bold;text-align:right;border-top:1px solid #eee">${egp(c.total)}</td></tr>
 </table>
@@ -88,6 +94,7 @@ ${payLine}
     `Thank you, we received your order ${c.order_number}.`,
     ...c.items.map((i) => `- ${i.quantity} x ${i.name}: ${egp(i.subtotal)}`),
     `Subtotal: ${egp(c.subtotal)}`,
+    discountOf(c) > 0 ? `Voucher discount: -${egp(discountOf(c))}` : "",
     `Delivery: ${c.shipping > 0 ? egp(c.shipping) : "Free"}`,
     `Total: ${egp(c.total)}`,
     c.cod ? `Payment: cash on delivery, ${egp(c.total)}.` : "",
