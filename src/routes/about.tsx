@@ -3,6 +3,7 @@ import { SiteLayout } from "@/components/site/layout";
 import { pageHead } from "@/components/site/legal-page";
 import { useSiteData } from "@/hooks/use-site-data";
 import { imageUrl } from "@/lib/store/format";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/about")({
   head: () => pageHead("About", "About Rivvo."),
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/about")({
 });
 
 function Page() {
+  const { t } = useI18n();
   const { about } = useSiteData();
   const image = imageUrl(about.image);
   return (
@@ -29,9 +31,9 @@ function Page() {
           ))}
         </div>
         <p className="mt-10 text-sm text-muted-foreground">
-          Need help?{" "}
+          {t("Need help?")}{" "}
           <Link to="/contact" className="font-medium text-foreground underline">
-            Contact us
+            {t("Contact us")}
           </Link>
           .
         </p>

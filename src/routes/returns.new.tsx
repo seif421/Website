@@ -8,6 +8,7 @@ import { OrderThumb, type OrderLine } from "@/components/account/order-thumb";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { SITE } from "@/lib/site-config";
+import { useI18n } from "@/lib/i18n";
 import { formatMoney } from "@/lib/store/format";
 import { fetchAddresses, type SavedAddress } from "@/lib/store/addresses";
 
@@ -54,6 +55,7 @@ const input =
 const day = 24 * 60 * 60 * 1000;
 
 function ReturnPage() {
+  const { t } = useI18n();
   const { user, loading } = useAuth();
   const { order: presetOrder } = Route.useSearch();
   const navigate = useNavigate();
@@ -152,9 +154,9 @@ function ReturnPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!order) return setError("Choose the order first.");
-    if (chosen.length === 0) return setError("Choose at least one item to return.");
-    if (!reason) return setError("Choose why you want to return it.");
+    if (!order) return setError(t("Choose the order first."));
+    if (chosen.length === 0) return setError(t("Choose at least one item to return."));
+    if (!reason) return setError(t("Choose why you want to return it."));
     setBusy(true);
     setError(null);
     // The database function is new, so the generated types do not list it yet.
@@ -187,13 +189,13 @@ function ReturnPage() {
       <SiteLayout>
         <section className="mx-auto max-w-xl px-4 py-20 text-center">
           <CheckCircle2 className="mx-auto size-12 text-brand" aria-hidden />
-          <h1 className="mt-4 font-display text-3xl font-bold">Return request sent</h1>
+          <h1 className="mt-4 font-display text-3xl font-bold">{t("Return request sent")}</h1>
           <p className="mt-3 text-muted-foreground">
-            Your request number is <strong className="text-foreground">{done.return_number}</strong> for order {done.order_number}.
-            We will review it and email you at <strong className="text-foreground">{user.email}</strong> when it is approved.
+            {t("Your request number is")} <strong className="text-foreground">{done.return_number}</strong> {t("for order")} {done.order_number}.{" "}
+            {t("We will review it and email you at")} <strong className="text-foreground">{user.email}</strong> {t("when it is approved.")}
           </p>
           <Link to="/account" className="mt-8 inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground">
-            Back to my account
+            {t("Back to my account")}
           </Link>
         </section>
       </SiteLayout>
@@ -203,27 +205,27 @@ function ReturnPage() {
   return (
     <SiteLayout>
       <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Return request</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{t("Return request")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          You can return items within {SITE.returnDays} days of delivery if they are unused and in the original packaging.
-          See our{" "}
-          <Link to="/refunds" className="underline">Refund Policy</Link>.
+          {t("You can return items within {n} days of delivery if they are unused and in the original packaging.", { n: SITE.returnDays })}{" "}
+          {t("See our")}{" "}
+          <Link to="/refunds" className="underline">{t("Refund Policy")}</Link>.
         </p>
 
         {orders.length === 0 ? (
           <Card className="mt-8 p-8 text-center">
-            <p className="font-display text-lg font-semibold">No orders to return yet</p>
+            <p className="font-display text-lg font-semibold">{t("No orders to return yet")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              You can ask for a return once an order has been delivered, for {SITE.returnDays} days after delivery.
+              {t("You can ask for a return once an order has been delivered, for {n} days after delivery.", { n: SITE.returnDays })}
             </p>
             <Link to="/account" className="mt-5 inline-flex h-10 items-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground">
-              See my orders
+              {t("See my orders")}
             </Link>
           </Card>
         ) : (
           <form onSubmit={submit} className="mt-8 space-y-8">
             <div>
-              <h2 className="font-display text-lg font-bold">1. Which order?</h2>
+              <h2 className="font-display text-lg font-bold">{t("1. Which order?")}</h2>
               <ul className="mt-3 space-y-2">
                 {orders.map((o) => {
                   const open = blocked[o.id];
@@ -243,7 +245,7 @@ function ReturnPage() {
                           <p className="truncate text-xs text-muted-foreground">
                             {o.order_items.map((l) => l.product_name).join(", ")}
                           </p>
-                          {open && <p className="text-xs text-amber-700">You already have request {open} for this order.</p>}
+                          {open && <p className="text-xs text-amber-700">{t("You already have request {n} for this order.", { n: open })}</p>}
                         </div>
                         <span className="text-sm font-semibold">{formatMoney(Number(o.total))}</span>
                       </label>
@@ -256,7 +258,7 @@ function ReturnPage() {
             {order && (
               <>
                 <div>
-                  <h2 className="font-display text-lg font-bold">2. Which items?</h2>
+                  <h2 className="font-display text-lg font-bold">{t("2. Which items?")}</h2>
                   <ul className="mt-3 divide-y rounded-xl border">
                     {order.order_items.map((l) => {
                       const q = qty[l.id] ?? 0;
@@ -265,7 +267,7 @@ function ReturnPage() {
                           <input
                             type="checkbox"
                             className="size-4"
-                            aria-label={`Return ${l.product_name}`}
+                            aria-label={`${t("Return")} ${l.product_name}`}
                             checked={q > 0}
                             onChange={(e) => setQty((p) => ({ ...p, [l.id]: e.target.checked ? 1 : 0 }))}
                           />
@@ -273,12 +275,12 @@ function ReturnPage() {
                           <div className="min-w-0 flex-1 text-sm">
                             <p className="font-medium">{l.product_name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {formatMoney(Number(l.unit_price))} · you bought {l.quantity}
+                              {formatMoney(Number(l.unit_price))} · {t("you bought {n}", { n: l.quantity })}
                             </p>
                           </div>
                           {q > 0 && l.quantity > 1 && (
                             <select
-                              aria-label="Quantity to return"
+                              aria-label={t("Quantity to return")}
                               value={q}
                               onChange={(e) => setQty((p) => ({ ...p, [l.id]: Number(e.target.value) }))}
                               className="rounded-lg border border-input bg-background px-2 py-1.5 text-sm"
@@ -295,16 +297,16 @@ function ReturnPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <h2 className="font-display text-lg font-bold">3. Why are you returning it?</h2>
+                  <h2 className="font-display text-lg font-bold">{t("3. Why are you returning it?")}</h2>
                   <label className="block text-sm font-medium">
-                    Reason
+                    {t("Reason")}
                     <select value={reason} onChange={(e) => setReason(e.target.value)} required className={input}>
-                      <option value="" disabled>Choose…</option>
-                      {REASONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      <option value="" disabled>{t("Choose…")}</option>
+                      {REASONS.map(([v, l]) => <option key={v} value={v}>{t(l)}</option>)}
                     </select>
                   </label>
                   <label className="block text-sm font-medium">
-                    Tell us more {reason === "other" ? "" : <span className="font-normal text-muted-foreground">(optional)</span>}
+                    {t("Tell us more")} {reason === "other" ? "" : <span className="font-normal text-muted-foreground">{t("(optional)")}</span>}
                     <textarea
                       value={details}
                       onChange={(e) => setDetails(e.target.value)}
@@ -316,9 +318,9 @@ function ReturnPage() {
                     />
                   </label>
                   <fieldset>
-                    <legend className="text-sm font-medium">What would you like?</legend>
+                    <legend className="text-sm font-medium">{t("What would you like?")}</legend>
                     <div className="mt-2 flex gap-3">
-                      {([["refund", "Refund"], ["replacement", "Replacement"]] as const).map(([v, l]) => (
+                      {([["refund", t("Refund")], ["replacement", t("Replacement")]] as const).map(([v, l]) => (
                         <label key={v} className={`flex flex-1 cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm ${type === v ? "border-brand bg-brand/5" : ""}`}>
                           <input type="radio" name="type" className="size-4" checked={type === v} onChange={() => setType(v)} /> {l}
                         </label>
@@ -328,24 +330,24 @@ function ReturnPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <h2 className="font-display text-lg font-bold">4. Where should we collect it?</h2>
+                  <h2 className="font-display text-lg font-bold">{t("4. Where should we collect it?")}</h2>
                   <label className="block text-sm font-medium">
-                    Address
+                    {t("Address")}
                     <select value={addrPick} onChange={(e) => pickAddress(e.target.value)} className={input}>
-                      <option value="order">The address of this order</option>
+                      <option value="order">{t("The address of this order")}</option>
                       {saved.map((a) => (
-                        <option key={a.id} value={a.id}>{(a.label || "Saved address") + " — " + a.line1 + ", " + a.city}</option>
+                        <option key={a.id} value={a.id}>{(a.label || t("Saved address")) + " — " + a.line1 + ", " + a.city}</option>
                       ))}
-                      <option value="new">A different address</option>
+                      <option value="new">{t("A different address")}</option>
                     </select>
                   </label>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className="block text-sm font-medium">
-                      Full name
+                      {t("Full name")}
                       <input className={input} required minLength={3} maxLength={100} value={form.fullName} onChange={(e) => set({ fullName: e.target.value })} />
                     </label>
                     <label className="block text-sm font-medium">
-                      Mobile number
+                      {t("Mobile number")}
                       <input
                         className={input}
                         required
@@ -353,31 +355,31 @@ function ReturnPage() {
                         inputMode="tel"
                         placeholder="01012345678"
                         pattern="(\+?20|0)?1[0125][0-9]{8}"
-                        title="An Egyptian mobile number, for example 01012345678"
+                        title={t("An Egyptian mobile number, for example 01012345678")}
                         value={form.phone}
                         onChange={(e) => set({ phone: e.target.value })}
                       />
                     </label>
                     <label className="block text-sm font-medium">
-                      Governorate
+                      {t("Governorate")}
                       <select className={input} required value={form.governorate} onChange={(e) => set({ governorate: e.target.value })}>
-                        <option value="" disabled>Choose…</option>
+                        <option value="" disabled>{t("Choose…")}</option>
                         {(zones.includes(form.governorate) || !form.governorate ? zones : [form.governorate, ...zones]).map((z) => (
                           <option key={z} value={z}>{governorateLabel(z)}</option>
                         ))}
                       </select>
                     </label>
                     <label className="block text-sm font-medium">
-                      City or area
+                      {t("City or area")}
                       <input className={input} required minLength={2} maxLength={80} value={form.city} onChange={(e) => set({ city: e.target.value })} />
                     </label>
                   </div>
                   <label className="block text-sm font-medium">
-                    Street, building and apartment
+                    {t("Street, building and apartment")}
                     <input className={input} required minLength={6} maxLength={150} value={form.line1} onChange={(e) => set({ line1: e.target.value })} />
                   </label>
                   <label className="block text-sm font-medium">
-                    Landmark <span className="font-normal text-muted-foreground">(optional)</span>
+                    {t("Landmark")} <span className="font-normal text-muted-foreground">{t("(optional)")}</span>
                     <input className={input} maxLength={150} value={form.line2} onChange={(e) => set({ line2: e.target.value })} />
                   </label>
                 </div>
@@ -388,7 +390,7 @@ function ReturnPage() {
                   disabled={busy || chosen.length === 0}
                   className="h-12 w-full rounded-full bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {busy ? "Sending…" : "Send return request"}
+                  {busy ? t("Sending…") : t("Send return request")}
                 </button>
               </>
             )}

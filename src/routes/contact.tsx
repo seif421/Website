@@ -4,6 +4,7 @@ import { SiteLayout } from "@/components/site/layout";
 import { pageHead } from "@/components/site/legal-page";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteData } from "@/hooks/use-site-data";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/contact")({
   head: () => pageHead("Contact us", "Send a message to the Rivvo team."),
@@ -14,6 +15,7 @@ const input =
   "w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20";
 
 function ContactPage() {
+  const { t } = useI18n();
   const { contact } = useSiteData();
   const wa = contact.whatsapp.replace(/\D/g, "");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -50,13 +52,13 @@ function ContactPage() {
         <ul className="mt-6 space-y-2 rounded-2xl border border-border bg-card p-5 text-sm">
           {contact.email && (
             <li>
-              <span className="font-medium">Email: </span>
+              <span className="font-medium">{t("Email")}: </span>
               <a href={`mailto:${contact.email}`} className="text-muted-foreground underline">{contact.email}</a>
             </li>
           )}
           {wa && (
             <li>
-              <span className="font-medium">WhatsApp: </span>
+              <span className="font-medium">{t("WhatsApp")}: </span>
               <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground underline">
                 {contact.whatsapp}
               </a>
@@ -64,19 +66,19 @@ function ContactPage() {
           )}
           {contact.phone && (
             <li>
-              <span className="font-medium">Phone: </span>
+              <span className="font-medium">{t("Phone")}: </span>
               <a href={`tel:${contact.phone.replace(/\s/g, "")}`} className="text-muted-foreground underline">{contact.phone}</a>
             </li>
           )}
           {contact.address && (
             <li>
-              <span className="font-medium">Address: </span>
+              <span className="font-medium">{t("Address")}: </span>
               <span className="whitespace-pre-line text-muted-foreground">{contact.address}</span>
             </li>
           )}
           {contact.hours && (
             <li>
-              <span className="font-medium">Hours: </span>
+              <span className="font-medium">{t("Hours")}: </span>
               <span className="whitespace-pre-line text-muted-foreground">{contact.hours}</span>
             </li>
           )}
@@ -84,15 +86,15 @@ function ContactPage() {
 
         {state === "sent" ? (
           <div className="mt-8 rounded-2xl border border-border bg-card p-6" role="status">
-            <p className="font-display text-lg font-semibold">Thank you, your message was sent.</p>
+            <p className="font-display text-lg font-semibold">{t("Thank you, your message was sent.")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              We will reply to the email address you gave us.
+              {t("We will reply to the email address you gave us.")}
             </p>
           </div>
         ) : (
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
             <label className="block text-sm font-medium">
-              Your name
+              {t("Your name")}
               <input
                 name="name"
                 required
@@ -102,7 +104,7 @@ function ContactPage() {
               />
             </label>
             <label className="block text-sm font-medium">
-              Email
+              {t("Email")}
               <input
                 name="email"
                 type="email"
@@ -113,11 +115,11 @@ function ContactPage() {
               />
             </label>
             <label className="block text-sm font-medium">
-              Order number <span className="font-normal text-muted-foreground">(optional)</span>
+              {t("Order number")} <span className="font-normal text-muted-foreground">{t("(optional)")}</span>
               <input name="order" maxLength={60} className={`${input} mt-1`} />
             </label>
             <label className="block text-sm font-medium">
-              Message
+              {t("Message")}
               <textarea
                 name="message"
                 required
@@ -136,7 +138,7 @@ function ContactPage() {
             />
             {state === "error" && (
               <p className="text-sm text-destructive" role="alert">
-                Sorry, the message could not be sent. Please try again in a moment.
+                {t("Sorry, the message could not be sent. Please try again in a moment.")}
               </p>
             )}
             <button
@@ -144,7 +146,7 @@ function ContactPage() {
               disabled={state === "sending"}
               className="h-12 w-full rounded-full bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {state === "sending" ? "Sending…" : "Send message"}
+              {state === "sending" ? t("Sending…") : t("Send message")}
             </button>
           </form>
         )}

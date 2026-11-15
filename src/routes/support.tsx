@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LegalPage, pageHead } from "@/components/site/legal-page";
 import { SITE } from "@/lib/site-config";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/support")({
   head: () => pageHead("Help Center", "Answers about orders, shipping and returns."),
@@ -10,61 +11,61 @@ export const Route = createFileRoute("/support")({
 const link = "font-medium text-foreground underline";
 
 function Page() {
+  const { t } = useI18n();
   return (
     <LegalPage
-      title="Help Center"
+      title={t("Help Center")}
       showUpdated={false}
       sections={[
         {
-          heading: "Where is my order?",
+          heading: t("Where is my order?"),
           body: (
             <p>
-              Orders are processed within {SITE.processingDays} business days and usually arrive{" "}
-              {SITE.deliveryDays} business days after dispatch. See the{" "}
+              {t("Orders are processed within {p} business days and usually arrive {d} business days after dispatch. See the", { p: SITE.processingDays, d: SITE.deliveryDays })}{" "}
               <Link to="/shipping" className={link}>
-                Shipping Policy
+                {t("Shipping Policy")}
               </Link>{" "}
               for details.
             </p>
           ),
         },
         {
-          heading: "How do I return something?",
+          heading: t("How do I return something?"),
           body: (
             <p>
-              You have {SITE.returnDays} days after delivery. Read the{" "}
+              {t("You have {n} days after delivery. Read the", { n: SITE.returnDays })}{" "}
               <Link to="/refunds" className={link}>
-                Refund Policy
+                {t("Refund Policy")}
               </Link>
-              , then send us your order number through the{" "}
+              {t(", then send us your order number through the")}{" "}
               <Link to="/contact" className={link}>
-                contact form
+                {t("contact form")}
               </Link>
               .
             </p>
           ),
         },
         {
-          heading: "My product is faulty",
+          heading: t("My product is faulty"),
           body: (
             <p>
-              Tell us within {SITE.returnDays} days of delivery.{" "}
+              {t("Tell us within {n} days of delivery.", { n: SITE.returnDays })}{" "}
               <Link to="/contact" className={link}>
-                Contact us
+                {t("Contact us")}
               </Link>{" "}
-              with your order number and a photo or video, and we will help you.
+              {t("with your order number and a photo or video, and we will help you.")}
             </p>
           ),
         },
         {
-          heading: "I could not find my answer",
+          heading: t("I could not find my answer"),
           body: (
             <p>
-              Send us a message through the{" "}
+              {t("Send us a message through the")}{" "}
               <Link to="/contact" className={link}>
-                contact form
+                {t("contact form")}
               </Link>{" "}
-              and we will reply by email.
+              {t("and we will reply by email.")}
             </p>
           ),
         },
