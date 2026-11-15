@@ -2,6 +2,7 @@
 // active, not deleted, and have status "published"; the database enforces the first two.
 
 import { supabase } from "@/integrations/supabase/client";
+import { getLang } from "@/lib/i18n/lang";
 import { pricing, toImages, toSpecs, toStringList, type Spec } from "./format";
 
 export const PAGE_SIZE = 12;
@@ -31,6 +32,8 @@ type ListRow = {
   id: string;
   slug: string;
   name: string;
+  name_ar?: string | null;
+  short_description_ar?: string | null;
   short_description: string | null;
   images: unknown;
   price: number | null;
@@ -44,7 +47,7 @@ type ListRow = {
 };
 
 const LIST_COLS =
-  "id, slug, name, short_description, images, price, sale_price, compare_at_price, rating, review_count, is_best_seller, is_new_arrival, category_id";
+  "id, slug, name, name_ar, short_description, short_description_ar, images, price, sale_price, compare_at_price, rating, review_count, is_best_seller, is_new_arrival, category_id";
 
 type StockInfo = { available: number; allowBackorder: boolean; lowThreshold: number };
 
@@ -82,13 +85,14 @@ function toStoreProduct(
   row: ListRow,
   categories: Map<string, string>,
   stock: Map<string, StockInfo>,
+  ar = false,
 ): StoreProduct {
   const p = pricing(row);
   return {
     id: row.id,
     slug: row.slug,
-    name: row.name,
-    shortDescription: row.short_description,
+    name: (ar && row.name_ar) || row.name,
+    shortDescription: (ar && row.short_description_ar) || row.short_description,
     image: toImages(row.images)[0] ?? null,
     price: p.price,
     compareAt: p.compareAt,
@@ -103,14 +107,20 @@ function toStoreProduct(
 }
 
 export async function fetchCategories(): Promise<Category[]> {
+  const ar = (await getLang()) === "ar";
   const { data, error } = await supabase
     .from("categories")
-    .select("id, name, slug, parent_id")
+    .select("id, name, name_ar, slug, parent_id")
     .eq("is_active", true)
     .is("deleted_at", null)
     .order("sort_order", { ascending: true });
   if (error) throw new Error(error.message);
-  return (data ?? []) as Category[];
+  return ((data ?? []) as (Category & { name_ar?: string | null })[]).map((c) => ({
+    id: c.id,
+    name: (ar && c.name_ar) || c.name,
+    slug: c.slug,
+    parent_id: c.parent_id,
+  }));
 }
 
 function published() {
@@ -123,9 +133,10 @@ function published() {
 }
 
 async function hydrate(rows: ListRow[], categories: Category[]): Promise<StoreProduct[]> {
+  const ar = (await getLang()) === "ar";
   const names = new Map(categories.map((c) => [c.id, c.name]));
   const stock = await fetchStock(rows.map((r) => r.id));
-  return rows.map((r) => toStoreProduct(r, names, stock));
+  return rows.map((r) => toStoreProduct(r, names, stock, ar));
 }
 
 // Characters that have a meaning inside a PostgREST filter string.
@@ -182,7 +193,7 @@ export async function fetchShop(params: ShopParams): Promise<ShopResult> {
   const term = params.q ? sanitizeSearch(params.q) : "";
   if (term) {
     query = query.or(
-      `name.ilike.%${term}%,short_description.ilike.%${term}%,search_keywords.ilike.%${term}%`,
+      `name.ilike.%${term}%,name_ar.ilike.%${term}%,short_description.ilike.%${term}%,search_keywords.ilike.%${term}%`,
     );
   }
   if (params.min != null) query = query.gte("price", params.min);
@@ -317,9 +328,10 @@ export type ProductPageData = {
   reviews: Review[];
 };
 
-const DETAIL_COLS = `${LIST_COLS}, description, features, specs, sku, warranty, meta_title, meta_description, brand_id`;
+const DETAIL_COLS = `${LIST_COLS}, description_ar, description, features, specs, sku, warranty, meta_title, meta_description, brand_id`;
 
 type DetailRow = ListRow & {
+  description_ar?: string | null;
   description: string | null;
   features: unknown;
   specs: unknown;
@@ -359,7 +371,8 @@ export async function fetchProductPage(slug: string): Promise<ProductPageData | 
   ]);
 
   const category = categories.find((c) => c.id === row.category_id) ?? null;
-  const base = toStoreProduct(row, new Map(categories.map((c) => [c.id, c.name])), stock);
+  const ar = (await getLang()) === "ar";
+  const base = toStoreProduct(row, new Map(categories.map((c) => [c.id, c.name])), stock, ar);
   const info = stock.get(row.id);
 
   let related: StoreProduct[] = [];
@@ -375,7 +388,7 @@ export async function fetchProductPage(slug: string): Promise<ProductPageData | 
 
   const product: ProductDetail = {
     ...base,
-    description: row.description,
+    description: (ar && row.description_ar) || row.description,
     features: toStringList(row.features),
     specs: toSpecs(row.specs),
     images: toImages(row.images),

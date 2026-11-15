@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { SITE } from "@/lib/site-config";
 import { imageUrl } from "./format";
+import { getLang } from "@/lib/i18n/lang";
 
 // Everything the owner can change from Admin > Website content, plus the category list.
 // Every field has a default, so the shop still works if nothing has been saved yet.
@@ -288,10 +289,11 @@ export function defaultSiteData(): SiteData {
 /** Loads the category list and the saved website content. Never throws: the shop falls back to defaults. */
 export async function fetchSiteData(): Promise<SiteData> {
   try {
+    const ar = (await getLang()) === "ar";
     const [cats, content] = await Promise.all([
       supabase
         .from("categories")
-        .select("id, name, slug, description, image_url, parent_id, is_featured, sort_order")
+        .select("id, name, name_ar, description_ar, slug, description, image_url, parent_id, is_featured, sort_order")
         .eq("is_active", true)
         .is("deleted_at", null)
         .order("sort_order", { ascending: true }),
@@ -303,9 +305,9 @@ export async function fetchSiteData(): Promise<SiteData> {
     for (const r of (content.data ?? []) as { key: string; value: unknown }[]) byKey[r.key] = r.value;
     const categories: MenuCategory[] = ((cats.data ?? []) as unknown as Obj[]).map((c) => ({
       id: String(c.id),
-      name: String(c.name ?? ""),
+      name: String((ar && c.name_ar) || c.name || ""),
       slug: String(c.slug ?? ""),
-      description: typeof c.description === "string" ? c.description : "",
+      description: (ar && typeof c.description_ar === "string" && c.description_ar) || (typeof c.description === "string" ? c.description : ""),
       image: imageUrl(c.image_url),
       parentId: (c.parent_id as string | null) ?? null,
       featured: c.is_featured === true,
