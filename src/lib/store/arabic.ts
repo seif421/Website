@@ -33,6 +33,49 @@ async function toArabic(text: string): Promise<string | null> {
   return out.join("");
 }
 
+/** Arabic for website content texts (FAQ, About, promos...), cached in the database. */
+export const arabicTexts = createServerFn({ method: "POST" })
+  .inputValidator((d: { texts: string[] }) => d)
+  .handler(async ({ data }): Promise<Record<string, string>> => {
+    const texts = [...new Set(data.texts.filter((x) => typeof x === "string" && x.trim() && x.length <= 1500))].slice(0, 80);
+    if (texts.length === 0) return {};
+    const { createHash } = await import("node:crypto");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as {
+      from: (t: string) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    };
+    const hash = (x: string) => createHash("md5").update(x).digest("hex");
+    const out: Record<string, string> = {};
+    const { data: hits } = await db.from("content_translations").select("src_hash, ar").in("src_hash", texts.map(hash));
+    const have = new Map<string, string>(((hits ?? []) as { src_hash: string; ar: string }[]).map((r) => [r.src_hash, r.ar]));
+    const missing: string[] = [];
+    for (const t of texts) {
+      const hit = have.get(hash(t));
+      if (hit) out[t] = hit;
+      else missing.push(t);
+    }
+    if (missing.length === 0) return out;
+    // Only translate text that really is part of the website content (this is not an open translator).
+    const { data: rows } = await db.from("site_content").select("value");
+    const blob = JSON.stringify(rows ?? []);
+    const inContent = (t: string) => blob.includes(JSON.stringify(t).slice(1, -1));
+    const fresh: { src_hash: string; src: string; ar: string }[] = [];
+    for (let i = 0; i < missing.length; i += 5) {
+      await Promise.all(
+        missing.slice(i, i + 5).map(async (t) => {
+          if (!inContent(t)) return;
+          const ar = await toArabic(t).catch(() => null);
+          if (ar) {
+            out[t] = ar;
+            fresh.push({ src_hash: hash(t), src: t, ar });
+          }
+        }),
+      );
+    }
+    if (fresh.length) await db.from("content_translations").upsert(fresh, { onConflict: "src_hash" });
+    return out;
+  });
+
 type Row = Record<string, string | null> & { id: string };
 
 export const fillArabic = createServerFn({ method: "POST" }).handler(async () => {
