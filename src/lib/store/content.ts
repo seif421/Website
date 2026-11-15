@@ -2,6 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { SITE } from "@/lib/site-config";
 import { imageUrl } from "./format";
 import { getLang } from "@/lib/i18n/lang";
+import { translate } from "@/lib/i18n";
+import { arabicTexts } from "./arabic";
 
 // Everything the owner can change from Admin > Website content, plus the category list.
 // Every field has a default, so the shop still works if nothing has been saved yet.
@@ -286,6 +288,40 @@ export function defaultSiteData(): SiteData {
   };
 }
 
+// Text fields of the website content that get translated automatically in Arabic.
+const TEXT_KEYS = new Set([
+  "title", "text", "body", "heading", "intro", "q", "a", "alt",
+  "announcement", "searchPlaceholder", "footerTagline", "address", "hours",
+]);
+
+function mapTexts<T>(value: T, fn: (s: string) => string, key = ""): T {
+  if (typeof value === "string") return (TEXT_KEYS.has(key) ? fn(value) : value) as T;
+  if (Array.isArray(value)) return value.map((v) => mapTexts(v, fn, key)) as T;
+  if (value && typeof value === "object")
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, mapTexts(v, fn, k)])) as T;
+  return value;
+}
+
+async function toArabicContent(d: SiteData): Promise<SiteData> {
+  const parts = { home: d.home, general: d.general, about: d.about, contact: d.contact };
+  // Ready-made Arabic for the built-in texts first; the rest goes to the translator.
+  const todo = new Set<string>();
+  mapTexts(parts, (s) => {
+    if (s.trim() && translate("ar", s) === s) todo.add(s);
+    return s;
+  });
+  let auto: Record<string, string> = {};
+  if (todo.size) {
+    try {
+      auto = await arabicTexts({ data: { texts: [...todo] } });
+    } catch {
+      /* the English text is shown if translating is not possible right now */
+    }
+  }
+  const fn = (s: string) => auto[s] ?? translate("ar", s);
+  return { ...d, ...mapTexts(parts, fn) };
+}
+
 /** Loads the category list and the saved website content. Never throws: the shop falls back to defaults. */
 export async function fetchSiteData(): Promise<SiteData> {
   try {
@@ -312,7 +348,7 @@ export async function fetchSiteData(): Promise<SiteData> {
       parentId: (c.parent_id as string | null) ?? null,
       featured: c.is_featured === true,
     }));
-    return {
+    const result: SiteData = {
       brand: mergeBrand(byKey.brand),
       categories,
       home: mergeHome(byKey.home),
@@ -320,6 +356,7 @@ export async function fetchSiteData(): Promise<SiteData> {
       about: mergeAbout(byKey.about),
       contact: mergeContact(byKey.contact),
     };
+    return ar ? await toArabicContent(result) : result;
   } catch {
     return defaultSiteData();
   }
