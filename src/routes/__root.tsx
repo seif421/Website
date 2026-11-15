@@ -20,6 +20,7 @@ import { imageUrl } from "@/lib/store/format";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProvider, useI18n } from "@/lib/i18n";
 import { getLang } from "@/lib/i18n/lang";
+import { fillArabic } from "@/lib/store/arabic";
 
 function NotFoundComponent() {
   const { t } = useI18n();
@@ -148,6 +149,32 @@ function PageTracker() {
   return null;
 }
 
+// Translates new or edited products and categories into Arabic in the background.
+// Visitors in Arabic trigger one pass; the admin keeps going until everything is done.
+function ArabicFiller({ lang }: { lang: string }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const inAdmin = pathname.startsWith("/admin");
+  useEffect(() => {
+    if (!inAdmin && lang !== "ar") return;
+    let stop = false;
+    (async () => {
+      for (let i = 0; i < (inAdmin ? 40 : 1) && !stop; i++) {
+        try {
+          const r = await fillArabic();
+          if (r.done === 0 && r.left === 0) return;
+        } catch {
+          return;
+        }
+        await new Promise((res) => setTimeout(res, 16000));
+      }
+    })();
+    return () => {
+      stop = true;
+    };
+  }, [inAdmin, lang]);
+  return null;
+}
+
 function RootComponent() {
   const { queryClient, lang } = Route.useRouteContext();
 
@@ -160,6 +187,7 @@ function RootComponent() {
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
           <PageTracker />
+          <ArabicFiller lang={lang} />
           <Toaster richColors position="top-right" />
           </WishlistProvider>
         </CartProvider>
