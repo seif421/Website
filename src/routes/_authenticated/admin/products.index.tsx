@@ -329,9 +329,9 @@ function ProductsPage() {
   const downloadTemplate = () => {
     const sample = [
       {
-        name: "Sample Camera",
-        slug: "sample-camera",
-        sku: "CAM-001",
+        name: "Sample Product",
+        slug: "sample-product",
+        sku: "PRD-001",
         barcode: "",
         status: "draft",
         price: "199.99",
@@ -339,9 +339,9 @@ function ProductsPage() {
         compare_at_price: "249.99",
         cost: "85.00",
         stock: 50,
-        category: "Cameras",
+        category: "Electronics",
         brand: "Rivvo",
-        tags: "wifi|outdoor",
+        tags: "gift|new",
         is_featured: "false",
         is_best_seller: "false",
         is_new_arrival: "true",
