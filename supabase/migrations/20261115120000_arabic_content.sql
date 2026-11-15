@@ -28,3 +28,7 @@ create trigger products_clear_stale_arabic before update on public.products
 drop trigger if exists categories_clear_stale_arabic on public.categories;
 create trigger categories_clear_stale_arabic before update on public.categories
   for each row execute function private.clear_stale_arabic();
+
+-- products uses column-level SELECT grants, so the new Arabic columns must be granted
+-- (without this the admin product editor and the shop fail).
+grant select (name_ar, short_description_ar, description_ar) on public.products to anon, authenticated;
