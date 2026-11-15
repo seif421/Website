@@ -24,23 +24,25 @@ export function Categories() {
         <span className="h-6 w-1.5 rounded-full bg-brand" aria-hidden />
         {title}
       </h2>
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {cats.map((c) => (
-          <Link
-            key={c.id}
-            to="/shop"
-            search={{ category: c.slug }}
-            className="group overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-elevated"
-          >
-            <CategoryThumb c={c} className="aspect-[4/3] w-full transition-transform duration-500 group-hover:scale-[1.03]" />
-            <div className="p-3">
-              <p className="text-sm font-semibold leading-tight">{c.name}</p>
-              {c.description && (
-                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{c.description}</p>
-              )}
-            </div>
-          </Link>
-        ))}
+      <div className="mt-4 rounded-2xl border border-border bg-card p-4 sm:p-6">
+        <div className="grid grid-cols-4 gap-x-2 gap-y-5 sm:grid-cols-6 lg:grid-cols-8">
+          {cats.map((c) => (
+            <Link
+              key={c.id}
+              to="/shop"
+              search={{ category: c.slug }}
+              className="group flex flex-col items-center gap-2 text-center"
+            >
+              <CategoryThumb
+                c={c}
+                className="size-16 rounded-full border border-border shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-brand group-hover:shadow-elevated sm:size-20 lg:size-[88px]"
+              />
+              <span className="line-clamp-2 text-xs font-medium leading-tight transition-colors group-hover:text-brand sm:text-sm">
+                {c.name}
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );
