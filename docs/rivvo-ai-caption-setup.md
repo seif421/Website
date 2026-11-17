@@ -26,3 +26,7 @@ The default model is `gpt-6-luna`. To override it, add an `OPENAI_MODEL` Edge Fu
 - The Meta Instagram publishing flow, product selection, daily limit, and GitHub Actions schedule are otherwise unchanged.
 
 OpenAI API usage is billed separately from ChatGPT and requires API billing to be enabled. Consider setting a usage budget in the OpenAI API platform.
+
+## Free option: Google Gemini (no billing)
+
+Add a `GEMINI_API_KEY` secret (free key from https://aistudio.google.com/apikey) to the Supabase Edge Function secrets. When it is set, the publisher uses Gemini first and only falls back to OpenAI (if `OPENAI_API_KEY` is set) or the built-in template. Optional: `GEMINI_MODEL` (default `gemini-flash-latest`). The free tier has daily limits that are far above the 1 to 3 captions Rivvo creates per day.
