@@ -112,6 +112,13 @@ function stockOf(inv: { stock: number }[] | { stock: number } | null | undefined
   return Number(row?.stock ?? 0);
 }
 
+// This database function is new, so the generated types do not list it yet.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rpc = (supabase as any).rpc.bind(supabase) as (
+  fn: string,
+  args?: Record<string, unknown>,
+) => Promise<{ data: unknown; error: { message: string } | null }>;
+
 const PAGE_SIZE = 25;
 
 function ProductsPage() {
@@ -127,6 +134,8 @@ function ProductsPage() {
   const [stockFilter, setStockFilter] = useState<string>("all");
   const [sort, setSort] = useState<string>("created_at:desc");
   const [page, setPage] = useState(1);
+  const [viewDays, setViewDays] = useState<string>("30");
+  const [views, setViews] = useState<Record<string, { views: number; visitors: number }>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
@@ -155,6 +164,17 @@ function ProductsPage() {
       .then(({ data }) => setBrands(data ?? []));
   }, []);
 
+  // Page views of every product page in the chosen period, from the site traffic log.
+  useEffect(() => {
+    rpc("admin_product_views", { p_days: Number(viewDays) }).then(({ data }) => {
+      const map: Record<string, { views: number; visitors: number }> = {};
+      for (const r of (data ?? []) as { slug: string; views: number; visitors: number }[]) {
+        map[r.slug] = { views: Number(r.views), visitors: Number(r.visitors) };
+      }
+      setViews(map);
+    });
+  }, [viewDays]);
+
   const load = async () => {
     setLoading(true);
     let q = supabase
@@ -174,9 +194,11 @@ function ProductsPage() {
     if (brandFilter !== "all") q = q.eq("brand_id", brandFilter);
 
     const fromIdx = (page - 1) * PAGE_SIZE;
-    q = q
-      .order(sortField, { ascending: sortDir === "asc" })
-      .range(fromIdx, fromIdx + PAGE_SIZE - 1);
+    const byViews = sortField === "views";
+    // Views are not a column of the products table, so for that sort we load the list and order it here.
+    q = byViews
+      ? q.order("created_at", { ascending: false }).range(0, 999)
+      : q.order(sortField, { ascending: sortDir === "asc" }).range(fromIdx, fromIdx + PAGE_SIZE - 1);
 
     const { data, count, error } = await q;
     if (error) {
@@ -194,6 +216,23 @@ function ProductsPage() {
         return true;
       });
     }
+    if (byViews) {
+      const viewMap = await rpc("admin_product_views", { p_days: Number(viewDays) })
+        .then(({ data: v }) => {
+          const m: Record<string, number> = {};
+          for (const r of (v ?? []) as { slug: string; views: number }[]) m[r.slug] = Number(r.views);
+          return m;
+        });
+      result = [...result].sort((a, b) =>
+        sortDir === "asc"
+          ? (viewMap[a.slug] ?? 0) - (viewMap[b.slug] ?? 0)
+          : (viewMap[b.slug] ?? 0) - (viewMap[a.slug] ?? 0),
+      );
+      setTotal(result.length);
+      setRows(result.slice(fromIdx, fromIdx + PAGE_SIZE));
+      setLoading(false);
+      return;
+    }
     setRows(result);
     setTotal(count ?? 0);
     setLoading(false);
@@ -202,7 +241,7 @@ function ProductsPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, statusFilter, categoryFilter, brandFilter, stockFilter, sort, page]);
+  }, [search, statusFilter, categoryFilter, brandFilter, stockFilter, sort, page, viewDays]);
 
   const allChecked = rows.length > 0 && rows.every((r) => selected.has(r.id));
   const toggleAll = () => {
@@ -575,11 +614,25 @@ function ProductsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="created_at:desc">Newest</SelectItem>
+            <SelectItem value="views:desc">Most views</SelectItem>
+            <SelectItem value="views:asc">Fewest views</SelectItem>
             <SelectItem value="created_at:asc">Oldest</SelectItem>
             <SelectItem value="price:desc">Highest price</SelectItem>
             <SelectItem value="price:asc">Lowest price</SelectItem>
             <SelectItem value="name:asc">Name A→Z</SelectItem>
             <SelectItem value="name:desc">Name Z→A</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={viewDays} onValueChange={setViewDays}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">Views: today</SelectItem>
+            <SelectItem value="7">Views: 7 days</SelectItem>
+            <SelectItem value="30">Views: 30 days</SelectItem>
+            <SelectItem value="90">Views: 90 days</SelectItem>
+            <SelectItem value="3650">Views: all time</SelectItem>
           </SelectContent>
         </Select>
         {hasFilters && (
@@ -647,6 +700,7 @@ function ProductsPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Stock</TableHead>
+                <TableHead>Views</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
@@ -654,13 +708,13 @@ function ProductsPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-32 text-center">
+                  <TableCell colSpan={9} className="h-32 text-center">
                     <Loader2 className="mx-auto size-5 animate-spin text-muted-foreground" />
                   </TableCell>
                 </TableRow>
               ) : rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-32 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={9} className="h-32 text-center text-sm text-muted-foreground">
                     No products found.{" "}
                     {hasFilters ? (
                       "Try clearing filters."
@@ -735,6 +789,12 @@ function ProductsPage() {
                           }
                         >
                           {stock}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium tabular-nums">{views[p.slug]?.views ?? 0}</span>
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          ({views[p.slug]?.visitors ?? 0} visitors)
                         </span>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
