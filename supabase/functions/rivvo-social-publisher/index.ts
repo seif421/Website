@@ -224,6 +224,10 @@ Deno.serve(async (req: Request) => {
   if (!settings.publish_instagram) return json({ ok: true, message: "Instagram publishing is paused" });
 
   const usedIds = (recent ?? []).map((post) => post.product_id).filter(Boolean);
+  // A product that keeps failing (for example because Instagram rejects its picture) must not block every future post.
+  const { data: failedRows } = await db.from("social_posts").select("product_id").eq("status", "failed").limit(300);
+  const failCount = new Map<string, number>();
+  for (const f of failedRows ?? []) if (f.product_id) failCount.set(f.product_id, (failCount.get(f.product_id) ?? 0) + 1);
   const { data: queuedPost, error: queuedError } = await db
     .from("social_posts")
     .select("id, product_id, product_name, product_url, image_url, caption")
@@ -236,6 +240,7 @@ Deno.serve(async (req: Request) => {
 
   let postId: string;
   let imageUrl: string;
+  let altImages: string[] = [];
   let caption: string;
 
   if (queuedPost) {
@@ -268,12 +273,14 @@ Deno.serve(async (req: Request) => {
 
     const candidate = (products ?? []).find((product) => {
       const images = Array.isArray(product.images) ? product.images : [];
-      return !usedIds.includes(product.id) && images.some((image: unknown) => typeof image === "string" && /^https:\/\//i.test(image));
+      return !usedIds.includes(product.id) && (failCount.get(product.id) ?? 0) < 2 && images.some((image: unknown) => typeof image === "string" && /^https:\/\//i.test(image));
     });
     if (!candidate) return json({ ok: true, message: "No eligible unused products with public HTTPS images" });
 
     const images = Array.isArray(candidate.images) ? candidate.images : [];
-    imageUrl = images.find((image: unknown) => typeof image === "string" && /^https:\/\//i.test(image)) as string;
+    const httpsImages = images.filter((image: unknown): image is string => typeof image === "string" && /^https:\/\//i.test(image));
+    imageUrl = httpsImages[0];
+    altImages = httpsImages.slice(1, 4);
     const productUrl = `https://rivvo-shop.vercel.app/product/${candidate.slug}`;
     caption =
       (await generateAICaption({
@@ -300,7 +307,24 @@ Deno.serve(async (req: Request) => {
   const errors: string[] = [];
 
   try {
-    instagramMediaId = await publishInstagram(igId, pageToken, imageUrl, caption, version);
+    try {
+      instagramMediaId = await publishInstagram(igId, pageToken, imageUrl, caption, version);
+    } catch (firstError) {
+      // Instagram only accepts some picture shapes; try the product's other pictures before giving up.
+      if (!/aspect ratio/i.test(firstError instanceof Error ? firstError.message : "")) throw firstError;
+      let lastError: unknown = firstError;
+      for (const alt of altImages) {
+        try {
+          instagramMediaId = await publishInstagram(igId, pageToken, alt, caption, version);
+          imageUrl = alt;
+          await db.from("social_posts").update({ image_url: alt }).eq("id", postId);
+          break;
+        } catch (e) {
+          lastError = e;
+        }
+      }
+      if (!instagramMediaId) throw lastError;
+    }
     const { error: mediaSaveError } = await db.from("social_posts")
       .update({ instagram_media_id: instagramMediaId })
       .eq("id", postId);
