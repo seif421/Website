@@ -45,9 +45,25 @@ function NotFoundComponent() {
   );
 }
 
+// After a website update, a tab that was already open can ask for old files that no longer exist.
+// Reloading once fetches the new version, so the visitor never sees the error page for that.
+const STALE_FILE_ERROR =
+  /dynamically imported module|importing a module script|loading chunk|loading css chunk|failed to fetch/i;
+
 function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  useEffect(() => {
+    if (!STALE_FILE_ERROR.test(message)) return;
+    try {
+      if (sessionStorage.getItem("rivvo_reloaded") === "1") return;
+      sessionStorage.setItem("rivvo_reloaded", "1");
+    } catch {
+      return;
+    }
+    window.location.reload();
+  }, [message]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -57,6 +73,11 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
         <p className="mt-2 text-sm text-muted-foreground">
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
+        {message ? (
+          <p className="mt-3 break-words rounded-md bg-muted px-3 py-2 text-left text-xs text-muted-foreground">
+            {message.slice(0, 300)}
+          </p>
+        ) : null}
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
