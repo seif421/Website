@@ -41,6 +41,7 @@ type ImportedProduct = {
   supplierPriceMin: string;
   supplierPriceMax: string;
   sellingPrice: string;
+  stock: string;
   description: string;
   images: string[];
   shippingNote: string;
@@ -72,6 +73,7 @@ function makeProduct(raw: ExtractedProduct): ImportedProduct {
     supplierPriceMin: min > 0 ? String(min) : "",
     supplierPriceMax: max > 0 ? String(max) : "",
     sellingPrice: "",
+    stock: "",
     description: String(raw.description ?? ""),
     images: Array.isArray(raw.images)
       ? raw.images
@@ -98,6 +100,7 @@ function DropzawyImportPage() {
   const [jsonText, setJsonText] = useState("");
   const [products, setProducts] = useState<ImportedProduct[]>([]);
   const [markup, setMarkup] = useState("35");
+  const [defaultStock, setDefaultStock] = useState("10");
   const [categoryId, setCategoryId] = useState("");
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
@@ -158,6 +161,9 @@ function DropzawyImportPage() {
     if (!chosen.length) return toast.error("Select at least one product.");
     if (!user) return toast.error("Please sign in again.");
     for (const p of chosen) {
+      const st = p.stock.trim() === "" ? defaultStock : p.stock;
+      if (!(Number(st) >= 0) || !Number.isInteger(Number(st)))
+        return toast.error(`Stock for ${p.name || "a product"} must be a whole number (0 or more).`);
       if (!p.name.trim()) return toast.error("Every selected product needs a name.");
       if (!(Number(p.supplierPriceMin) > 0))
         return toast.error(`Enter a valid Dropzawy cost for ${p.name}.`);
@@ -245,6 +251,11 @@ function DropzawyImportPage() {
           errors.push(`${p.name}: ${error.message}`);
           continue;
         }
+        const stock = Number(p.stock.trim() === "" ? defaultStock : p.stock) || 0;
+        const { error: stockError } = await supabase
+          .from("inventory")
+          .upsert({ product_id: data.id, stock }, { onConflict: "product_id" });
+        if (stockError) errors.push(`${p.name}: imported, but stock was not saved (${stockError.message})`);
         imported++;
         importedUrls.add(p.sourceUrl);
         knownUrls.add(p.sourceUrl);
@@ -388,7 +399,17 @@ function DropzawyImportPage() {
               </div>
               <Badge variant="secondary">{selectedCount} selected</Badge>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr]">
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="space-y-1">
+                <Label>Default stock (pieces)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={defaultStock}
+                  onChange={(e) => setDefaultStock(e.target.value)}
+                />
+              </div>
               <div className="space-y-1">
                 <Label>Default markup (%)</Label>
                 <Input
@@ -518,6 +539,17 @@ function DropzawyImportPage() {
                             Use +{markup}%
                           </Button>
                         </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Stock (pieces)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={p.stock}
+                          onChange={(e) => updateProduct(index, { stock: e.target.value })}
+                          placeholder={`Default: ${defaultStock || 0}`}
+                        />
                       </div>
                       <div className="space-y-1">
                         <Label>Dropzawy product ID</Label>
