@@ -290,10 +290,17 @@ export type HomeRows = {
 
 /** Product rows for the homepage. A row is simply left out when it has no products. */
 export async function fetchHomeRows(): Promise<HomeRows> {
-  const [bestSellers, newest] = await Promise.all([fetchFeatured(12), fetchNewest(12)]);
-  const seen = new Set<string>();
-  const deals = [...bestSellers, ...newest]
-    .filter((p) => p.discountPct > 0 && !seen.has(p.id) && (seen.add(p.id), true))
+  const [bestSellers, newest, categories] = await Promise.all([
+    fetchFeatured(12),
+    fetchNewest(12),
+    fetchCategories(),
+  ]);
+  // Deals come from the whole catalog (the same products the "See all" page shows), not only from the rows above.
+  const { data: dealRows } = await published()
+    .or("sale_price.not.is.null,compare_at_price.not.is.null")
+    .range(0, 499);
+  const deals = (await hydrate((dealRows ?? []) as unknown as ListRow[], categories))
+    .filter((p) => p.discountPct > 0)
     .sort((a, b) => b.discountPct - a.discountPct)
     .slice(0, 12);
   return { bestSellers, newest, deals };
