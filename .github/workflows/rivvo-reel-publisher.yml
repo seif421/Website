@@ -1,9 +1,10 @@
 name: Rivvo Reel Publisher
 
 on:
-  schedule:
-    # Once a day in the evening (Cairo); the function enforces the daily reel limit.
-    - cron: "0 17 * * *"
+  # schedule paused: automatic reels are switched off (run manually with "Run workflow" if wanted)
+  #schedule:
+    #
+    #- cron: "0 17 * * *"
   workflow_dispatch:
 
 permissions:

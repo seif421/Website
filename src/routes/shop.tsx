@@ -29,6 +29,20 @@ function positiveNumber(v: unknown): number | undefined {
   return Number.isFinite(n) && n >= 0 && n < 1_000_000 ? n : undefined;
 }
 
+// Page buttons to show: first, last and the pages around the current one. 0 means "…".
+function pageNumbers(current: number, total: number): number[] {
+  const keep = new Set([1, total, current - 1, current, current + 1]);
+  if (current <= 3) [2, 3, 4].forEach((n) => keep.add(n));
+  if (current >= total - 2) [total - 1, total - 2, total - 3].forEach((n) => keep.add(n));
+  const list = [...keep].filter((n) => n >= 1 && n <= total).sort((x, y) => x - y);
+  const out: number[] = [];
+  list.forEach((n, i) => {
+    if (i > 0 && n - list[i - 1] > 1) out.push(0);
+    out.push(n);
+  });
+  return out;
+}
+
 export const Route = createFileRoute("/shop")({
   validateSearch: (s: Record<string, unknown>): ShopSearch => {
     const page = positiveNumber(s.page);
@@ -331,7 +345,7 @@ function ShopPage() {
                 {data.pageCount > 1 && (
                   <nav
                     aria-label={t("Pagination")}
-                    className="mt-10 flex items-center justify-center gap-3"
+                    className="mt-10 flex flex-wrap items-center justify-center gap-2"
                   >
                     <button
                       type="button"
@@ -341,9 +355,28 @@ function ShopPage() {
                     >
                       {t("Previous")}
                     </button>
-                    <span className="text-sm text-muted-foreground">
-                      {t("Page {page} of {total}", { page: data.page, total: data.pageCount })}
-                    </span>
+                    {pageNumbers(data.page, data.pageCount).map((n, i) =>
+                      n === 0 ? (
+                        <span key={`gap-${i}`} className="px-1 text-muted-foreground">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={n}
+                          type="button"
+                          aria-label={t("Page {page} of {total}", { page: n, total: data.pageCount })}
+                          aria-current={n === data.page ? "page" : undefined}
+                          onClick={() => goToPage(n)}
+                          className={`h-10 min-w-10 rounded-full border px-3 text-sm font-medium ${
+                            n === data.page
+                              ? "border-brand bg-brand text-white"
+                              : "border-input hover:bg-muted"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ),
+                    )}
                     <button
                       type="button"
                       disabled={data.page >= data.pageCount}
