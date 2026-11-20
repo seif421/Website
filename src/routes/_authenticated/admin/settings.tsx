@@ -61,8 +61,8 @@ function SettingsPage() {
               <Field label="Facebook">
                 <Input value={b.facebook} onChange={(e) => set({ facebook: e.target.value })} placeholder="https://facebook.com/yourpage" />
               </Field>
-              <Field label="X (Twitter)">
-                <Input value={b.x} onChange={(e) => set({ x: e.target.value })} placeholder="https://x.com/yourpage" />
+              <Field label="TikTok">
+                <Input value={b.x} onChange={(e) => set({ x: e.target.value })} placeholder="https://www.tiktok.com/@yourpage" />
               </Field>
               <Field label="YouTube">
                 <Input value={b.youtube} onChange={(e) => set({ youtube: e.target.value })} placeholder="https://youtube.com/@yourchannel" />
