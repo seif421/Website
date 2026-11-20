@@ -195,4 +195,7 @@ export const more: Record<string, string> = {
   "Lost or damaged parcels": "الطرود المفقودة أو التالفة",
   "If your parcel is lost, or arrives damaged or incorrect,": "إذا فُقد طردك أو وصل تالفًا أو خاطئًا،",
   "with your order number and, for damage, a photo. We will arrange a replacement or refund.": "مع ذكر رقم طلبك، وصورة في حالة التلف. سنرتب لك بديلًا أو استردادًا.",
+  "Hello Rivvo, I'm interested in this product: {url}": "مرحباً ريفو، مهتم بهذا المنتج: {url}",
+  "Hello Rivvo, I have a question": "مرحباً ريفو، عندي سؤال",
+  "Chat with us on WhatsApp": "تواصل معنا على واتساب",
 };
