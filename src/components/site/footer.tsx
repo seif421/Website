@@ -1,8 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { Facebook, Instagram, Youtube } from "lucide-react";
 import { Logo } from "./logo";
 import { useI18n } from "@/lib/i18n";
 import { navCategories, useSiteData } from "@/hooks/use-site-data";
+
+// Simple TikTok logo (the icon set has none).
+function TikTok({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M16.6 2h-3.2v13.2a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V9.1a6.1 6.1 0 1 0 5.2 6V8.6a7.4 7.4 0 0 0 4.3 1.4V6.8a4.3 4.3 0 0 1-4.3-4.8Z" />
+    </svg>
+  );
+}
 
 type FooterLink = { label: string; to: string; category?: string };
 
@@ -12,7 +21,7 @@ export function Footer() {
   const { brand } = site;
   const socials = [
     { Icon: Instagram, href: brand.instagram, label: "Instagram" },
-    { Icon: Twitter, href: brand.x, label: "X (Twitter)" },
+    { Icon: TikTok, href: brand.x, label: "TikTok" },
     { Icon: Facebook, href: brand.facebook, label: "Facebook" },
     { Icon: Youtube, href: brand.youtube, label: "YouTube" },
   ].filter((s) => s.href);
